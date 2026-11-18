@@ -1,0 +1,275 @@
+{
+  "name": "GeoAgent Icons",
+  "version": "3.0.0",
+  "base": "Lucide (lucide-react)",
+  "grid": 24,
+  "strokeWidth": 1.75,
+  "icons": [
+    {
+      "name": "menu",
+      "label": "Mở danh sách",
+      "group": "navigation",
+      "source": "lucide:Menu",
+      "file": "menu.svg"
+    },
+    {
+      "name": "close",
+      "label": "Đóng",
+      "group": "navigation",
+      "source": "lucide:X",
+      "file": "close.svg"
+    },
+    {
+      "name": "back",
+      "label": "Quay lại",
+      "group": "navigation",
+      "source": "lucide:ArrowLeft",
+      "file": "back.svg"
+    },
+    {
+      "name": "chevron-down",
+      "label": "Mở rộng",
+      "group": "navigation",
+      "source": "lucide:ChevronDown",
+      "file": "chevron-down.svg"
+    },
+    {
+      "name": "chevron-up",
+      "label": "Thu gọn",
+      "group": "navigation",
+      "source": "lucide:ChevronUp",
+      "file": "chevron-up.svg"
+    },
+    {
+      "name": "more",
+      "label": "Tùy chọn",
+      "group": "navigation",
+      "source": "lucide:Ellipsis",
+      "file": "more.svg"
+    },
+    {
+      "name": "phone",
+      "label": "Xem trên điện thoại",
+      "group": "navigation",
+      "source": "lucide:Smartphone",
+      "file": "phone.svg"
+    },
+    {
+      "name": "settings",
+      "label": "Cài đặt",
+      "group": "navigation",
+      "source": "lucide:SlidersHorizontal",
+      "file": "settings.svg"
+    },
+    {
+      "name": "sign-in",
+      "label": "Đăng nhập",
+      "group": "navigation",
+      "source": "lucide:LogIn",
+      "file": "sign-in.svg"
+    },
+    {
+      "name": "search",
+      "label": "Tìm kiếm",
+      "group": "conversation",
+      "source": "lucide:Search",
+      "file": "search.svg"
+    },
+    {
+      "name": "chat",
+      "label": "Hội thoại",
+      "group": "conversation",
+      "source": "lucide:MessageSquareText",
+      "file": "chat.svg"
+    },
+    {
+      "name": "new-chat",
+      "label": "Hội thoại mới",
+      "group": "conversation",
+      "source": "lucide:MessageSquarePlus",
+      "file": "new-chat.svg"
+    },
+    {
+      "name": "edit",
+      "label": "Soạn mới",
+      "group": "conversation",
+      "source": "lucide:SquarePen",
+      "file": "edit.svg"
+    },
+    {
+      "name": "group",
+      "label": "Phòng hội thoại",
+      "group": "conversation",
+      "source": "lucide:Users",
+      "file": "group.svg"
+    },
+    {
+      "name": "group-add",
+      "label": "Thêm thành viên",
+      "group": "conversation",
+      "source": "lucide:UserPlus",
+      "file": "group-add.svg"
+    },
+    {
+      "name": "favorite",
+      "label": "Yêu thích",
+      "group": "conversation",
+      "source": "lucide:Star",
+      "file": "favorite.svg"
+    },
+    {
+      "name": "assistant",
+      "label": "Trợ lý GeoAgent",
+      "group": "conversation",
+      "source": "geoagent:custom",
+      "file": "assistant.svg"
+    },
+    {
+      "name": "plus",
+      "label": "Thêm",
+      "group": "compose",
+      "source": "lucide:Plus",
+      "file": "plus.svg"
+    },
+    {
+      "name": "attach",
+      "label": "Đính kèm tệp",
+      "group": "compose",
+      "source": "lucide:Paperclip",
+      "file": "attach.svg"
+    },
+    {
+      "name": "send",
+      "label": "Gửi tin nhắn",
+      "group": "compose",
+      "source": "lucide:ArrowUp",
+      "file": "send.svg"
+    },
+    {
+      "name": "stop",
+      "label": "Dừng trả lời",
+      "group": "compose",
+      "source": "lucide:Square",
+      "file": "stop.svg"
+    },
+    {
+      "name": "smile",
+      "label": "Biểu cảm",
+      "group": "compose",
+      "source": "lucide:Smile",
+      "file": "smile.svg"
+    },
+    {
+      "name": "microphone",
+      "label": "Nhập bằng giọng nói",
+      "group": "compose",
+      "source": "lucide:Mic",
+      "file": "microphone.svg"
+    },
+    {
+      "name": "document",
+      "label": "Tài liệu",
+      "group": "knowledge",
+      "source": "lucide:FileText",
+      "file": "document.svg"
+    },
+    {
+      "name": "sources",
+      "label": "Nguồn tham khảo",
+      "group": "knowledge",
+      "source": "lucide:BookOpenText",
+      "file": "sources.svg"
+    },
+    {
+      "name": "link",
+      "label": "Liên kết",
+      "group": "knowledge",
+      "source": "lucide:Link",
+      "file": "link.svg"
+    },
+    {
+      "name": "external-link",
+      "label": "Mở liên kết ngoài",
+      "group": "knowledge",
+      "source": "lucide:ExternalLink",
+      "file": "external-link.svg"
+    },
+    {
+      "name": "download",
+      "label": "Tải xuống",
+      "group": "knowledge",
+      "source": "lucide:Download",
+      "file": "download.svg"
+    },
+    {
+      "name": "copy",
+      "label": "Sao chép",
+      "group": "knowledge",
+      "source": "lucide:Copy",
+      "file": "copy.svg"
+    },
+    {
+      "name": "shield",
+      "label": "Bảo mật",
+      "group": "knowledge",
+      "source": "lucide:ShieldCheck",
+      "file": "shield.svg"
+    },
+    {
+      "name": "retry",
+      "label": "Thử lại",
+      "group": "feedback",
+      "source": "lucide:RotateCw",
+      "file": "retry.svg"
+    },
+    {
+      "name": "thumbs-up",
+      "label": "Hữu ích",
+      "group": "feedback",
+      "source": "lucide:ThumbsUp",
+      "file": "thumbs-up.svg"
+    },
+    {
+      "name": "thumbs-down",
+      "label": "Chưa hữu ích",
+      "group": "feedback",
+      "source": "lucide:ThumbsDown",
+      "file": "thumbs-down.svg"
+    },
+    {
+      "name": "info",
+      "label": "Thông tin",
+      "group": "feedback",
+      "source": "lucide:Info",
+      "file": "info.svg"
+    },
+    {
+      "name": "success",
+      "label": "Thành công",
+      "group": "feedback",
+      "source": "lucide:CircleCheck",
+      "file": "success.svg"
+    },
+    {
+      "name": "warning",
+      "label": "Cảnh báo",
+      "group": "feedback",
+      "source": "lucide:TriangleAlert",
+      "file": "warning.svg"
+    },
+    {
+      "name": "error",
+      "label": "Có lỗi",
+      "group": "feedback",
+      "source": "lucide:CircleX",
+      "file": "error.svg"
+    },
+    {
+      "name": "check",
+      "label": "Đã chọn",
+      "group": "feedback",
+      "source": "lucide:Check",
+      "file": "check.svg"
+    }
+  ]
+}

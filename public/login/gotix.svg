@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 793 340"
+     width="793" height="340" xml:space="preserve">
+  <!-- left bracket [ -->
+  <path d="M10,9 L34,9 L34,2 L2,2 L2,338 L34,338 L34,331 L10,331 Z"/>
+  <!-- right bracket ] -->
+  <path d="M783,331 L759,331 L759,338 L791,338 L791,2 L759,2 L759,9 L783,9 Z"/>
+  <!-- "gotix" text -->
+  <text x="396.5" y="240" text-anchor="middle"
+        font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-weight="900" font-size="220" letter-spacing="-6">gotix</text>
+</svg>
