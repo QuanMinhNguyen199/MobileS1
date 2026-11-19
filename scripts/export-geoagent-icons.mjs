@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { createElement } from "react";
@@ -9,6 +9,10 @@ import { ICONS, ICON_GROUPS, STROKE, PLATFORMS, lucideFor } from "../src/improve
 const root = fileURLToPath(new URL("../", import.meta.url));
 const out = resolve(root, "public/geoagent-icons");
 mkdirSync(out, { recursive: true });
+// Self-host the browser build, including on static GitHub Pages deployments.
+copyFileSync(fileURLToPath(import.meta.resolve('svgo/browser')), resolve(out, 'svgo.browser.js'));
+copyFileSync(new URL('./catalog-svg-optimizer.js', import.meta.url), resolve(out, 'svg-optimizer.js'));
+copyFileSync(new URL('../LICENSE', import.meta.resolve('svgo/browser')), resolve(out, 'SVGO-LICENSE.txt'));
 const xml = (s) => String(s).replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 const kebab = (s) => s.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
 const attributes = (values) => Object.entries(values).map(([key, value]) => `${kebab(key)}="${xml(value)}"`).join(" ");
@@ -106,6 +110,7 @@ section{scroll-margin-top:20px;margin-bottom:32px}section h2{font-size:16px;font
 @media(max-width:600px){.masthead{padding:16px 20px;gap:12px;flex-wrap:wrap}.masthead p{display:none}.brand{font-size:19px}.back-link{font-size:12px}.layout{display:block}.catalog-nav{padding:16px 20px;border-right:0;border-bottom:1px solid var(--line)}.catalog-nav>p{margin-bottom:8px}.catalog-nav nav{display:flex;overflow-x:auto;gap:20px}.catalog-nav nav a{white-space:nowrap;padding:8px 0}.download-link{margin-top:16px}.text-link{margin-top:12px}main{padding:28px 20px}.intro h1{font-size:25px}.intro p{font-size:13px;line-height:1.8}.specimen{gap:24px;margin:24px 0}.signature{gap:16px}.signature>svg{width:52px;height:52px}.signature p{font-size:12px}.toolbar{gap:14px}.search{flex-basis:100%;max-width:none}.size-control{font-size:12px}#result-count{font-size:12px}.set-tabs{gap:0}.set-tabs button{flex:1;justify-content:center;gap:5px;padding:12px 6px;font-size:13px}.set-tabs button span{font-size:10px;padding:2px 6px}.icon-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.icon-item{min-height:132px;padding-inline:5px}.icon-label{font-size:11px}.icon-name{font-size:10px}.sample{padding-inline:12px}}
 `);
 writeFileSync(resolve(out, "catalog.js"), `
+import { optimizeSvg } from './svg-optimizer.js';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const normalize = (value) => value.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replaceAll('đ', 'd');
@@ -208,11 +213,16 @@ for (const select of $$('.format-select')) select.addEventListener('change', () 
 const baseName = (name) => 'geoagent-' + (platform === 'shared' ? '' : platform + '-') + name;
 
 async function render(name, fmt) {
-  const source = await (await fetch(DIRS[platform] + name + '.svg')).text();
   const px = size();
-  const text = source.replaceAll('currentColor', colorOf(name)).replace('width="24" height="24"', 'width="' + px + '" height="' + px + '"');
+  const hex = colorOf(name);
+  const filename = baseName(name);
+  const response = await fetch(DIRS[platform] + name + '.svg');
+  if (!response.ok) throw new Error('Không đọc được SVG: ' + response.status);
+  const source = await response.text();
+  let text = source.replaceAll('currentColor', hex).replace('width="24" height="24"', 'width="' + px + '" height="' + px + '"');
+  if (fmt === 'svg') text = await optimizeSvg(text);
   const svgBlob = new Blob([text], { type: 'image/svg+xml' });
-  if (fmt === 'svg') return { name: baseName(name) + '.svg', blob: svgBlob };
+  if (fmt === 'svg') return { name: filename + '.svg', blob: svgBlob };
   const url = URL.createObjectURL(svgBlob);
   try {
     const image = new Image(px, px);
@@ -221,7 +231,7 @@ async function render(name, fmt) {
     const canvas = Object.assign(document.createElement('canvas'), { width: px, height: px });
     canvas.getContext('2d').drawImage(image, 0, 0, px, px);
     const blob = await new Promise((done) => canvas.toBlob(done, 'image/png'));
-    return { name: baseName(name) + '.png', blob };
+    return { name: filename + '.png', blob };
   } finally { URL.revokeObjectURL(url); }
 }
 function save(blob, filename) {
@@ -232,12 +242,24 @@ function save(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 async function busy(button, label, task) {
+  if (button.getAttribute('aria-busy') === 'true') return;
   const original = button.innerHTML;
+  button.setAttribute('aria-busy', 'true');
   button.disabled = true;
   button.textContent = label;
   try { await task(); } catch (error) { console.error(error); alert('Không tạo được file. Hãy thử lại.'); }
-  finally { button.disabled = false; button.innerHTML = original; }
+  finally { button.disabled = false; button.removeAttribute('aria-busy'); button.innerHTML = original; }
 }
+$('#sprite-link').addEventListener('click', (event) => {
+  event.preventDefault();
+  const sprite = SPRITES[platform];
+  busy(event.currentTarget, 'Đang tạo…', async () => {
+    const response = await fetch(sprite);
+    if (!response.ok) throw new Error('Không đọc được sprite: ' + response.status);
+    const text = await optimizeSvg(await response.text());
+    save(new Blob([text], { type: 'image/svg+xml' }), sprite);
+  });
+});
 $('#dlg-download').addEventListener('click', (event) => busy(event.currentTarget, 'Đang tạo…', async () => {
   const file = await render(current, format);
   save(file.blob, file.name);
@@ -335,6 +357,6 @@ select(SPRITES[params.get('bo')] ? params.get('bo') : 'shared');
 paint();
 `);
 
-writeFileSync(resolve(out, "README.md"), `# GeoAgent Icons v3\n\n${Object.keys(ICONS).length} icon cho GeoAgent, dựng trên Lucide (lucide-react, giấy phép ISC). Tên, nhóm và nhãn tiếng Việt là của GeoAgent; riêng dấu hiệu trợ lý (assistant) được vẽ riêng theo cùng kiểu nét.\n\n## Quy chuẩn\n\n- Lưới 24 × 24, nét ${STROKE} px, đầu và góc nét tròn. Độ dày nét giữ nguyên ở mọi cỡ (absoluteStrokeWidth).\n- 16 px cho icon phụ, 20 px mặc định, 24 px cho thao tác nổi bật.\n- Màu currentColor: tự theo màu chữ của component. Không tô cố định màu thương hiệu trong file.\n- Sidebar đỏ: trắng ấm; vùng sáng: màu chữ hoặc đỏ thương hiệu. Giữ tương phản icon chức năng tối thiểu 3:1.\n- Dấu hiệu assistant (bong bóng hội thoại và dấu định vị) là đề xuất thiết kế, chưa được kiểm chứng nhận diện với người dùng. Không thay thế logo.\n\n## React\n\nImport GeoIcon hoặc các component có tên từ src/improved/icons.jsx, không import thẳng từ lucide-react, để giữ một bộ tên và một độ dày nét chung.\n\n    <button aria-label="Đính kèm tệp"><GeoIcon name="attach" /></button>\n    <GeoIcon name="warning" label="Cảnh báo" size={24} />\n\nIcon mặc định aria-hidden, focusable=false. Đặt tên cho nút trên chính nút. Chỉ dùng label khi icon đứng độc lập mang thông tin.\n\n## Thêm icon mới\n\n1. Chọn icon trên lucide.dev.\n2. Thêm vào src/improved/icon-data.js: tên GeoAgent, nhãn tiếng Việt, nhóm, tên Lucide.\n3. Import component đó theo tên trong src/improved/icons.jsx, để bundler chỉ đóng gói icon đang dùng.\n4. Chạy npm run icons:export.\n\n## SVG riêng\n\nCác file SVG có kích thước 24 × 24 và nhãn tiếng Việt. Có thể nhập vào Figma. Khi inline vào nút đã có tên, đặt aria-hidden=true và bỏ role/aria-label của SVG.\n\nNếu dùng img, màu của phần tử cha không truyền vào file SVG: dùng inline SVG hoặc sprite để đổi màu theo theme.\n\n## Ba bộ: dùng chung, iPhone, Android\n\nMột số icon đổi hình theo thói quen từng nền tảng: quay lại (iPhone: chevron), tùy chọn (Android: ba chấm dọc), gửi (Android: máy bay giấy), chia sẻ (Android: ba nút nối). Các icon còn lại giống nhau ở cả ba bộ.\n\n- Dùng chung: thư mục gốc, sprite.svg\n- iPhone: ios/, sprite-ios.svg\n- Android: android/, sprite-android.svg\n\nTrong React: <GeoIcon name="back" platform="ios" />. Mặc định platform="shared".\n\n## Đổi màu và tải PNG trên trang catalog\n\n- Màu cả bộ: chọn ở thanh công cụ; ô đầu tiên (đỏ GeoAgent) là màu mặc định.\n- Màu riêng: bấm một icon, chọn màu trong hộp thoại; Áp dụng màu này cho tất cả đặt màu đó cho cả bộ và bỏ các màu riêng.\n- Tải dạng SVG hoặc PNG. PNG có cỡ đúng bằng Kích thước đang chọn (16 đến 48 px). Tải cả bộ tạo file .zip của bộ đang xem ngay trong trình duyệt.\n- Màu riêng từng icon chỉ giữ trong lần mở trang; màu cả bộ được ghi vào link (?mau=).\n\n## Sprite\n\n    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">\n      <use href="/geoagent-icons/sprite.svg#geo-search" />\n    </svg>\n\n## Xuất lại\n\nNguồn: src/improved/icon-data.js. Chạy npm run icons:export sau khi chỉnh; không sửa riêng file được sinh trong public/geoagent-icons.\n`);
+writeFileSync(resolve(out, "README.md"), `# GeoAgent Icons v3\n\n${Object.keys(ICONS).length} icon cho GeoAgent, dựng trên Lucide (lucide-react, giấy phép ISC). Tên, nhóm và nhãn tiếng Việt là của GeoAgent; riêng dấu hiệu trợ lý (assistant) được vẽ riêng theo cùng kiểu nét.\n\n## Quy chuẩn\n\n- Lưới 24 × 24, nét ${STROKE} px, đầu và góc nét tròn. Độ dày nét giữ nguyên ở mọi cỡ (absoluteStrokeWidth).\n- 16 px cho icon phụ, 20 px mặc định, 24 px cho thao tác nổi bật.\n- Màu currentColor: tự theo màu chữ của component. Không tô cố định màu thương hiệu trong file.\n- Sidebar đỏ: trắng ấm; vùng sáng: màu chữ hoặc đỏ thương hiệu. Giữ tương phản icon chức năng tối thiểu 3:1.\n- Dấu hiệu assistant (bong bóng hội thoại và dấu định vị) là đề xuất thiết kế, chưa được kiểm chứng nhận diện với người dùng. Không thay thế logo.\n\n## React\n\nImport GeoIcon hoặc các component có tên từ src/improved/icons.jsx, không import thẳng từ lucide-react, để giữ một bộ tên và một độ dày nét chung.\n\n    <button aria-label="Đính kèm tệp"><GeoIcon name="attach" /></button>\n    <GeoIcon name="warning" label="Cảnh báo" size={24} />\n\nIcon mặc định aria-hidden, focusable=false. Đặt tên cho nút trên chính nút. Chỉ dùng label khi icon đứng độc lập mang thông tin.\n\n## Thêm icon mới\n\n1. Chọn icon trên lucide.dev.\n2. Thêm vào src/improved/icon-data.js: tên GeoAgent, nhãn tiếng Việt, nhóm, tên Lucide.\n3. Import component đó theo tên trong src/improved/icons.jsx, để bundler chỉ đóng gói icon đang dùng.\n4. Chạy npm run icons:export.\n\n## SVG riêng\n\nCác file SVG có kích thước 24 × 24 và nhãn tiếng Việt. Có thể nhập vào Figma. Khi inline vào nút đã có tên, đặt aria-hidden=true và bỏ role/aria-label của SVG.\n\nNếu dùng img, màu của phần tử cha không truyền vào file SVG: dùng inline SVG hoặc sprite để đổi màu theo theme.\n\n## Ba bộ: dùng chung, iPhone, Android\n\nMột số icon đổi hình theo thói quen từng nền tảng: quay lại (iPhone: chevron), tùy chọn (Android: ba chấm dọc), gửi (Android: máy bay giấy), chia sẻ (Android: ba nút nối). Các icon còn lại giống nhau ở cả ba bộ.\n\n- Dùng chung: thư mục gốc, sprite.svg\n- iPhone: ios/, sprite-ios.svg\n- Android: android/, sprite-android.svg\n\nTrong React: <GeoIcon name="back" platform="ios" />. Mặc định platform="shared".\n\n## Đổi màu và tải PNG trên trang catalog\n\n- Màu cả bộ: chọn ở thanh công cụ; ô đầu tiên (đỏ GeoAgent) là màu mặc định.\n- Màu riêng: bấm một icon, chọn màu trong hộp thoại; Áp dụng màu này cho tất cả đặt màu đó cho cả bộ và bỏ các màu riêng.\n- SVG tải riêng, trong ZIP và sprite được tự động tối ưu bằng SVGO ngay trong trình duyệt. Giữ viewBox, kích thước, nhãn và ID sprite; nếu tối ưu lỗi thì tải bản gốc.\n- Tải dạng SVG hoặc PNG. PNG có cỡ đúng bằng Kích thước đang chọn (16 đến 48 px). Tải cả bộ tạo file .zip của bộ đang xem ngay trong trình duyệt.\n- Màu riêng từng icon chỉ giữ trong lần mở trang; màu cả bộ được ghi vào link (?mau=).\n\n## Sprite\n\n    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">\n      <use href="/geoagent-icons/sprite.svg#geo-search" />\n    </svg>\n\n## Xuất lại\n\nNguồn: src/improved/icon-data.js. Chạy npm run icons:export sau khi chỉnh; không sửa riêng file được sinh trong public/geoagent-icons.\n`);
 console.log(`Exported ${Object.keys(ICONS).length} GeoAgent icons and catalog to ${out}`);
 

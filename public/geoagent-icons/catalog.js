@@ -1,4 +1,5 @@
 
+import { optimizeSvg } from './svg-optimizer.js';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const normalize = (value) => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replaceAll('đ', 'd');
@@ -101,11 +102,16 @@ for (const select of $$('.format-select')) select.addEventListener('change', () 
 const baseName = (name) => 'geoagent-' + (platform === 'shared' ? '' : platform + '-') + name;
 
 async function render(name, fmt) {
-  const source = await (await fetch(DIRS[platform] + name + '.svg')).text();
   const px = size();
-  const text = source.replaceAll('currentColor', colorOf(name)).replace('width="24" height="24"', 'width="' + px + '" height="' + px + '"');
+  const hex = colorOf(name);
+  const filename = baseName(name);
+  const response = await fetch(DIRS[platform] + name + '.svg');
+  if (!response.ok) throw new Error('Không đọc được SVG: ' + response.status);
+  const source = await response.text();
+  let text = source.replaceAll('currentColor', hex).replace('width="24" height="24"', 'width="' + px + '" height="' + px + '"');
+  if (fmt === 'svg') text = await optimizeSvg(text);
   const svgBlob = new Blob([text], { type: 'image/svg+xml' });
-  if (fmt === 'svg') return { name: baseName(name) + '.svg', blob: svgBlob };
+  if (fmt === 'svg') return { name: filename + '.svg', blob: svgBlob };
   const url = URL.createObjectURL(svgBlob);
   try {
     const image = new Image(px, px);
@@ -114,7 +120,7 @@ async function render(name, fmt) {
     const canvas = Object.assign(document.createElement('canvas'), { width: px, height: px });
     canvas.getContext('2d').drawImage(image, 0, 0, px, px);
     const blob = await new Promise((done) => canvas.toBlob(done, 'image/png'));
-    return { name: baseName(name) + '.png', blob };
+    return { name: filename + '.png', blob };
   } finally { URL.revokeObjectURL(url); }
 }
 function save(blob, filename) {
@@ -125,12 +131,24 @@ function save(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 async function busy(button, label, task) {
+  if (button.getAttribute('aria-busy') === 'true') return;
   const original = button.innerHTML;
+  button.setAttribute('aria-busy', 'true');
   button.disabled = true;
   button.textContent = label;
   try { await task(); } catch (error) { console.error(error); alert('Không tạo được file. Hãy thử lại.'); }
-  finally { button.disabled = false; button.innerHTML = original; }
+  finally { button.disabled = false; button.removeAttribute('aria-busy'); button.innerHTML = original; }
 }
+$('#sprite-link').addEventListener('click', (event) => {
+  event.preventDefault();
+  const sprite = SPRITES[platform];
+  busy(event.currentTarget, 'Đang tạo…', async () => {
+    const response = await fetch(sprite);
+    if (!response.ok) throw new Error('Không đọc được sprite: ' + response.status);
+    const text = await optimizeSvg(await response.text());
+    save(new Blob([text], { type: 'image/svg+xml' }), sprite);
+  });
+});
 $('#dlg-download').addEventListener('click', (event) => busy(event.currentTarget, 'Đang tạo…', async () => {
   const file = await render(current, format);
   save(file.blob, file.name);

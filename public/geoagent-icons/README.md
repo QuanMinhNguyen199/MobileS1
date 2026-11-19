@@ -46,6 +46,7 @@ Trong React: <GeoIcon name="back" platform="ios" />. Mặc định platform="sha
 
 - Màu cả bộ: chọn ở thanh công cụ; ô đầu tiên (đỏ GeoAgent) là màu mặc định.
 - Màu riêng: bấm một icon, chọn màu trong hộp thoại; Áp dụng màu này cho tất cả đặt màu đó cho cả bộ và bỏ các màu riêng.
+- SVG tải riêng, trong ZIP và sprite được tự động tối ưu bằng SVGO ngay trong trình duyệt. Giữ viewBox, kích thước, nhãn và ID sprite; nếu tối ưu lỗi thì tải bản gốc.
 - Tải dạng SVG hoặc PNG. PNG có cỡ đúng bằng Kích thước đang chọn (16 đến 48 px). Tải cả bộ tạo file .zip của bộ đang xem ngay trong trình duyệt.
 - Màu riêng từng icon chỉ giữ trong lần mở trang; màu cả bộ được ghi vào link (?mau=).
 
