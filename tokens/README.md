@@ -17,6 +17,11 @@ Trang **Token** trên site thư viện (`/geoagent-icons/tokens.html`, cạnh tr
 bo góc, đổ bóng, tìm kiếm và bấm để sao chép class. Trang được sinh từ file JSON này bởi
 `npm run icons:export` (bước deploy đã chạy lệnh này), nên luôn khớp token hiện tại.
 
+Muốn xem file khác (bản vừa xuất từ Figma, token của dự án khác): kéo thả file `.json` vào trang hoặc bấm
+**Chọn file…**. File chỉ đọc trên máy, không tải lên. File có `primitive` + `semantic` hiển thị như trang gốc;
+file DTCG khác được nhóm theo `$type` (màu, kiểu chữ, đổ bóng, còn lại). Tham chiếu hỏng được liệt kê ở đầu trang.
+Phần hiển thị dùng chung `scripts/token-view.mjs` với bước build, nên hai bên luôn giống nhau.
+
 ## Hai tầng màu
 
 - **Primitive** (`--red-700`, `--warm-950`…): mã màu gốc. Chỉ tầng này chứa mã màu.

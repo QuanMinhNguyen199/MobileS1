@@ -5,6 +5,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import * as Lucide from "lucide-react";
 import { ICONS, ICON_GROUPS, STROKE, PLATFORMS, lucideFor } from "../src/improved/icon-data.js";
+import { renderTokenView } from "./token-view.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const out = resolve(root, "public/geoagent-icons");
@@ -112,87 +113,31 @@ section{scroll-margin-top:20px;margin-bottom:32px}section h2{font-size:16px;font
 @media(max-width:1050px){.layout{grid-template-columns:190px minmax(0,1fr)}.catalog-nav{padding:32px 20px}main{padding:32px 24px}.specimen{grid-template-columns:1fr}.intro{align-items:flex-start;flex-direction:column;gap:16px}}
 @media(max-width:600px){.masthead{padding:16px 20px;gap:12px;flex-wrap:wrap}.site-nav{order:3;width:100%}.site-nav a{flex:1;justify-content:center}.masthead p{display:none}.brand{font-size:19px}.back-link{font-size:12px}.layout{display:block}.catalog-nav{padding:16px 20px;border-right:0;border-bottom:1px solid var(--line)}.catalog-nav>p{margin-bottom:8px}.catalog-nav nav{display:flex;overflow-x:auto;gap:20px}.catalog-nav nav a{white-space:nowrap;padding:8px 0}.download-link{margin-top:16px}.text-link{margin-top:12px}main{padding:28px 20px}.intro h1{font-size:25px}.intro p{font-size:13px;line-height:1.8}.specimen{gap:24px;margin:24px 0}.signature{gap:16px}.signature>svg{width:52px;height:52px}.signature p{font-size:12px}.toolbar{gap:14px}.search{flex-basis:100%;max-width:none}.size-control{font-size:12px}#result-count{font-size:12px}.set-tabs{gap:0}.set-tabs button{flex:1;justify-content:center;gap:5px;padding:12px 6px;font-size:13px}.set-tabs button span{font-size:10px;padding:2px 6px}.icon-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.icon-item{min-height:132px;padding-inline:5px}.icon-label{font-size:11px}.icon-name{font-size:10px}.sample{padding-inline:12px}}
 `);
-// ===== Trang Token: đọc tokens/geoagent.tokens.json, nguồn chung với Figma và src/tokens.css
+// ===== Trang Token: nội dung dựng bởi scripts/token-view.mjs (dùng chung với trình duyệt khi thả file khác vào)
 {
   const TOK = JSON.parse(readFileSync(resolve(root, "tokens/geoagent.tokens.json"), "utf8"));
   copyFileSync(resolve(root, "tokens/geoagent.tokens.json"), resolve(out, "geoagent.tokens.json"));
-  const leaves = (node, prefix = []) =>
-    Object.entries(node || {}).flatMap(([k, v]) => (k.startsWith("$") || typeof v !== "object" ? [] : "$value" in v ? [[[...prefix, k], v]] : leaves(v, [...prefix, k])));
-  const ext = (t) => t.$extensions?.geoagent || {};
-  const rgbParts = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
-  const colorOf = (v) => (typeof v === "string" ? { hex: v.toLowerCase(), a: 1 } : { hex: v.hex.toLowerCase(), a: v.alpha ?? 1 });
-  const cssColor = ({ hex, a }) => (a >= 1 ? hex : `rgb(${rgbParts(hex).join(" ")} / ${a})`);
-  const label = ({ hex, a }) => hex.toUpperCase() + (a < 1 ? ` · ${Math.round(a * 100)}%` : "");
-  const code = (text) => `<button type="button" class="copy" data-copy="${xml(text)}"><code>${xml(text)}</code></button>`;
-  const searchable = (...parts) => xml(parts.filter(Boolean).join(" "));
-
-  // Tầng 1 và tầng 2
-  const prims = leaves(TOK.primitive).map(([p, t]) => ({ ref: p.join("."), name: p.join("/"), css: ext(t).css || "--" + p.join("-"), color: colorOf(t.$value) }));
-  const primByRef = Object.fromEntries(prims.map((p) => [p.ref, p]));
-  const sems = leaves(TOK.semantic).map(([p, t]) => {
-    const ref = (t.$value.match?.(/^\{primitive\.(.+)\}$/) || [])[1];
-    const prim = primByRef[ref];
-    if (!prim) throw new Error(`Token semantic ${p.join("/")} không trỏ về primitive hợp lệ`);
-    const css = ext(t).css || "--" + p.at(-1);
-    // Tiền tố theo vai trò: màu chữ → text-, đường viền → border-, viền focus → outline-, còn lại → bg-
-    const n = css.slice(2);
-    const util = n === "focus" ? "outline" : p[0] === "text" || /(^|-)ink(-|$)|^on-|-fg$/.test(n) ? "text" : p[0] === "border" || /(^|-)(edge|divider|line|rule)(-|$)/.test(n) ? "border" : "bg";
-    return { group: p[0], name: p.join("/"), css, cls: `${util}-${css.slice(2)}`, prim, desc: t.$description || "" };
-  });
-  const usedBy = {};
-  for (const s of sems) (usedBy[s.prim.name] ||= []).push(s.name.split("/").pop());
-  const families = [...new Set(prims.map((p) => p.name.split("/")[0]))];
-  const GROUP_LABEL = { brand: "Thương hiệu", sidebar: "Sidebar (nền đỏ)", surface: "Nền", text: "Chữ", border: "Viền và đường kẻ", state: "Trạng thái", avatar: "Avatar" };
-  const swatchStyle = (c) => `--c:${cssColor(c)}`;
-
-  const primitiveSection = `<section class="tk-section" id="primitive" aria-labelledby="h-primitive"><h2 id="h-primitive">Màu gốc<span>${prims.length} · tầng 1</span></h2>
-<p class="set-note">Chỉ tầng này chứa mã màu. Đổi màu cho dự án khác: sửa ở đây (Figma: GeoAgent / Primitives), mọi màu vai trò đổi theo. Component không dùng thẳng tầng này.</p>
-${families.map((f) => `<div class="tk-group" data-group="${f}"><h3>${f}</h3><ul class="tk-grid">${prims.filter((p) => p.name.startsWith(f + "/")).map((p) => `<li class="tk-card" data-search="${searchable(p.name, p.css, p.color.hex, ...(usedBy[p.name] || []))}"><span class="sw" style="${swatchStyle(p.color)}"></span><div class="tk-meta"><b>${p.name}</b><span>${label(p.color)}</span>${code(`var(${p.css})`)}<span class="used">${usedBy[p.name] ? "→ " + usedBy[p.name].join(", ") : "→ chưa dùng"}</span></div></li>`).join("")}</ul></div>`).join("\n")}</section>`;
-
-  const semanticSection = `<section class="tk-section" id="semantic" aria-labelledby="h-semantic"><h2 id="h-semantic">Màu theo vai trò<span>${sems.length} · tầng 2</span></h2>
-<p class="set-note">Component chỉ dùng tầng này. Tên Figma lấy phần sau dấu “/” là tên class: <code>brand/brand</code> → <code>bg-brand</code>, <code>text/ink-2</code> → <code>text-ink-2</code>. Đổi tiền tố tùy chỗ dùng: <code>bg-</code>, <code>text-</code>, <code>border-</code>.</p>
-${Object.keys(GROUP_LABEL).filter((g) => sems.some((s) => s.group === g)).map((g) => `<div class="tk-group"><h3>${GROUP_LABEL[g]}</h3><ul class="tk-list">${sems.filter((s) => s.group === g).map((s) => `<li class="tk-row" data-search="${searchable(s.name, s.css, s.cls, s.prim.name, s.prim.color.hex, s.desc)}"><span class="sw dot" style="${swatchStyle(s.prim.color)}"></span><div class="tk-name"><b>${s.name}</b><span>${s.prim.name} · ${label(s.prim.color)}</span></div><div class="tk-codes">${code(s.cls)}${code(`var(${s.css})`)}</div><p class="tk-desc">${xml(s.desc)}</p></li>`).join("")}</ul></div>`).join("\n")}</section>`;
-
-  const types = leaves(TOK.typography).map(([p, t]) => ({ key: p.at(-1), v: t.$value, figma: ext(t).figma, desc: t.$description || "" }));
-  const lh = (x) => (typeof x === "number" ? String(x) : x);
-  const SAMPLE = "Ước tính chi phí đo đạc địa chính cho 3 thửa đất";
-  const typeSection = `<section class="tk-section" id="typography" aria-labelledby="h-typography"><h2 id="h-typography">Kiểu chữ<span>${types.length}</span></h2>
-<p class="set-note">Một class đặt cả cỡ chữ, khoảng dòng và độ đậm. Kiểu chữ thường (14/20, 12/16) dùng sẵn <code>text-sm</code>, <code>text-xs</code> của Tailwind.</p>
-<ul class="tk-list">${types.map((t) => `<li class="tk-type" data-search="${searchable("text-" + t.key, t.figma, t.desc, t.v.fontFamily)}"><div class="tk-name"><b>${xml(t.figma)}</b><span>${xml(t.v.fontFamily)} ${t.v.fontWeight} · ${t.v.fontSize} / ${lh(t.v.lineHeight)}${t.v.letterSpacing ? " · " + t.v.letterSpacing : ""}</span>${code((t.key === "wordmark" ? "font-heading " : "") + "text-" + t.key)}</div><p class="tk-sample" style="font-family:'${t.v.fontFamily}',Inter,system-ui,sans-serif;font-size:${t.v.fontSize};font-weight:${t.v.fontWeight};line-height:${lh(t.v.lineHeight)}${t.v.letterSpacing ? ";letter-spacing:" + t.v.letterSpacing : ""}">${SAMPLE}</p><p class="tk-desc">${xml(t.desc)}</p></li>`).join("")}
-<li class="tk-type" data-search="font-unread tên chưa đọc 650"><div class="tk-name"><b>Label/List title unread</b><span>Inter 650 · dùng kèm text-sm</span>${code("text-sm font-unread")}</div><p class="tk-sample" style="font-size:14px;line-height:20px;font-weight:650">Phòng Kế toán</p><p class="tk-desc">${xml(TOK.fontWeight?.unread?.$description || "")}</p></li></ul></section>`;
-
-  const radii = leaves(TOK.radius).map(([p, t]) => ({ key: p.at(-1), v: t.$value, desc: t.$description || "" }));
-  const radiusSection = `<section class="tk-section" id="radius" aria-labelledby="h-radius"><h2 id="h-radius">Bo góc<span>${radii.length}</span></h2>
-<p class="set-note">Bong bóng tin bo 20, góc phía người gửi bo 6: tin người dùng <code>rounded-bubble rounded-br-bubble-tip</code>, tin bot <code>rounded-bubble rounded-tl-bubble-tip</code>.</p>
-<ul class="tk-grid">${radii.map((r) => `<li class="tk-card tk-shape" data-search="${searchable("rounded-" + r.key, r.v, r.desc)}"><span class="shape" style="border-radius:${r.v}"></span><div class="tk-meta"><b>radius/${r.key}</b><span>${r.v}</span>${code("rounded-" + r.key)}<span class="used">${xml(r.desc)}</span></div></li>`).join("")}</ul></section>`;
-
-  const shadowCss = (t) => (Array.isArray(t.$value) ? t.$value : [t.$value]).map((l) => `${l.offsetX} ${l.offsetY} ${l.blur} ${l.spread || "0px"} ${cssColor(colorOf(l.color))}`).join(", ");
-  const shadows = leaves(TOK.shadow).map(([p, t]) => ({ key: p.at(-1), css: shadowCss(t), figma: ext(t).figma, desc: t.$description || "" }));
-  const shadowSection = `<section class="tk-section" id="shadow" aria-labelledby="h-shadow"><h2 id="h-shadow">Đổ bóng<span>${shadows.length}</span></h2>
-<p class="set-note">Bóng mềm tông nâu mực, không dùng đen thuần.</p>
-<ul class="tk-grid tk-shadows">${shadows.map((s) => `<li class="tk-card tk-shadow" data-search="${searchable("shadow-" + s.key, s.figma, s.desc)}"><span class="shadow-box" style="box-shadow:${s.css}"></span><div class="tk-meta"><b>${xml(s.figma)}</b>${code("shadow-" + s.key)}<span class="used">${xml(s.desc)}</span></div></li>`).join("")}</ul></section>`;
-
+  copyFileSync(new URL("./token-view.mjs", import.meta.url), resolve(out, "token-view.js"));
+  const view = renderTokenView(TOK);
+  if (view.problems.length) throw new Error("tokens/geoagent.tokens.json lỗi:\n- " + view.problems.join("\n- "));
+  const navHtml = (nav) => nav.map(([id, l]) => `<a href="#${id}">${l}</a>`).join("");
   const usage = `<section class="tk-section tk-usage" id="usage" aria-labelledby="h-usage"><h2 id="h-usage">Dùng trong code</h2>
 <ol><li><b>Trong Figma</b>, chọn phần tử, đọc tên biến (Fill <code>brand/brand</code>), kiểu chữ (<code>Body/Message</code>) hoặc đổ bóng. Mô tả của component ghi sẵn cách gọi component React.</li>
-<li><b>Trong code</b>, tìm token đó trên trang này và bấm để sao chép class: <code>bg-brand</code>, <code>text-message</code>, <code>shadow-composer</code>. Không gõ mã màu hay số px.</li>
+<li><b>Trong code</b>, tìm token đó trên trang này và bấm để sao chép class: <code>bg-brand</code>, <code>text-message</code>, <code>shadow-composer</code>. Chỉ dùng <code>var(--brand)</code> ở nơi không viết được class (style inline, file CSS, thư viện ngoài, SVG). Không gõ mã màu hay số px.</li>
 <li><b>Đồng bộ</b> khi token đổi: plugin GeoAgent DS Builder → Tải tokens.json → chép đè <code>tokens/geoagent.tokens.json</code> → <code>npm run tokens</code>. Trang này tự cập nhật ở lần deploy sau.</li>
 <li><b>Nền tảng khác</b> (iOS, Android, React Native): dùng file <a href="geoagent.tokens.json" download>geoagent.tokens.json</a> (chuẩn W3C DTCG) với công cụ như Style Dictionary.</li></ol></section>`;
-
-  const total = prims.length + sems.length + types.length + 1 + radii.length + shadows.length;
-  const NAV = [["primitive", "Màu gốc"], ["semantic", "Màu theo vai trò"], ["typography", "Kiểu chữ"], ["radius", "Bo góc"], ["shadow", "Đổ bóng"], ["usage", "Dùng trong code"]];
   writeFileSync(resolve(out, "tokens.html"), `<!doctype html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>GeoAgent — Design token</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Plus+Jakarta+Sans:wght@600&display=swap&subset=vietnamese">
 <link rel="stylesheet" href="catalog.css"><link rel="stylesheet" href="token-page.css"></head>
 <body>${masthead("token", "Design token")}
-<div class="layout"><aside class="catalog-nav" aria-label="Nhóm token"><p>GeoAgent Tokens</p><nav>${NAV.map(([id, l]) => `<a href="#${id}">${l}</a>`).join("")}</nav><a class="download-link" href="geoagent.tokens.json" download>${svg("download", { size: 18 })} Tải tokens.json</a><p class="download-hint">Chuẩn W3C DTCG. Nguồn chung của Figma và code.</p></aside>
-<main><div class="intro"><div><h1>Design token GeoAgent</h1><p>${total} token · Màu hai tầng (gốc → vai trò) · Tên khớp Figma, biến CSS và class Tailwind</p></div></div>
-<div class="toolbar tk-toolbar"><label class="search">${svg("search", { size: 18 })}<span class="sr-only">Tìm token</span><input id="tk-search" type="search" placeholder="Tìm tên, class hoặc mã màu" autocomplete="off"></label><span id="tk-count" role="status" aria-live="polite">${total} token</span><span id="copy-status" class="copy-status" role="status" aria-live="polite"></span></div>
-${primitiveSection}
-${semanticSection}
-${typeSection}
-${radiusSection}
-${shadowSection}
+<div class="layout"><aside class="catalog-nav" aria-label="Nhóm token"><p>GeoAgent Tokens</p><nav id="tk-nav">${navHtml(view.nav)}<a href="#usage">Dùng trong code</a></nav><a class="download-link" href="geoagent.tokens.json" download>${svg("download", { size: 18 })} Tải tokens.json</a><p class="download-hint">Chuẩn W3C DTCG. Nguồn chung của Figma và code.</p></aside>
+<main><div class="intro"><div><h1 id="tk-title">Design token GeoAgent</h1><p id="tk-summary">${view.total} token · Màu hai tầng (gốc → vai trò) · Tên khớp Figma, biến CSS và class Tailwind</p></div></div>
+<div class="tk-drop" id="tk-drop"><div class="tk-drop-text">${svg("document", { size: 22 })}<p><b>Xem file token khác</b><span>Kéo thả file .json vào đây, hoặc chọn file. File chỉ được đọc trên máy bạn, không tải lên đâu.</span></p></div><label class="ghost-button tk-pick">Chọn file…<input type="file" id="tk-file" accept=".json,application/json" class="sr-only"></label></div>
+<div class="tk-viewing" id="tk-viewing" hidden><p><span id="tk-viewing-text"></span></p><button type="button" class="ghost-button" id="tk-reset">Xem lại token GeoAgent</button></div>
+<div class="tk-problems" id="tk-problems" role="alert" hidden></div>
+<div class="toolbar tk-toolbar"><label class="search">${svg("search", { size: 18 })}<span class="sr-only">Tìm token</span><input id="tk-search" type="search" placeholder="Tìm tên, class hoặc mã màu" autocomplete="off"></label><span id="tk-count" role="status" aria-live="polite">${view.total} token</span><span id="copy-status" class="copy-status" role="status" aria-live="polite"></span></div>
+<div id="tk-content">${view.html}</div>
 <p id="tk-empty" hidden>Không tìm thấy token phù hợp. Thử tên ngắn hơn, ví dụ “brand” hoặc “ink”.</p>
 ${usage}
 <footer>Sinh tự động từ tokens/geoagent.tokens.json bởi npm run icons:export. Không sửa tay trang này.</footer></main></div>
@@ -210,51 +155,17 @@ ${usage}
 .tk-type{display:grid;grid-template-columns:minmax(200px,260px) minmax(0,1fr);gap:6px 28px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line)}.tk-type .tk-desc{grid-column:2}.tk-sample{margin:0;color:var(--ink)}
 .tk-shape .shape{display:block;width:72px;height:72px;margin:20px auto 8px;border:2px solid var(--brand);background:#f5d6d0}.tk-shadows{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}.tk-shadow{overflow:visible;background:#fcf8f7;border-color:transparent}.shadow-box{display:block;height:88px;margin:16px;border-radius:14px;background:#fff}
 .tk-usage ol{margin:0;padding-left:20px;display:grid;gap:12px;font-size:14px;line-height:1.6;max-width:760px}.tk-usage a{color:var(--brand)}#tk-empty{color:var(--muted);font-size:14px}
-@media(max-width:900px){.tk-row{grid-template-columns:44px minmax(0,1fr)}.tk-codes,.tk-desc{grid-column:2}.tk-type{grid-template-columns:minmax(0,1fr)}.tk-type .tk-desc{grid-column:1}}
-@media(max-width:600px){.tk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tk-shadows{grid-template-columns:minmax(0,1fr)}.tk-section>h2{font-size:18px}.tk-sample{overflow-wrap:anywhere}}
+.tk-drop{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:24px;padding:14px 16px;border:1.5px dashed #958884;border-radius:12px;background:#fff}.tk-drop-text{display:flex;align-items:center;gap:12px;color:var(--muted)}.tk-drop-text p{margin:0;display:flex;flex-direction:column;font-size:13px;line-height:1.5}.tk-drop-text b{color:var(--ink);font-size:14px}.tk-pick{position:relative;white-space:nowrap}.tk-pick:has(input:focus-visible){outline:2px solid #1a5fd6;outline-offset:2px}
+.tk-drop[data-over]{border-color:var(--brand);border-style:solid;background:#fdf1ee;box-shadow:0 0 0 3px #f5d6d0}.tk-drop[data-over] .tk-drop-text{color:var(--brand)}.tk-drop[data-state=loading]{opacity:.6}
+.tk-viewing{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding:10px 14px;border-radius:10px;background:#f5d6d0;color:#5c0f13}.tk-viewing p{margin:0;font-size:13px;font-weight:600}
+.tk-problems{margin-top:12px;padding:12px 14px;border:1px solid #e3a59b;border-radius:10px;background:#fff6f4;color:#7a1519;font-size:13px}.tk-problems p{margin:0 0 6px}.tk-problems ul{margin:0;padding-left:18px;line-height:1.6;overflow-wrap:anywhere}.warn{color:#b3261e;font-weight:600}
+.tk-row-plain{grid-template-columns:96px minmax(180px,1fr) minmax(0,340px) minmax(0,1fr)}.tk-type-tag{justify-self:start;font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:#f3ece8;color:var(--muted)}
+@media(max-width:900px){.tk-row{grid-template-columns:44px minmax(0,1fr)}.tk-row-plain{grid-template-columns:minmax(0,1fr)}.tk-row-plain>*{grid-column:1!important}.tk-codes,.tk-desc{grid-column:2}.tk-type{grid-template-columns:minmax(0,1fr)}.tk-type .tk-desc{grid-column:1}}
+@media(max-width:600px){.tk-drop{flex-direction:column;align-items:stretch}.tk-drop-text>svg{display:none}.tk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tk-shadows{grid-template-columns:minmax(0,1fr)}.tk-section>h2{font-size:18px}.tk-sample{overflow-wrap:anywhere}}
 @media(prefers-reduced-motion:no-preference){.copy{transition:border-color .15s,background-color .15s}}
 `);
 
-  writeFileSync(resolve(out, "token-page.js"), `
-// Tìm token và sao chép class / biến CSS (Async Clipboard, dự phòng execCommand khi không có quyền)
-const $ = (s) => document.querySelector(s);
-const norm = (s) => s.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase();
-const items = [...document.querySelectorAll("[data-search]")];
-for (const el of items) el.dataset.key = norm(el.dataset.search + " " + el.textContent);
-const search = $("#tk-search"), count = $("#tk-count"), empty = $("#tk-empty"), status = $("#copy-status");
-const filter = () => {
-  const q = norm(search.value.trim());
-  let n = 0;
-  for (const el of items) { const show = !q || el.dataset.key.includes(q); el.hidden = !show; if (show) n++; }
-  for (const g of document.querySelectorAll(".tk-group")) g.hidden = !g.querySelector("[data-search]:not([hidden])");
-  for (const s of document.querySelectorAll(".tk-section:not(.tk-usage)")) s.hidden = !s.querySelector("[data-search]:not([hidden])");
-  count.textContent = n + " token";
-  empty.hidden = n > 0;
-};
-search.addEventListener("input", filter);
-const legacyCopy = (text) => {
-  const field = Object.assign(document.createElement("textarea"), { value: text });
-  field.setAttribute("readonly", ""); field.style.cssText = "position:fixed;inset-block-start:0;opacity:0";
-  document.body.append(field); field.select();
-  try { return document.execCommand("copy"); } finally { field.remove(); }
-};
-const timers = new WeakMap();
-let last = "";
-document.addEventListener("click", async (event) => {
-  const button = event.target.closest(".copy");
-  if (!button) return;
-  const text = button.dataset.copy;
-  let ok = true;
-  try { await navigator.clipboard.writeText(text); } catch { ok = legacyCopy(text); }
-  clearTimeout(timers.get(button));
-  button.removeAttribute("data-copied"); button.removeAttribute("data-failed");
-  button.setAttribute(ok ? "data-copied" : "data-failed", "");
-  let message = ok ? "Đã sao chép " + text : "Không sao chép được, hãy chọn chữ và sao chép tay";
-  if (message === last) message += "\\u00a0"; // VoiceOver bỏ qua thông báo trùng
-  last = message; status.textContent = message; status.toggleAttribute("data-failed", !ok);
-  timers.set(button, setTimeout(() => { button.removeAttribute("data-copied"); button.removeAttribute("data-failed"); status.textContent = ""; }, 2000));
-});
-`);
+  copyFileSync(new URL("./token-page.js", import.meta.url), resolve(out, "token-page.js"));
 }
 
 writeFileSync(resolve(out, "catalog.js"), `
