@@ -40,7 +40,6 @@ function paint() {
     if (own) item.style.setProperty('--glyph-color', own); else item.style.removeProperty('--glyph-color');
   }
   syncSwatches('swatch', $('#color'), color);
-  $('#reset-all').hidden = color === DEFAULT_COLOR && overrides.size === 0;
   $('#custom-count').hidden = overrides.size === 0;
   $('#custom-count').textContent = overrides.size + ' icon đang có màu riêng (chấm màu ở góc).';
   $('#color-warning').hidden = !lowContrast(color);
@@ -52,7 +51,6 @@ function paint() {
 // Màu cả bộ: giữ nguyên các icon đã đặt màu riêng
 $$('input[name="swatch"]').forEach(radio => radio.addEventListener('change', () => { color = radio.value; paint(); }));
 $('#color').addEventListener('input', (event) => { color = event.target.value.toLowerCase(); paint(); });
-$('#reset-all').addEventListener('click', () => { color = DEFAULT_COLOR; overrides.clear(); paint(); $$('input[name="swatch"]')[0].focus(); });
 
 // Hộp thoại từng icon
 function syncDialog() {
@@ -60,7 +58,6 @@ function syncDialog() {
   $('#dlg-preview').style.setProperty('--glyph-color', hex);
   syncSwatches('dlg-swatch', $('#dlg-color'), hex);
   $('#dlg-warning').hidden = !lowContrast(hex);
-  $('#dlg-reset').disabled = hex === DEFAULT_COLOR;
 }
 function setIconColor(hex) {
   hex = hex.toLowerCase();
@@ -84,7 +81,6 @@ $('#catalog').addEventListener('click', (event) => {
 });
 $$('input[name="dlg-swatch"]').forEach(radio => radio.addEventListener('change', () => setIconColor(radio.value)));
 $('#dlg-color').addEventListener('input', (event) => setIconColor(event.target.value));
-$('#dlg-reset').addEventListener('click', () => setIconColor(DEFAULT_COLOR));
 $('#dlg-apply-all').addEventListener('click', (event) => {
   color = colorOf(current);
   overrides.clear();
@@ -100,14 +96,13 @@ if (!('closedBy' in HTMLDialogElement.prototype)) {
   dialog.addEventListener('pointerup', (e) => { if (pressedOutside && outside(e)) dialog.close(); });
 }
 
-// Định dạng tải: SVG hoặc PNG @1x/@2x/@3x theo cỡ đang chọn
+// Định dạng tải: SVG, hoặc PNG đúng bằng Kích thước đang chọn
 for (const select of $$('.format-select')) select.addEventListener('change', () => { format = select.value; for (const other of $$('.format-select')) other.value = format; });
-const scaleOf = (fmt) => Number(fmt.slice(3)) || 1;
 const baseName = (name) => 'geoagent-' + (platform === 'shared' ? '' : platform + '-') + name;
 
 async function render(name, fmt) {
   const source = await (await fetch(DIRS[platform] + name + '.svg')).text();
-  const px = size() * (fmt === 'svg' ? 1 : scaleOf(fmt));
+  const px = size();
   const text = source.replaceAll('currentColor', colorOf(name)).replace('width="24" height="24"', 'width="' + px + '" height="' + px + '"');
   const svgBlob = new Blob([text], { type: 'image/svg+xml' });
   if (fmt === 'svg') return { name: baseName(name) + '.svg', blob: svgBlob };
@@ -119,8 +114,7 @@ async function render(name, fmt) {
     const canvas = Object.assign(document.createElement('canvas'), { width: px, height: px });
     canvas.getContext('2d').drawImage(image, 0, 0, px, px);
     const blob = await new Promise((done) => canvas.toBlob(done, 'image/png'));
-    const scale = scaleOf(fmt);
-    return { name: baseName(name) + (scale > 1 ? '@' + scale + 'x' : '') + '.png', blob };
+    return { name: baseName(name) + '.png', blob };
   } finally { URL.revokeObjectURL(url); }
 }
 function save(blob, filename) {
@@ -176,7 +170,7 @@ for (const button of $$('.download-all')) button.addEventListener('click', () =>
     const file = await render(name, format);
     return { name: file.name, bytes: new Uint8Array(await file.blob.arrayBuffer()) };
   }));
-  const kind = format === 'svg' ? 'svg' : 'png-' + scaleOf(format) + 'x';
+  const kind = format;
   save(zip(files), 'geoagent-icons-' + platform + '-' + kind + '-' + size() + 'px.zip');
 }));
 
@@ -218,7 +212,15 @@ tabs.forEach((tab, i) => {
     select(tabs[(next + tabs.length) % tabs.length].dataset.platform, true);
   });
 });
-$('#size').addEventListener('change', event => document.documentElement.style.setProperty('--glyph-size', event.target.value + 'px'));
+// Nhãn PNG ghi cỡ ảnh theo Kích thước đang chọn
+function labelFormats() {
+  for (const option of $$('.format-select option')) {
+    if (option.value === 'svg') continue;
+    option.textContent = 'PNG ' + size() + ' px';
+  }
+}
+$('#size').addEventListener('change', event => { document.documentElement.style.setProperty('--glyph-size', event.target.value + 'px'); labelFormats(); });
+labelFormats();
 
 const params = new URLSearchParams(location.search);
 if (/^[0-9a-f]{6}$/i.test(params.get('mau') || '')) color = '#' + params.get('mau').toLowerCase();

@@ -50,7 +50,7 @@ writeFileSync(resolve(out, "manifest.json"), JSON.stringify({
 // Màu có sẵn cho ô chọn màu trên catalog (màu đầu là mặc định)
 const SWATCHES = [["#a3141a", "Đỏ GeoAgent"], ["#1d1416", "Mực"], ["#6b5f5c", "Xám ấm"], ["#1a5fd6", "Xanh"], ["#e9b84a", "Vàng"]];
 const swatchSet = (group, pickerId, legend) => `<fieldset class="color-control"><legend>${legend}</legend>${SWATCHES.map(([hex, name], i) => `<label class="swatch" title="${name}"><input type="radio" name="${group}" value="${hex}"${i ? "" : " checked"}><span style="background:${hex}"></span><span class="sr-only">${name}</span></label>`).join("")}<label class="swatch custom" title="Chọn màu khác"><input type="color" id="${pickerId}" value="${SWATCHES[0][0]}"><span class="sr-only">Chọn màu khác</span></label></fieldset>`;
-const FORMATS = [["svg", "SVG"], ["png1", "PNG @1x"], ["png2", "PNG @2x"], ["png3", "PNG @3x"]];
+const FORMATS = [["svg", "SVG"], ["png", "PNG 24 px"]];
 const formatSelect = (id) => `<select id="${id}" class="format-select">${FORMATS.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>`;
 const PLATFORM_NOTE = { ios: "Riêng iPhone", android: "Riêng Android" };
 const variantCount = (platform) => Object.values(ICONS).filter((def) => isVariant(def, platform)).length;
@@ -77,13 +77,13 @@ writeFileSync(resolve(out, "index.html"), `<!doctype html>
 <div class="layout"><aside class="catalog-nav" aria-label="Nhóm biểu tượng"><p>GeoAgent Icons</p><nav>${ICON_GROUPS.map((g) => `<a href="#shared-${g.id}" data-group="${g.id}">${xml(g.label)}</a>`).join("")}</nav><button type="button" class="download-link download-all">${svg("download", { size: 18 })} Tải cả bộ (.zip)</button><p class="download-hint">Bộ đang xem, theo màu, cỡ và định dạng đã chọn.</p><a class="text-link" href="README.md">Hướng dẫn sử dụng</a></aside>
 <main><div class="intro"><div><h1>Bộ icon riêng cho GeoAgent</h1><p>${Object.keys(ICONS).length} biểu tượng SVG dựa trên Lucide · Lưới 24 × 24 · Nét ${String(STROKE).replace(".", ",")} · Đầu nét bo tròn</p></div><a class="sprite-link" id="sprite-link" href="sprite.svg" download>Tải SVG sprite ${svg("download", { size: 18 })}</a></div>
 <div class="specimen"><div class="signature">${svg("assistant", { size: 64 })}<div><h2>Dấu hiệu trợ lý</h2><p>Bong bóng hội thoại kết hợp dấu định vị.<br>Một dấu hiệu riêng, đi cùng bộ icon chức năng.</p></div></div><div class="context-samples" aria-label="Ví dụ icon trên nền sáng và đỏ"><div class="sample light">${["new-chat", "search", "attach", "send"].map((n) => svg(n)).join("")}<span>Nền sáng</span></div><div class="sample dark">${["new-chat", "search", "attach", "send"].map((n) => svg(n)).join("")}<span>Sidebar đỏ</span></div></div></div>
-${tabs}<div class="toolbar"><label class="search">${svg("search", { size: 18 })}<span class="sr-only">Tìm biểu tượng</span><input id="search" type="search" placeholder="Tìm tên hoặc chức năng…" autocomplete="off"></label><label class="size-control">Kích thước <select id="size"><option value="16">16 px</option><option value="20">20 px</option><option value="24" selected>24 px</option><option value="32">32 px</option></select></label>${swatchSet("swatch", "color", "Màu cả bộ")}<button type="button" id="reset-all" class="ghost-button" hidden>Về màu mặc định</button><label class="size-control">Tải dạng ${formatSelect("format")}</label><button type="button" class="primary-button download-all">${svg("download", { size: 18 })} Tải cả bộ</button><span id="result-count" role="status" aria-live="polite">${Object.keys(ICONS).length} biểu tượng</span></div>
+${tabs}<div class="toolbar"><label class="search">${svg("search", { size: 18 })}<span class="sr-only">Tìm biểu tượng</span><input id="search" type="search" placeholder="Tìm tên hoặc chức năng…" autocomplete="off"></label><label class="size-control">Kích thước <select id="size"><option value="16">16 px</option><option value="20">20 px</option><option value="24" selected>24 px</option><option value="32">32 px</option><option value="48">48 px</option></select></label>${swatchSet("swatch", "color", "Màu cả bộ")}<label class="size-control">Tải dạng ${formatSelect("format")}</label><button type="button" class="primary-button download-all">${svg("download", { size: 18 })} Tải cả bộ</button><span id="result-count" role="status" aria-live="polite">${Object.keys(ICONS).length} biểu tượng</span></div>
 <p class="download-note"><span>Chọn một biểu tượng để đổi màu riêng cho nó, hoặc tải về.</span> <span id="custom-count" hidden></span> <span id="color-warning" hidden>Màu này khó thấy trên nền trắng (tương phản dưới 3:1).</span></p><div id="catalog">${panels}</div><p id="empty" hidden>Không tìm thấy biểu tượng phù hợp. Hãy thử từ khóa khác.</p>
 <footer>Icon chức năng: Lucide (giấy phép ISC). Dấu hiệu trợ lý: vẽ riêng cho GeoAgent. File SVG trong thư mục và sprite dùng currentColor (màu theo ngữ cảnh); file tải từ trang này mang màu đã chọn.</footer></main></div>
 <dialog id="icon-dialog" closedby="any" aria-labelledby="dlg-title"><form method="dialog" class="dlg-close"><button value="" aria-label="Đóng">${svg("close", { size: 20 })}</button></form>
 <div class="dlg-preview" id="dlg-preview"></div><h2 id="dlg-title"></h2><p class="dlg-name" id="dlg-name"></p>
 ${swatchSet("dlg-swatch", "dlg-color", "Màu của icon này")}<p class="dlg-warning" id="dlg-warning" hidden>Màu này khó thấy trên nền trắng (tương phản dưới 3:1).</p>
-<div class="dlg-row"><button type="button" class="ghost-button" id="dlg-apply-all">Áp dụng màu này cho tất cả</button><button type="button" class="ghost-button" id="dlg-reset">Về màu mặc định</button></div>
+<div class="dlg-row"><button type="button" class="ghost-button" id="dlg-apply-all">Áp dụng màu này cho tất cả</button></div>
 <div class="dlg-row dlg-download"><label class="size-control">Tải dạng ${formatSelect("dlg-format")}</label><button type="button" class="primary-button" id="dlg-download" autofocus>${svg("download", { size: 18 })} Tải xuống</button></div></dialog><script type="module" src="catalog.js"></script></body></html>`);
 
 writeFileSync(resolve(out, "catalog.css"), `
@@ -147,7 +147,6 @@ function paint() {
     if (own) item.style.setProperty('--glyph-color', own); else item.style.removeProperty('--glyph-color');
   }
   syncSwatches('swatch', $('#color'), color);
-  $('#reset-all').hidden = color === DEFAULT_COLOR && overrides.size === 0;
   $('#custom-count').hidden = overrides.size === 0;
   $('#custom-count').textContent = overrides.size + ' icon đang có màu riêng (chấm màu ở góc).';
   $('#color-warning').hidden = !lowContrast(color);
@@ -159,7 +158,6 @@ function paint() {
 // Màu cả bộ: giữ nguyên các icon đã đặt màu riêng
 $$('input[name="swatch"]').forEach(radio => radio.addEventListener('change', () => { color = radio.value; paint(); }));
 $('#color').addEventListener('input', (event) => { color = event.target.value.toLowerCase(); paint(); });
-$('#reset-all').addEventListener('click', () => { color = DEFAULT_COLOR; overrides.clear(); paint(); $$('input[name="swatch"]')[0].focus(); });
 
 // Hộp thoại từng icon
 function syncDialog() {
@@ -167,7 +165,6 @@ function syncDialog() {
   $('#dlg-preview').style.setProperty('--glyph-color', hex);
   syncSwatches('dlg-swatch', $('#dlg-color'), hex);
   $('#dlg-warning').hidden = !lowContrast(hex);
-  $('#dlg-reset').disabled = hex === DEFAULT_COLOR;
 }
 function setIconColor(hex) {
   hex = hex.toLowerCase();
@@ -191,7 +188,6 @@ $('#catalog').addEventListener('click', (event) => {
 });
 $$('input[name="dlg-swatch"]').forEach(radio => radio.addEventListener('change', () => setIconColor(radio.value)));
 $('#dlg-color').addEventListener('input', (event) => setIconColor(event.target.value));
-$('#dlg-reset').addEventListener('click', () => setIconColor(DEFAULT_COLOR));
 $('#dlg-apply-all').addEventListener('click', (event) => {
   color = colorOf(current);
   overrides.clear();
@@ -207,14 +203,13 @@ if (!('closedBy' in HTMLDialogElement.prototype)) {
   dialog.addEventListener('pointerup', (e) => { if (pressedOutside && outside(e)) dialog.close(); });
 }
 
-// Định dạng tải: SVG hoặc PNG @1x/@2x/@3x theo cỡ đang chọn
+// Định dạng tải: SVG, hoặc PNG đúng bằng Kích thước đang chọn
 for (const select of $$('.format-select')) select.addEventListener('change', () => { format = select.value; for (const other of $$('.format-select')) other.value = format; });
-const scaleOf = (fmt) => Number(fmt.slice(3)) || 1;
 const baseName = (name) => 'geoagent-' + (platform === 'shared' ? '' : platform + '-') + name;
 
 async function render(name, fmt) {
   const source = await (await fetch(DIRS[platform] + name + '.svg')).text();
-  const px = size() * (fmt === 'svg' ? 1 : scaleOf(fmt));
+  const px = size();
   const text = source.replaceAll('currentColor', colorOf(name)).replace('width="24" height="24"', 'width="' + px + '" height="' + px + '"');
   const svgBlob = new Blob([text], { type: 'image/svg+xml' });
   if (fmt === 'svg') return { name: baseName(name) + '.svg', blob: svgBlob };
@@ -226,8 +221,7 @@ async function render(name, fmt) {
     const canvas = Object.assign(document.createElement('canvas'), { width: px, height: px });
     canvas.getContext('2d').drawImage(image, 0, 0, px, px);
     const blob = await new Promise((done) => canvas.toBlob(done, 'image/png'));
-    const scale = scaleOf(fmt);
-    return { name: baseName(name) + (scale > 1 ? '@' + scale + 'x' : '') + '.png', blob };
+    return { name: baseName(name) + '.png', blob };
   } finally { URL.revokeObjectURL(url); }
 }
 function save(blob, filename) {
@@ -283,7 +277,7 @@ for (const button of $$('.download-all')) button.addEventListener('click', () =>
     const file = await render(name, format);
     return { name: file.name, bytes: new Uint8Array(await file.blob.arrayBuffer()) };
   }));
-  const kind = format === 'svg' ? 'svg' : 'png-' + scaleOf(format) + 'x';
+  const kind = format;
   save(zip(files), 'geoagent-icons-' + platform + '-' + kind + '-' + size() + 'px.zip');
 }));
 
@@ -325,7 +319,15 @@ tabs.forEach((tab, i) => {
     select(tabs[(next + tabs.length) % tabs.length].dataset.platform, true);
   });
 });
-$('#size').addEventListener('change', event => document.documentElement.style.setProperty('--glyph-size', event.target.value + 'px'));
+// Nhãn PNG ghi cỡ ảnh theo Kích thước đang chọn
+function labelFormats() {
+  for (const option of $$('.format-select option')) {
+    if (option.value === 'svg') continue;
+    option.textContent = 'PNG ' + size() + ' px';
+  }
+}
+$('#size').addEventListener('change', event => { document.documentElement.style.setProperty('--glyph-size', event.target.value + 'px'); labelFormats(); });
+labelFormats();
 
 const params = new URLSearchParams(location.search);
 if (/^[0-9a-f]{6}$/i.test(params.get('mau') || '')) color = '#' + params.get('mau').toLowerCase();
@@ -333,6 +335,6 @@ select(SPRITES[params.get('bo')] ? params.get('bo') : 'shared');
 paint();
 `);
 
-writeFileSync(resolve(out, "README.md"), `# GeoAgent Icons v3\n\n${Object.keys(ICONS).length} icon cho GeoAgent, dựng trên Lucide (lucide-react, giấy phép ISC). Tên, nhóm và nhãn tiếng Việt là của GeoAgent; riêng dấu hiệu trợ lý (assistant) được vẽ riêng theo cùng kiểu nét.\n\n## Quy chuẩn\n\n- Lưới 24 × 24, nét ${STROKE} px, đầu và góc nét tròn. Độ dày nét giữ nguyên ở mọi cỡ (absoluteStrokeWidth).\n- 16 px cho icon phụ, 20 px mặc định, 24 px cho thao tác nổi bật.\n- Màu currentColor: tự theo màu chữ của component. Không tô cố định màu thương hiệu trong file.\n- Sidebar đỏ: trắng ấm; vùng sáng: màu chữ hoặc đỏ thương hiệu. Giữ tương phản icon chức năng tối thiểu 3:1.\n- Dấu hiệu assistant (bong bóng hội thoại và dấu định vị) là đề xuất thiết kế, chưa được kiểm chứng nhận diện với người dùng. Không thay thế logo.\n\n## React\n\nImport GeoIcon hoặc các component có tên từ src/improved/icons.jsx, không import thẳng từ lucide-react, để giữ một bộ tên và một độ dày nét chung.\n\n    <button aria-label="Đính kèm tệp"><GeoIcon name="attach" /></button>\n    <GeoIcon name="warning" label="Cảnh báo" size={24} />\n\nIcon mặc định aria-hidden, focusable=false. Đặt tên cho nút trên chính nút. Chỉ dùng label khi icon đứng độc lập mang thông tin.\n\n## Thêm icon mới\n\n1. Chọn icon trên lucide.dev.\n2. Thêm vào src/improved/icon-data.js: tên GeoAgent, nhãn tiếng Việt, nhóm, tên Lucide.\n3. Import component đó theo tên trong src/improved/icons.jsx, để bundler chỉ đóng gói icon đang dùng.\n4. Chạy npm run icons:export.\n\n## SVG riêng\n\nCác file SVG có kích thước 24 × 24 và nhãn tiếng Việt. Có thể nhập vào Figma. Khi inline vào nút đã có tên, đặt aria-hidden=true và bỏ role/aria-label của SVG.\n\nNếu dùng img, màu của phần tử cha không truyền vào file SVG: dùng inline SVG hoặc sprite để đổi màu theo theme.\n\n## Ba bộ: dùng chung, iPhone, Android\n\nMột số icon đổi hình theo thói quen từng nền tảng: quay lại (iPhone: chevron), tùy chọn (Android: ba chấm dọc), gửi (Android: máy bay giấy), chia sẻ (Android: ba nút nối). Các icon còn lại giống nhau ở cả ba bộ.\n\n- Dùng chung: thư mục gốc, sprite.svg\n- iPhone: ios/, sprite-ios.svg\n- Android: android/, sprite-android.svg\n\nTrong React: <GeoIcon name="back" platform="ios" />. Mặc định platform="shared".\n\n## Đổi màu và tải PNG trên trang catalog\n\n- Màu cả bộ: chọn ở thanh công cụ; nút Về màu mặc định đưa cả bộ và mọi màu riêng về đỏ GeoAgent.\n- Màu riêng: bấm một icon, chọn màu trong hộp thoại; Áp dụng màu này cho tất cả đặt màu đó cho cả bộ và bỏ các màu riêng.\n- Tải dạng SVG hoặc PNG @1x/@2x/@3x theo Kích thước (24 px @3x = 72 px). Tải cả bộ tạo file .zip của bộ đang xem ngay trong trình duyệt.\n- Màu riêng từng icon chỉ giữ trong lần mở trang; màu cả bộ được ghi vào link (?mau=).\n\n## Sprite\n\n    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">\n      <use href="/geoagent-icons/sprite.svg#geo-search" />\n    </svg>\n\n## Xuất lại\n\nNguồn: src/improved/icon-data.js. Chạy npm run icons:export sau khi chỉnh; không sửa riêng file được sinh trong public/geoagent-icons.\n`);
+writeFileSync(resolve(out, "README.md"), `# GeoAgent Icons v3\n\n${Object.keys(ICONS).length} icon cho GeoAgent, dựng trên Lucide (lucide-react, giấy phép ISC). Tên, nhóm và nhãn tiếng Việt là của GeoAgent; riêng dấu hiệu trợ lý (assistant) được vẽ riêng theo cùng kiểu nét.\n\n## Quy chuẩn\n\n- Lưới 24 × 24, nét ${STROKE} px, đầu và góc nét tròn. Độ dày nét giữ nguyên ở mọi cỡ (absoluteStrokeWidth).\n- 16 px cho icon phụ, 20 px mặc định, 24 px cho thao tác nổi bật.\n- Màu currentColor: tự theo màu chữ của component. Không tô cố định màu thương hiệu trong file.\n- Sidebar đỏ: trắng ấm; vùng sáng: màu chữ hoặc đỏ thương hiệu. Giữ tương phản icon chức năng tối thiểu 3:1.\n- Dấu hiệu assistant (bong bóng hội thoại và dấu định vị) là đề xuất thiết kế, chưa được kiểm chứng nhận diện với người dùng. Không thay thế logo.\n\n## React\n\nImport GeoIcon hoặc các component có tên từ src/improved/icons.jsx, không import thẳng từ lucide-react, để giữ một bộ tên và một độ dày nét chung.\n\n    <button aria-label="Đính kèm tệp"><GeoIcon name="attach" /></button>\n    <GeoIcon name="warning" label="Cảnh báo" size={24} />\n\nIcon mặc định aria-hidden, focusable=false. Đặt tên cho nút trên chính nút. Chỉ dùng label khi icon đứng độc lập mang thông tin.\n\n## Thêm icon mới\n\n1. Chọn icon trên lucide.dev.\n2. Thêm vào src/improved/icon-data.js: tên GeoAgent, nhãn tiếng Việt, nhóm, tên Lucide.\n3. Import component đó theo tên trong src/improved/icons.jsx, để bundler chỉ đóng gói icon đang dùng.\n4. Chạy npm run icons:export.\n\n## SVG riêng\n\nCác file SVG có kích thước 24 × 24 và nhãn tiếng Việt. Có thể nhập vào Figma. Khi inline vào nút đã có tên, đặt aria-hidden=true và bỏ role/aria-label của SVG.\n\nNếu dùng img, màu của phần tử cha không truyền vào file SVG: dùng inline SVG hoặc sprite để đổi màu theo theme.\n\n## Ba bộ: dùng chung, iPhone, Android\n\nMột số icon đổi hình theo thói quen từng nền tảng: quay lại (iPhone: chevron), tùy chọn (Android: ba chấm dọc), gửi (Android: máy bay giấy), chia sẻ (Android: ba nút nối). Các icon còn lại giống nhau ở cả ba bộ.\n\n- Dùng chung: thư mục gốc, sprite.svg\n- iPhone: ios/, sprite-ios.svg\n- Android: android/, sprite-android.svg\n\nTrong React: <GeoIcon name="back" platform="ios" />. Mặc định platform="shared".\n\n## Đổi màu và tải PNG trên trang catalog\n\n- Màu cả bộ: chọn ở thanh công cụ; ô đầu tiên (đỏ GeoAgent) là màu mặc định.\n- Màu riêng: bấm một icon, chọn màu trong hộp thoại; Áp dụng màu này cho tất cả đặt màu đó cho cả bộ và bỏ các màu riêng.\n- Tải dạng SVG hoặc PNG. PNG có cỡ đúng bằng Kích thước đang chọn (16 đến 48 px). Tải cả bộ tạo file .zip của bộ đang xem ngay trong trình duyệt.\n- Màu riêng từng icon chỉ giữ trong lần mở trang; màu cả bộ được ghi vào link (?mau=).\n\n## Sprite\n\n    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">\n      <use href="/geoagent-icons/sprite.svg#geo-search" />\n    </svg>\n\n## Xuất lại\n\nNguồn: src/improved/icon-data.js. Chạy npm run icons:export sau khi chỉnh; không sửa riêng file được sinh trong public/geoagent-icons.\n`);
 console.log(`Exported ${Object.keys(ICONS).length} GeoAgent icons and catalog to ${out}`);
 
