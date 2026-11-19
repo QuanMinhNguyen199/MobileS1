@@ -2,15 +2,15 @@ import { createElement } from "react";
 // Import từng icon theo tên để bundler chỉ đóng gói icon đang dùng
 import {
   ArrowLeft, ArrowUp, BookOpenText, Check, ChevronDown as LChevronDown, ChevronUp as LChevronUp, CircleCheck, CircleX, Copy, Download,
-  Ellipsis, ExternalLink, FileText, Info, Link, LogIn, Menu, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Plus, RotateCw,
+  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Info, Link, LogIn, Menu, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Plus, RotateCw,
   Search, ShieldCheck, SlidersHorizontal, Smartphone, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, TriangleAlert, UserPlus,
   Users, X,
 } from "lucide-react";
-import { ICONS, STROKE } from "./icon-data.js";
+import { ICONS, STROKE, lucideFor } from "./icon-data.js";
 
 const LUCIDE = {
   ArrowLeft, ArrowUp, BookOpenText, Check, ChevronDown: LChevronDown, ChevronUp: LChevronUp, CircleCheck, CircleX, Copy, Download,
-  Ellipsis, ExternalLink, FileText, Info, Link, LogIn, Menu, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Plus, RotateCw,
+  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Info, Link, LogIn, Menu, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Plus, RotateCw,
   Search, ShieldCheck, SlidersHorizontal, Smartphone, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, TriangleAlert, UserPlus,
   Users, X,
 };
@@ -18,14 +18,15 @@ const LUCIDE = {
 // GeoIcon: icon của GeoAgent, dựng trên Lucide.
 // Mặc định là trang trí (aria-hidden): đặt tên cho nút chứa icon. Icon đứng riêng mang thông tin thì truyền label.
 // strokeWidth tính bằng px hiển thị và giữ nguyên ở mọi cỡ (16, 20, 24…).
-export function GeoIcon({ name, size = 20, strokeWidth = STROKE, label, style, ...props }) {
+// platform: "shared" (mặc định) | "ios" | "android"; dùng bản riêng của nền tảng nếu icon có.
+export function GeoIcon({ name, size = 20, strokeWidth = STROKE, platform = "shared", label, style, ...props }) {
   const definition = ICONS[name];
   if (!definition) throw new Error(`Unknown GeoAgent icon: ${name}`);
   const a11y = label ? { role: "img", "aria-label": label } : { "aria-hidden": true };
   const common = { focusable: "false", "data-geo-icon": name, style: { flexShrink: 0, ...style }, ...a11y, ...props };
 
   if (definition.lucide) {
-    const Icon = LUCIDE[definition.lucide];
+    const Icon = LUCIDE[lucideFor(definition, platform)];
     return <Icon size={size} strokeWidth={strokeWidth} absoluteStrokeWidth {...common} />;
   }
 
@@ -74,3 +75,4 @@ export const PhoneIcon = icon("phone");
 export const SignInIcon = icon("sign-in");
 export const AssistantIcon = icon("assistant");
 export const MicIcon = icon("microphone");
+export const ShareIcon = icon("share");

@@ -1,6 +1,6 @@
 # GeoAgent Icons v3
 
-38 icon cho GeoAgent, dựng trên Lucide (lucide-react, giấy phép ISC). Tên, nhóm và nhãn tiếng Việt là của GeoAgent; riêng dấu hiệu trợ lý (assistant) được vẽ riêng theo cùng kiểu nét.
+39 icon cho GeoAgent, dựng trên Lucide (lucide-react, giấy phép ISC). Tên, nhóm và nhãn tiếng Việt là của GeoAgent; riêng dấu hiệu trợ lý (assistant) được vẽ riêng theo cùng kiểu nét.
 
 ## Quy chuẩn
 
@@ -31,6 +31,23 @@ Icon mặc định aria-hidden, focusable=false. Đặt tên cho nút trên chí
 Các file SVG có kích thước 24 × 24 và nhãn tiếng Việt. Có thể nhập vào Figma. Khi inline vào nút đã có tên, đặt aria-hidden=true và bỏ role/aria-label của SVG.
 
 Nếu dùng img, màu của phần tử cha không truyền vào file SVG: dùng inline SVG hoặc sprite để đổi màu theo theme.
+
+## Ba bộ: dùng chung, iPhone, Android
+
+Một số icon đổi hình theo thói quen từng nền tảng: quay lại (iPhone: chevron), tùy chọn (Android: ba chấm dọc), gửi (Android: máy bay giấy), chia sẻ (Android: ba nút nối). Các icon còn lại giống nhau ở cả ba bộ.
+
+- Dùng chung: thư mục gốc, sprite.svg
+- iPhone: ios/, sprite-ios.svg
+- Android: android/, sprite-android.svg
+
+Trong React: <GeoIcon name="back" platform="ios" />. Mặc định platform="shared".
+
+## Đổi màu và tải PNG trên trang catalog
+
+- Màu cả bộ: chọn ở thanh công cụ; nút Về màu mặc định đưa cả bộ và mọi màu riêng về đỏ GeoAgent.
+- Màu riêng: bấm một icon, chọn màu trong hộp thoại; Áp dụng màu này cho tất cả đặt màu đó cho cả bộ và bỏ các màu riêng.
+- Tải dạng SVG hoặc PNG @1x/@2x/@3x theo Kích thước (24 px @3x = 72 px). Tải cả bộ tạo file .zip của bộ đang xem ngay trong trình duyệt.
+- Màu riêng từng icon chỉ giữ trong lần mở trang; màu cả bộ được ghi vào link (?mau=).
 
 ## Sprite
 

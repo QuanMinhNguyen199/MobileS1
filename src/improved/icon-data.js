@@ -6,10 +6,21 @@
 // Độ dày nét hiển thị (px), giữ nguyên ở mọi cỡ icon. Đổi một chỗ này để chỉnh cả bộ.
 export const STROKE = 1.75;
 
-const item = (label, group, lucide) => ({ label, group, lucide });
+// platforms: bản riêng cho iPhone / Android khi thói quen hai nền tảng khác nhau; không có thì dùng bản chung
+const item = (label, group, lucide, platforms) => ({ label, group, lucide, ...(platforms ? { platforms } : {}) });
 const p = (d) => ["path", { d }];
 const c = (cx, cy, r, dot = false) => ["circle", { cx, cy, r, ...(dot ? { fill: "currentColor", stroke: "none" } : {}) }];
 const custom = (label, group, ...nodes) => ({ label, group, nodes });
+
+// Ba bộ icon: dùng chung (mặc định), iPhone, Android
+export const PLATFORMS = [
+  { id: "shared", label: "Dùng chung" },
+  { id: "ios", label: "iPhone" },
+  { id: "android", label: "Android" },
+];
+
+// Tên icon Lucide cho một nền tảng (bản riêng nếu có, không thì bản chung)
+export const lucideFor = (def, platform = "shared") => (platform !== "shared" && def.platforms?.[platform]) || def.lucide;
 
 export const ICON_GROUPS = [
   { id: "navigation", label: "Điều hướng" },
@@ -22,10 +33,10 @@ export const ICON_GROUPS = [
 export const ICONS = {
   menu: item("Mở danh sách", "navigation", "Menu"),
   close: item("Đóng", "navigation", "X"),
-  back: item("Quay lại", "navigation", "ArrowLeft"),
+  back: item("Quay lại", "navigation", "ArrowLeft", { ios: "ChevronLeft", android: "ArrowLeft" }),
   "chevron-down": item("Mở rộng", "navigation", "ChevronDown"),
   "chevron-up": item("Thu gọn", "navigation", "ChevronUp"),
-  more: item("Tùy chọn", "navigation", "Ellipsis"),
+  more: item("Tùy chọn", "navigation", "Ellipsis", { ios: "Ellipsis", android: "EllipsisVertical" }),
   phone: item("Xem trên điện thoại", "navigation", "Smartphone"),
   settings: item("Cài đặt", "navigation", "SlidersHorizontal"),
   "sign-in": item("Đăng nhập", "navigation", "LogIn"),
@@ -45,7 +56,7 @@ export const ICONS = {
   ),
   plus: item("Thêm", "compose", "Plus"),
   attach: item("Đính kèm tệp", "compose", "Paperclip"),
-  send: item("Gửi tin nhắn", "compose", "ArrowUp"),
+  send: item("Gửi tin nhắn", "compose", "ArrowUp", { ios: "ArrowUp", android: "SendHorizontal" }),
   stop: item("Dừng trả lời", "compose", "Square"),
   smile: item("Biểu cảm", "compose", "Smile"),
   microphone: item("Nhập bằng giọng nói", "compose", "Mic"),
@@ -55,6 +66,7 @@ export const ICONS = {
   "external-link": item("Mở liên kết ngoài", "knowledge", "ExternalLink"),
   download: item("Tải xuống", "knowledge", "Download"),
   copy: item("Sao chép", "knowledge", "Copy"),
+  share: item("Chia sẻ", "knowledge", "Share", { ios: "Share", android: "Share2" }),
   shield: item("Bảo mật", "knowledge", "ShieldCheck"),
   retry: item("Thử lại", "feedback", "RotateCw"),
   "thumbs-up": item("Hữu ích", "feedback", "ThumbsUp"),

@@ -1,9 +1,29 @@
 {
   "name": "GeoAgent Icons",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "base": "Lucide (lucide-react)",
   "grid": 24,
   "strokeWidth": 1.75,
+  "sets": [
+    {
+      "id": "shared",
+      "label": "Dùng chung",
+      "folder": "./",
+      "sprite": "sprite.svg"
+    },
+    {
+      "id": "ios",
+      "label": "iPhone",
+      "folder": "ios/",
+      "sprite": "sprite-ios.svg"
+    },
+    {
+      "id": "android",
+      "label": "Android",
+      "folder": "android/",
+      "sprite": "sprite-android.svg"
+    }
+  ],
   "icons": [
     {
       "name": "menu",
@@ -24,6 +44,10 @@
       "label": "Quay lại",
       "group": "navigation",
       "source": "lucide:ArrowLeft",
+      "platforms": {
+        "ios": "lucide:ChevronLeft",
+        "android": "lucide:ArrowLeft"
+      },
       "file": "back.svg"
     },
     {
@@ -45,6 +69,10 @@
       "label": "Tùy chọn",
       "group": "navigation",
       "source": "lucide:Ellipsis",
+      "platforms": {
+        "ios": "lucide:Ellipsis",
+        "android": "lucide:EllipsisVertical"
+      },
       "file": "more.svg"
     },
     {
@@ -143,6 +171,10 @@
       "label": "Gửi tin nhắn",
       "group": "compose",
       "source": "lucide:ArrowUp",
+      "platforms": {
+        "ios": "lucide:ArrowUp",
+        "android": "lucide:SendHorizontal"
+      },
       "file": "send.svg"
     },
     {
@@ -207,6 +239,17 @@
       "group": "knowledge",
       "source": "lucide:Copy",
       "file": "copy.svg"
+    },
+    {
+      "name": "share",
+      "label": "Chia sẻ",
+      "group": "knowledge",
+      "source": "lucide:Share",
+      "platforms": {
+        "ios": "lucide:Share",
+        "android": "lucide:Share2"
+      },
+      "file": "share.svg"
     },
     {
       "name": "shield",
