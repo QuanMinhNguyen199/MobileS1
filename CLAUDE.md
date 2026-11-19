@@ -4,8 +4,12 @@
 
 - `src/improved/` là **bản chính**, app chỉ chạy bản này (`src/Shell.jsx`). Mọi thay đổi giao diện đưa vào đây.
 - `src/original/` là bản gốc cũ, không còn chạy; giữ lại để tham chiếu, không sửa.
-- CSS và token của bản chính viết dưới `:root[data-variant="improved"]` trong `src/index.css`
+- CSS của bản chính viết dưới `:root[data-variant="improved"]` trong `src/index.css`
   (`Shell.jsx` luôn gắn `data-variant="improved"`).
+- Token (màu, kiểu chữ, bo góc, đổ bóng) nằm ở `tokens/geoagent.tokens.json`, khớp Figma;
+  `npm run tokens` sinh `src/tokens.css` (không sửa tay). Component dùng class token
+  (`bg-brand`, `text-message`, `rounded-bubble`, `shadow-composer`…), không gõ giá trị cứng.
+  Xem `tokens/README.md`.
 - Thanh cuộn: không hiện trên điện thoại; trên máy tính chỉ hiện khi người dùng
   đang cuộn và ẩn sau khi dừng (`src/improved/scrollbars.js` + CSS trong `index.css`).
   Vùng cuộn mới không tự đặt lại kiểu thanh cuộn.

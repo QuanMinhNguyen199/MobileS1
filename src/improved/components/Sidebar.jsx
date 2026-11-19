@@ -29,7 +29,7 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
       <div className="flex h-16 shrink-0 items-center gap-3 px-4">
         <img ref={logoRef} src={LOGIN_ASSETS.emblem} alt="" width="400" height="407" className={`h-auto w-8 shrink-0 ${logoHidden ? "invisible" : ""}`} />
         <div className="min-w-0 flex-1">
-          <p className="font-heading text-base leading-5 font-semibold tracking-[-0.01em]">GeoAgent</p>
+          <p className="font-heading text-wordmark">GeoAgent</p>
           <p className="text-xs leading-4 text-on-frame-muted">Trợ lý AI thông minh</p>
         </div>
         {onClose && (
@@ -80,7 +80,7 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
       </label>
 
       {/* Tab lọc: chia đều trong lề 16px hai bên */}
-      <div role="group" aria-label="Lọc hội thoại" className="mx-4 mt-3 flex justify-between border-b border-on-frame/15">
+      <div role="group" aria-label="Lọc hội thoại" className="mx-4 mt-3 flex justify-between border-b border-divider">
         {TABS.map((t) => {
           const on = filter === t.key;
           return (
@@ -89,7 +89,7 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
               type="button"
               aria-pressed={on}
               onClick={() => setFilter(t.key)}
-              className={`-mb-px border-b-2 pt-1 pb-2 text-[13px] leading-[18px] whitespace-nowrap focus-visible:outline-2 focus-visible:outline-on-frame ${
+              className={`-mb-px border-b-2 pt-1 pb-2 text-small whitespace-nowrap focus-visible:outline-2 focus-visible:outline-on-frame ${
                 on ? "border-gold text-on-frame font-semibold" : "border-transparent text-on-frame-muted hover:text-on-frame"
               }`}
             >
@@ -105,16 +105,18 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
         <ul className="m-0 min-h-0 flex-1 list-none space-y-0.5 overflow-y-auto px-2 py-2">
           {items.map((c) => {
             const selected = showActive && c.id === activeId;
+            const unread = c.unread && !selected;
             const muted = selected ? "text-on-frame-active-muted" : "text-on-frame-muted group-hover:text-on-frame-muted-strong";
             return (
               <li key={c.id}>
                 <button
                   type="button"
                   data-id={c.id}
+                  data-unread={unread || undefined}
                   aria-current={selected ? "true" : undefined}
                   onClick={() => onOpen(c.id)}
                   className={`group flex w-full items-center gap-3 rounded-2xl px-2.5 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-on-frame ${
-                    selected ? "bg-frame-active text-brand" : "hover:bg-frame-hover"
+                    selected ? "bg-frame-active text-brand" : unread ? "text-on-frame hover:bg-frame-hover" : "text-on-frame-muted hover:bg-frame-hover"
                   }`}
                 >
                   <Avatar name={c.name} size={36} tone={selected ? "selected" : "frame"} />
@@ -122,18 +124,18 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
                     <span className="flex items-baseline gap-2">
                       <span
                         className={`min-w-0 flex-1 truncate text-sm leading-5 ${
-                          c.unread ? "font-[650]" : "font-medium"
+                          unread ? "font-unread" : selected ? "font-medium" : "font-normal"
                         }`}
                       >
                         {c.name}
                       </span>
-                      <span className={`shrink-0 text-xs leading-4 tabular-nums ${muted}`}>{lastTime(c)}</span>
+                      <span className={`shrink-0 text-xs leading-4 tabular-nums ${unread ? "font-semibold text-on-frame" : muted}`}>{lastTime(c)}</span>
                     </span>
                     <span className="flex items-center gap-2">
-                      <span className={`min-w-0 flex-1 truncate text-[13px] leading-[18px] ${c.unread && !selected ? "text-on-frame" : muted}`}>
+                      <span className={`min-w-0 flex-1 truncate text-small ${unread ? "font-semibold text-on-frame" : `font-normal ${muted}`}`}>
                         {c.preview}
                       </span>
-                      {c.unread && (
+                      {unread && (
                         <>
                           <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-gold" />
                           <span className="sr-only">Chưa đọc</span>
@@ -149,7 +151,7 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
       )}
 
       {/* Người dùng */}
-      <div className="flex items-center gap-3 border-t border-on-frame/15 px-4 py-3">
+      <div className="flex items-center gap-3 border-t border-divider px-4 py-3">
         <Avatar name={ME} size={32} tone="frame" />
         <span className="min-w-0 flex-1 truncate text-sm font-medium">{ME}</span>
       </div>

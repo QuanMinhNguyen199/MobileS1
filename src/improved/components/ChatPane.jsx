@@ -22,7 +22,7 @@ function ScrollButton({ label, onClick, disabled, children }) {
       title={label}
       onClick={onClick}
       disabled={disabled}
-      className="pointer-events-auto grid size-9 place-items-center rounded-full border border-line bg-surface text-ink-2 shadow-[0_2px_8px_rgb(29_20_22_/_0.08)] transition-opacity hover:text-ink motion-reduce:transition-none disabled:pointer-events-none disabled:opacity-0 [&_svg]:size-[18px]"
+      className="pointer-events-auto grid size-9 place-items-center rounded-full border border-line bg-surface text-ink-2 shadow-float transition-opacity hover:text-ink motion-reduce:transition-none disabled:pointer-events-none disabled:opacity-0 [&_svg]:size-[18px]"
     >
       {children}
     </button>
@@ -74,7 +74,7 @@ export default function ChatPane({ conversation, typing, onSend, onMenu, logoRef
             <img ref={logoRef} src={LOGIN_ASSETS.emblem} alt="" width="400" height="407" className={`h-auto w-7 shrink-0 md:hidden ${logoHidden ? "invisible" : ""}`} />
           )}
           <div className="min-w-0 flex-1">
-            <h1 id="chat-title" tabIndex={-1} className="m-0 truncate text-base leading-tight font-semibold outline-none">
+            <h1 id="chat-title" tabIndex={-1} className="m-0 truncate text-title outline-none">
               {conversation.name}
             </h1>
             <p className="m-0 truncate text-xs text-ink-2">{kindOf(conversation)}</p>
@@ -95,7 +95,7 @@ export default function ChatPane({ conversation, typing, onSend, onMenu, logoRef
               m.from === "user" ? (
                 <div key={m.id} className="flex max-w-[85%] flex-col items-end self-end md:max-w-[75%]">
                   <span className="sr-only">Bạn: </span>
-                  <div className="rounded-[20px_20px_6px_20px] bg-brand-soft px-4 py-2.5 text-[15px] leading-[1.5] whitespace-pre-wrap [overflow-wrap:anywhere]">
+                  <div className="rounded-bubble rounded-br-bubble-tip bg-brand-soft px-4 py-2.5 text-bubble whitespace-pre-wrap [overflow-wrap:anywhere]">
                     {m.text}
                   </div>
                   {/* Avatar nằm trên dòng giờ gửi để mép phải bong bóng thẳng với mép ô soạn tin */}
@@ -107,12 +107,12 @@ export default function ChatPane({ conversation, typing, onSend, onMenu, logoRef
               ) : (
                 <article key={m.id} className="w-full">
                   <div className="min-w-0">
-                    <p className="m-0 mb-2 flex items-center gap-2 text-[13px]">
+                    <p className="m-0 mb-2 flex items-center gap-2 text-small">
                       {otherAvatar}
                       <span className="font-medium text-ink">{otherName}</span>
                       <time className="text-xs text-ink-2 tabular-nums">{m.time}</time>
                     </p>
-                    <div className="w-full rounded-[6px_20px_20px_20px] border border-bubble-edge bg-surface px-4 py-3.5 shadow-[0_1px_2px_rgb(29_20_22_/_0.05),0_6px_16px_rgb(29_20_22_/_0.05)] md:px-5 md:py-4">
+                    <div className="w-full rounded-bubble rounded-tl-bubble-tip border border-bubble-edge bg-surface px-4 py-3.5 shadow-bubble md:px-5 md:py-4">
                       <MessageContent blocks={m.blocks} />
                     </div>
                   </div>

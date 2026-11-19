@@ -1,6 +1,8 @@
 @import "tailwindcss";
+/* Token của bản chính (improved): sinh tự động, không sửa tay. Sửa tokens/geoagent.tokens.json rồi chạy npm run tokens. */
+@import "./tokens.css";
 
-/* Token màu: đổi ở đây, Tailwind dùng qua bg-brand, text-ink-2... */
+/* Token màu của bản gốc (src/original, giữ để tham chiếu) */
 :root {
   --brand: #b0123a;
   --brand-soft: #fde7ee;
@@ -59,42 +61,77 @@
   --text-xl: 1.25rem;
   --text-2xl: 1.5rem;
 
-  /* Đỏ thương hiệu: biến thể sẫm của đỏ quốc huy (#d01818), dùng cho sidebar và nền đăng nhập */
-  --frame: #a3141a;
-  --frame-hover: #ae2f33;
-  --frame-active: #fff7f0; /* mục đang chọn: viên trắng ấm, chữ đỏ */
-  --on-frame-active-muted: #7a4b47;
-  --frame-sunken: #85101a;
-  --frame-edge: #e39a90;
-  --on-frame: #fff7f0;
-  --on-frame-muted: #f2cfc6;
-  --on-frame-muted-strong: #f8e2da;
-  --gold: #e9b84a;
-  --gold-ink: #3d1205;
-
-  /* 60% trung tính: nền làm việc trắng */
-  --surface: #ffffff;
-  --surface-2: #f5f1ee;
-  --stripe: #ffffff;
-  --ink: #1d1416;
-  --ink-2: #6b5f5c;
-  --line: #e7dfdb;
-  --rule: #f0e9e6;
-  --line-strong: #958884; /* viền điều khiển, 3,42:1 trên trắng */
-  /* 30% xám ấm: sidebar, bóng tin của người dùng, nền phụ */
-  --canvas: #fcf8f7; /* Vista White (bộ trắng của dự án): nền vùng hội thoại, để bong bóng trắng của bot nổi lên */
-  --panel: #f6f1ee;
-  --panel-hover: #eee6e2;
-  --panel-active: #e7ddd8;
-  --brand-soft: #f5d6d0; /* bóng tin của người dùng: hồng thương hiệu, tách rõ khỏi nền và bóng bot */
-  --bubble-edge: #d9cdc8; /* viền bóng bot */
-  /* 10% đỏ thương hiệu: thao tác chính và trạng thái. Vàng chỉ ở quốc huy và biểu tượng bot */
-  --brand: #a3141a;
-  --focus: #1a5fd6;
+  /* Màu, kiểu chữ, bo góc, đổ bóng: xem src/tokens.css (sinh từ tokens/geoagent.tokens.json, khớp Figma).
+     Tỉ lệ màu: 60% nền trắng, 30% xám ấm và sidebar đỏ, 10% đỏ thương hiệu cho thao tác chính. */
+  --stripe: #ffffff; /* chỉ để bản gốc dùng chung class bg-stripe; không có trong Figma */
 
   /* Vùng an toàn trên điện thoại (tai thỏ, thanh home) */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Sidebar desktop: chiều rộng kéo được, thu gọn thành thanh menu toàn chiều cao. */
+:root[data-variant="improved"] .desktop-sidebar {
+  position: relative;
+  flex-grow: 0;
+  flex-shrink: 0;
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+:root[data-variant="improved"] .sidebar-toggle {
+  position: absolute;
+  inset-block-start: calc(var(--safe-top) + 10px);
+  inset-inline-end: 8px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 50%;
+  color: var(--on-frame);
+}
+:root[data-variant="improved"] .desktop-sidebar[data-collapsed="true"] .sidebar-toggle {
+  inset-inline-end: 4px;
+  inline-size: 32px;
+}
+:root[data-variant="improved"] .sidebar-toggle:hover {
+  background: var(--frame-hover);
+}
+:root[data-variant="improved"] .sidebar-toggle:focus-visible {
+  outline-color: var(--on-frame);
+  outline-offset: -2px;
+}
+:root[data-variant="improved"] .sidebar-resizer {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -4px;
+  z-index: 2;
+  inline-size: 9px;
+  cursor: col-resize;
+  touch-action: none;
+}
+:root[data-variant="improved"] .sidebar-resizer::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 4px;
+  inline-size: 1px;
+  background: var(--frame-edge);
+}
+:root[data-variant="improved"] .sidebar-resizer:is(:hover, :focus-visible)::after,
+:root[data-variant="improved"] .desktop-sidebar[data-resizing="true"] .sidebar-resizer::after {
+  inline-size: 3px;
+  inset-inline-start: 3px;
+  background: var(--on-frame);
+}
+:root[data-variant="improved"] .sidebar-resizer:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -1px;
+}
+:root[data-variant="improved"].sidebar-resizing,
+:root[data-variant="improved"].sidebar-resizing * {
+  cursor: col-resize !important;
+  user-select: none;
 }
 
 /* Thanh cuộn (bản cải thiện)
@@ -146,22 +183,7 @@
 
 @theme inline {
   --font-heading: "Plus Jakarta Sans", Inter, system-ui, sans-serif;
-  --color-frame: var(--frame);
-  --color-frame-hover: var(--frame-hover);
-  --color-frame-active: var(--frame-active);
-  --color-on-frame: var(--on-frame);
-  --color-on-frame-muted: var(--on-frame-muted);
-  --color-on-frame-muted-strong: var(--on-frame-muted-strong);
-  --color-frame-sunken: var(--frame-sunken);
-  --color-frame-edge: var(--frame-edge);
-  --color-on-frame-active-muted: var(--on-frame-active-muted);
-  --color-gold-ink: var(--gold-ink);
-  --color-rule: var(--rule);
-  --color-canvas: var(--canvas);
-  --color-bubble-edge: var(--bubble-edge);
-  --color-panel: var(--panel);
-  --color-panel-hover: var(--panel-hover);
-  --color-panel-active: var(--panel-active);
+  /* Class màu của bản chính (bg-frame, text-on-frame...) sinh trong src/tokens.css */
 }
 
 @theme inline {

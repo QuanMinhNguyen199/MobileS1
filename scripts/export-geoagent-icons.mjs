@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { createElement } from "react";
@@ -75,9 +75,12 @@ const SET_NOTE = {
 const panels = PLATFORMS.map(({ id }, i) => `<div id="panel-${id}" class="set-panel" role="tabpanel" aria-labelledby="tab-${id}"${i ? " hidden" : ""}><p class="set-note">${xml(SET_NOTE[id])}</p>${sections(id)}</div>`).join("\n");
 const tabs = `<div class="set-tabs" role="tablist" aria-label="Bộ icon theo nền tảng">${PLATFORMS.map(({ id, label }, i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-platform="${id}">${xml(label)}${id === "shared" ? "" : `<span>${variantCount(id)} riêng</span>`}</button>`).join("")}</div>`;
 
+// Thanh trên cùng dùng chung cho hai trang của site: Icon và Token
+const masthead = (current, tagline) => `<header class="masthead"><a class="brand" href="../"><img src="../login/emblem.svg" width="34" height="35" alt="">GeoAgent</a><nav class="site-nav" aria-label="Trang thư viện">${[["index.html", "icon", "Icon"], ["tokens.html", "token", "Token"]].map(([href, id, label]) => `<a href="${href}"${id === current ? ' aria-current="page"' : ""}>${label}</a>`).join("")}</nav><p>${tagline}</p><a class="back-link" href="../">${svg("back", { size: 18 })} Về ứng dụng</a></header>`;
+
 writeFileSync(resolve(out, "index.html"), `<!doctype html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>GeoAgent — Bộ icon riêng</title><link rel="stylesheet" href="catalog.css"></head>
-<body><header class="masthead"><a class="brand" href="../"><img src="../login/emblem.svg" width="34" height="35" alt="">GeoAgent</a><p>Bộ biểu tượng giao diện</p><a class="back-link" href="../">${svg("back", { size: 18 })} Về ứng dụng</a></header>
+<body>${masthead("icon", "Bộ biểu tượng giao diện")}
 <div class="layout"><aside class="catalog-nav" aria-label="Nhóm biểu tượng"><p>GeoAgent Icons</p><nav>${ICON_GROUPS.map((g) => `<a href="#shared-${g.id}" data-group="${g.id}">${xml(g.label)}</a>`).join("")}</nav><button type="button" class="download-link download-all">${svg("download", { size: 18 })} Tải cả bộ (.zip)</button><p class="download-hint">Bộ đang xem, theo màu, cỡ và định dạng đã chọn.</p><a class="text-link" href="README.md">Hướng dẫn sử dụng</a></aside>
 <main><div class="intro"><div><h1>Bộ icon riêng cho GeoAgent</h1><p>${Object.keys(ICONS).length} biểu tượng SVG dựa trên Lucide · Lưới 24 × 24 · Nét ${String(STROKE).replace(".", ",")} · Đầu nét bo tròn</p></div><a class="sprite-link" id="sprite-link" href="sprite.svg" download>Tải SVG sprite ${svg("download", { size: 18 })}</a></div>
 <div class="specimen"><div class="signature">${svg("assistant", { size: 64 })}<div><h2>Dấu hiệu trợ lý</h2><p>Bong bóng hội thoại kết hợp dấu định vị.<br>Một dấu hiệu riêng, đi cùng bộ icon chức năng.</p></div></div><div class="context-samples" aria-label="Ví dụ icon trên nền sáng và đỏ"><div class="sample light">${["new-chat", "search", "attach", "send"].map((n) => svg(n)).join("")}<span>Nền sáng</span></div><div class="sample dark">${["new-chat", "search", "attach", "send"].map((n) => svg(n)).join("")}<span>Sidebar đỏ</span></div></div></div>
@@ -93,7 +96,7 @@ ${swatchSet("dlg-swatch", "dlg-color", "Màu của icon này")}<p class="dlg-war
 writeFileSync(resolve(out, "catalog.css"), `
 :root{color-scheme:light;--brand:#a3141a;--ink:#1d1416;--muted:#6b5f5c;--line:#e7dfdb;--glyph-size:24px;font-family:Inter,"Segoe UI",system-ui,sans-serif;color:var(--ink);background:#fcf8f7}
 *{box-sizing:border-box}body{margin:0}a{color:inherit}button,input,select{font:inherit}svg{flex:none}a,input,select{outline-offset:4px}:focus-visible{outline:2px solid #1a5fd6}a{text-underline-offset:4px}p{line-height:1.6}h1,h2,p{margin-top:0}
-.masthead{min-height:80px;display:flex;align-items:center;gap:32px;padding:18px 40px;background:var(--brand);color:#fff7f0}.brand{display:flex;gap:12px;align-items:center;font-size:21px;font-weight:700;text-decoration:none}.masthead p{margin:0;color:#f2cfc6;font-size:14px}.back-link{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:14px;text-decoration:none}.masthead :focus-visible{outline-color:#fff7f0}
+.masthead{min-height:80px;display:flex;align-items:center;gap:32px;padding:18px 40px;background:var(--brand);color:#fff7f0}.brand{display:flex;gap:12px;align-items:center;font-size:21px;font-weight:700;text-decoration:none}.masthead p{margin:0;color:#f2cfc6;font-size:14px}.back-link{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:14px;text-decoration:none}.masthead :focus-visible{outline-color:#fff7f0}.site-nav{display:flex;gap:4px;padding:4px;border-radius:999px;background:#85101a}.site-nav a{display:flex;align-items:center;min-height:36px;padding:0 16px;border-radius:999px;font-size:14px;font-weight:600;text-decoration:none;color:#f2cfc6}.site-nav a:hover{color:#fff7f0}.site-nav a[aria-current=page]{background:#fff7f0;color:var(--brand)}
 .layout{display:grid;grid-template-columns:236px minmax(0,1fr);max-width:1600px;margin:auto}.catalog-nav{padding:42px 28px;border-right:1px solid var(--line)}.catalog-nav>p{font-size:14px;font-weight:650;margin-bottom:24px}.catalog-nav nav{display:grid;gap:8px}.catalog-nav nav a{padding:10px 0;font-size:14px;text-decoration:none;color:var(--muted)}.catalog-nav a:hover{color:var(--brand)}.download-link{display:flex;align-items:center;gap:8px;margin-top:40px;font-size:14px;font-weight:600}.text-link{display:block;font-size:13px;color:var(--muted);margin-top:18px}main{min-width:0;padding:40px 44px}.intro{display:flex;gap:24px;align-items:center;justify-content:space-between}.intro h1{font-size:28px;line-height:1.3;letter-spacing:-.025em;margin-bottom:12px}.intro p{font-size:14px;color:var(--muted);margin-bottom:0}.sprite-link{display:flex;gap:8px;align-items:center;font-size:13px;white-space:nowrap}
 .specimen{display:grid;grid-template-columns:1.1fr 1fr;gap:32px;align-items:center;padding:28px 0;margin:28px 0;border-block:1px solid var(--line)}.signature{display:flex;align-items:center;gap:20px;color:var(--brand)}.signature h2{color:var(--ink);font-size:17px;margin-bottom:6px}.signature p{color:var(--muted);font-size:13px;margin-bottom:0}.context-samples{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden}.sample{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 10px;padding:22px 16px;place-items:center}.sample span{grid-column:1/-1;font-size:11px}.light{background:white;color:var(--brand)}.dark{background:var(--brand);color:#fff7f0}
 .toolbar{display:flex;align-items:center;gap:20px;flex-wrap:wrap}.search{display:flex;align-items:center;gap:10px;max-width:360px;flex:1 1 260px;min-width:220px;border:1px solid #958884;border-radius:8px;padding:10px 12px;background:white}.search input{min-width:0;width:100%;border:0;background:transparent;color:var(--ink);font-size:14px}.search input:focus{outline:0}.search:focus-within{outline:2px solid #1a5fd6;outline-offset:2px}.search input::placeholder{color:var(--muted)}.size-control{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}.size-control select{padding:8px;border:1px solid #958884;border-radius:6px;background:white;color:var(--ink)}#result-count{margin-left:auto;font-size:13px;color:var(--muted)}.download-note{font-size:12px;color:var(--muted);margin:14px 0 24px}
@@ -107,8 +110,153 @@ button.download-link{border:0;background:none;padding:0;color:inherit;cursor:poi
 .set-note{font-size:13px;color:var(--muted);margin:0 0 22px}.icon-item{position:relative}.badge{position:absolute;top:8px;right:8px;font-size:10px;line-height:1;padding:4px 6px;border-radius:999px;background:#f5d6d0;color:#7a1519;font-weight:600}.badge.neutral{background:#f3ece8;color:var(--muted)}.icon-item.is-variant{background:#fffaf8}
 section{scroll-margin-top:20px;margin-bottom:32px}section h2{font-size:16px;font-weight:650;display:flex;gap:10px;align-items:center;margin-bottom:16px}section h2 span{color:var(--muted);font-size:12px;font-weight:400}.icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}.icon-item{min-height:142px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:16px 8px;background:#fff;text-decoration:none;text-align:center;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.icon-item:hover{background:#f5e9e5;color:var(--brand)}.glyph{height:36px;display:flex;align-items:center;justify-content:center;color:var(--glyph-color,var(--brand))}.glyph svg{width:var(--glyph-size);height:var(--glyph-size)}.icon-label{font-size:12px;line-height:1.6}.icon-name{font-size:11px;color:var(--muted);overflow-wrap:anywhere}footer{padding:24px 0 4px;border-top:1px solid var(--line);font-size:12px;line-height:1.8;color:var(--muted)}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}[hidden]{display:none!important}
 @media(max-width:1050px){.layout{grid-template-columns:190px minmax(0,1fr)}.catalog-nav{padding:32px 20px}main{padding:32px 24px}.specimen{grid-template-columns:1fr}.intro{align-items:flex-start;flex-direction:column;gap:16px}}
-@media(max-width:600px){.masthead{padding:16px 20px;gap:12px;flex-wrap:wrap}.masthead p{display:none}.brand{font-size:19px}.back-link{font-size:12px}.layout{display:block}.catalog-nav{padding:16px 20px;border-right:0;border-bottom:1px solid var(--line)}.catalog-nav>p{margin-bottom:8px}.catalog-nav nav{display:flex;overflow-x:auto;gap:20px}.catalog-nav nav a{white-space:nowrap;padding:8px 0}.download-link{margin-top:16px}.text-link{margin-top:12px}main{padding:28px 20px}.intro h1{font-size:25px}.intro p{font-size:13px;line-height:1.8}.specimen{gap:24px;margin:24px 0}.signature{gap:16px}.signature>svg{width:52px;height:52px}.signature p{font-size:12px}.toolbar{gap:14px}.search{flex-basis:100%;max-width:none}.size-control{font-size:12px}#result-count{font-size:12px}.set-tabs{gap:0}.set-tabs button{flex:1;justify-content:center;gap:5px;padding:12px 6px;font-size:13px}.set-tabs button span{font-size:10px;padding:2px 6px}.icon-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.icon-item{min-height:132px;padding-inline:5px}.icon-label{font-size:11px}.icon-name{font-size:10px}.sample{padding-inline:12px}}
+@media(max-width:600px){.masthead{padding:16px 20px;gap:12px;flex-wrap:wrap}.site-nav{order:3;width:100%}.site-nav a{flex:1;justify-content:center}.masthead p{display:none}.brand{font-size:19px}.back-link{font-size:12px}.layout{display:block}.catalog-nav{padding:16px 20px;border-right:0;border-bottom:1px solid var(--line)}.catalog-nav>p{margin-bottom:8px}.catalog-nav nav{display:flex;overflow-x:auto;gap:20px}.catalog-nav nav a{white-space:nowrap;padding:8px 0}.download-link{margin-top:16px}.text-link{margin-top:12px}main{padding:28px 20px}.intro h1{font-size:25px}.intro p{font-size:13px;line-height:1.8}.specimen{gap:24px;margin:24px 0}.signature{gap:16px}.signature>svg{width:52px;height:52px}.signature p{font-size:12px}.toolbar{gap:14px}.search{flex-basis:100%;max-width:none}.size-control{font-size:12px}#result-count{font-size:12px}.set-tabs{gap:0}.set-tabs button{flex:1;justify-content:center;gap:5px;padding:12px 6px;font-size:13px}.set-tabs button span{font-size:10px;padding:2px 6px}.icon-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.icon-item{min-height:132px;padding-inline:5px}.icon-label{font-size:11px}.icon-name{font-size:10px}.sample{padding-inline:12px}}
 `);
+// ===== Trang Token: đọc tokens/geoagent.tokens.json, nguồn chung với Figma và src/tokens.css
+{
+  const TOK = JSON.parse(readFileSync(resolve(root, "tokens/geoagent.tokens.json"), "utf8"));
+  copyFileSync(resolve(root, "tokens/geoagent.tokens.json"), resolve(out, "geoagent.tokens.json"));
+  const leaves = (node, prefix = []) =>
+    Object.entries(node || {}).flatMap(([k, v]) => (k.startsWith("$") || typeof v !== "object" ? [] : "$value" in v ? [[[...prefix, k], v]] : leaves(v, [...prefix, k])));
+  const ext = (t) => t.$extensions?.geoagent || {};
+  const rgbParts = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const colorOf = (v) => (typeof v === "string" ? { hex: v.toLowerCase(), a: 1 } : { hex: v.hex.toLowerCase(), a: v.alpha ?? 1 });
+  const cssColor = ({ hex, a }) => (a >= 1 ? hex : `rgb(${rgbParts(hex).join(" ")} / ${a})`);
+  const label = ({ hex, a }) => hex.toUpperCase() + (a < 1 ? ` · ${Math.round(a * 100)}%` : "");
+  const code = (text) => `<button type="button" class="copy" data-copy="${xml(text)}"><code>${xml(text)}</code></button>`;
+  const searchable = (...parts) => xml(parts.filter(Boolean).join(" "));
+
+  // Tầng 1 và tầng 2
+  const prims = leaves(TOK.primitive).map(([p, t]) => ({ ref: p.join("."), name: p.join("/"), css: ext(t).css || "--" + p.join("-"), color: colorOf(t.$value) }));
+  const primByRef = Object.fromEntries(prims.map((p) => [p.ref, p]));
+  const sems = leaves(TOK.semantic).map(([p, t]) => {
+    const ref = (t.$value.match?.(/^\{primitive\.(.+)\}$/) || [])[1];
+    const prim = primByRef[ref];
+    if (!prim) throw new Error(`Token semantic ${p.join("/")} không trỏ về primitive hợp lệ`);
+    const css = ext(t).css || "--" + p.at(-1);
+    // Tiền tố theo vai trò: màu chữ → text-, đường viền → border-, viền focus → outline-, còn lại → bg-
+    const n = css.slice(2);
+    const util = n === "focus" ? "outline" : p[0] === "text" || /(^|-)ink(-|$)|^on-|-fg$/.test(n) ? "text" : p[0] === "border" || /(^|-)(edge|divider|line|rule)(-|$)/.test(n) ? "border" : "bg";
+    return { group: p[0], name: p.join("/"), css, cls: `${util}-${css.slice(2)}`, prim, desc: t.$description || "" };
+  });
+  const usedBy = {};
+  for (const s of sems) (usedBy[s.prim.name] ||= []).push(s.name.split("/").pop());
+  const families = [...new Set(prims.map((p) => p.name.split("/")[0]))];
+  const GROUP_LABEL = { brand: "Thương hiệu", sidebar: "Sidebar (nền đỏ)", surface: "Nền", text: "Chữ", border: "Viền và đường kẻ", state: "Trạng thái", avatar: "Avatar" };
+  const swatchStyle = (c) => `--c:${cssColor(c)}`;
+
+  const primitiveSection = `<section class="tk-section" id="primitive" aria-labelledby="h-primitive"><h2 id="h-primitive">Màu gốc<span>${prims.length} · tầng 1</span></h2>
+<p class="set-note">Chỉ tầng này chứa mã màu. Đổi màu cho dự án khác: sửa ở đây (Figma: GeoAgent / Primitives), mọi màu vai trò đổi theo. Component không dùng thẳng tầng này.</p>
+${families.map((f) => `<div class="tk-group" data-group="${f}"><h3>${f}</h3><ul class="tk-grid">${prims.filter((p) => p.name.startsWith(f + "/")).map((p) => `<li class="tk-card" data-search="${searchable(p.name, p.css, p.color.hex, ...(usedBy[p.name] || []))}"><span class="sw" style="${swatchStyle(p.color)}"></span><div class="tk-meta"><b>${p.name}</b><span>${label(p.color)}</span>${code(`var(${p.css})`)}<span class="used">${usedBy[p.name] ? "→ " + usedBy[p.name].join(", ") : "→ chưa dùng"}</span></div></li>`).join("")}</ul></div>`).join("\n")}</section>`;
+
+  const semanticSection = `<section class="tk-section" id="semantic" aria-labelledby="h-semantic"><h2 id="h-semantic">Màu theo vai trò<span>${sems.length} · tầng 2</span></h2>
+<p class="set-note">Component chỉ dùng tầng này. Tên Figma lấy phần sau dấu “/” là tên class: <code>brand/brand</code> → <code>bg-brand</code>, <code>text/ink-2</code> → <code>text-ink-2</code>. Đổi tiền tố tùy chỗ dùng: <code>bg-</code>, <code>text-</code>, <code>border-</code>.</p>
+${Object.keys(GROUP_LABEL).filter((g) => sems.some((s) => s.group === g)).map((g) => `<div class="tk-group"><h3>${GROUP_LABEL[g]}</h3><ul class="tk-list">${sems.filter((s) => s.group === g).map((s) => `<li class="tk-row" data-search="${searchable(s.name, s.css, s.cls, s.prim.name, s.prim.color.hex, s.desc)}"><span class="sw dot" style="${swatchStyle(s.prim.color)}"></span><div class="tk-name"><b>${s.name}</b><span>${s.prim.name} · ${label(s.prim.color)}</span></div><div class="tk-codes">${code(s.cls)}${code(`var(${s.css})`)}</div><p class="tk-desc">${xml(s.desc)}</p></li>`).join("")}</ul></div>`).join("\n")}</section>`;
+
+  const types = leaves(TOK.typography).map(([p, t]) => ({ key: p.at(-1), v: t.$value, figma: ext(t).figma, desc: t.$description || "" }));
+  const lh = (x) => (typeof x === "number" ? String(x) : x);
+  const SAMPLE = "Ước tính chi phí đo đạc địa chính cho 3 thửa đất";
+  const typeSection = `<section class="tk-section" id="typography" aria-labelledby="h-typography"><h2 id="h-typography">Kiểu chữ<span>${types.length}</span></h2>
+<p class="set-note">Một class đặt cả cỡ chữ, khoảng dòng và độ đậm. Kiểu chữ thường (14/20, 12/16) dùng sẵn <code>text-sm</code>, <code>text-xs</code> của Tailwind.</p>
+<ul class="tk-list">${types.map((t) => `<li class="tk-type" data-search="${searchable("text-" + t.key, t.figma, t.desc, t.v.fontFamily)}"><div class="tk-name"><b>${xml(t.figma)}</b><span>${xml(t.v.fontFamily)} ${t.v.fontWeight} · ${t.v.fontSize} / ${lh(t.v.lineHeight)}${t.v.letterSpacing ? " · " + t.v.letterSpacing : ""}</span>${code((t.key === "wordmark" ? "font-heading " : "") + "text-" + t.key)}</div><p class="tk-sample" style="font-family:'${t.v.fontFamily}',Inter,system-ui,sans-serif;font-size:${t.v.fontSize};font-weight:${t.v.fontWeight};line-height:${lh(t.v.lineHeight)}${t.v.letterSpacing ? ";letter-spacing:" + t.v.letterSpacing : ""}">${SAMPLE}</p><p class="tk-desc">${xml(t.desc)}</p></li>`).join("")}
+<li class="tk-type" data-search="font-unread tên chưa đọc 650"><div class="tk-name"><b>Label/List title unread</b><span>Inter 650 · dùng kèm text-sm</span>${code("text-sm font-unread")}</div><p class="tk-sample" style="font-size:14px;line-height:20px;font-weight:650">Phòng Kế toán</p><p class="tk-desc">${xml(TOK.fontWeight?.unread?.$description || "")}</p></li></ul></section>`;
+
+  const radii = leaves(TOK.radius).map(([p, t]) => ({ key: p.at(-1), v: t.$value, desc: t.$description || "" }));
+  const radiusSection = `<section class="tk-section" id="radius" aria-labelledby="h-radius"><h2 id="h-radius">Bo góc<span>${radii.length}</span></h2>
+<p class="set-note">Bong bóng tin bo 20, góc phía người gửi bo 6: tin người dùng <code>rounded-bubble rounded-br-bubble-tip</code>, tin bot <code>rounded-bubble rounded-tl-bubble-tip</code>.</p>
+<ul class="tk-grid">${radii.map((r) => `<li class="tk-card tk-shape" data-search="${searchable("rounded-" + r.key, r.v, r.desc)}"><span class="shape" style="border-radius:${r.v}"></span><div class="tk-meta"><b>radius/${r.key}</b><span>${r.v}</span>${code("rounded-" + r.key)}<span class="used">${xml(r.desc)}</span></div></li>`).join("")}</ul></section>`;
+
+  const shadowCss = (t) => (Array.isArray(t.$value) ? t.$value : [t.$value]).map((l) => `${l.offsetX} ${l.offsetY} ${l.blur} ${l.spread || "0px"} ${cssColor(colorOf(l.color))}`).join(", ");
+  const shadows = leaves(TOK.shadow).map(([p, t]) => ({ key: p.at(-1), css: shadowCss(t), figma: ext(t).figma, desc: t.$description || "" }));
+  const shadowSection = `<section class="tk-section" id="shadow" aria-labelledby="h-shadow"><h2 id="h-shadow">Đổ bóng<span>${shadows.length}</span></h2>
+<p class="set-note">Bóng mềm tông nâu mực, không dùng đen thuần.</p>
+<ul class="tk-grid tk-shadows">${shadows.map((s) => `<li class="tk-card tk-shadow" data-search="${searchable("shadow-" + s.key, s.figma, s.desc)}"><span class="shadow-box" style="box-shadow:${s.css}"></span><div class="tk-meta"><b>${xml(s.figma)}</b>${code("shadow-" + s.key)}<span class="used">${xml(s.desc)}</span></div></li>`).join("")}</ul></section>`;
+
+  const usage = `<section class="tk-section tk-usage" id="usage" aria-labelledby="h-usage"><h2 id="h-usage">Dùng trong code</h2>
+<ol><li><b>Trong Figma</b>, chọn phần tử, đọc tên biến (Fill <code>brand/brand</code>), kiểu chữ (<code>Body/Message</code>) hoặc đổ bóng. Mô tả của component ghi sẵn cách gọi component React.</li>
+<li><b>Trong code</b>, tìm token đó trên trang này và bấm để sao chép class: <code>bg-brand</code>, <code>text-message</code>, <code>shadow-composer</code>. Không gõ mã màu hay số px.</li>
+<li><b>Đồng bộ</b> khi token đổi: plugin GeoAgent DS Builder → Tải tokens.json → chép đè <code>tokens/geoagent.tokens.json</code> → <code>npm run tokens</code>. Trang này tự cập nhật ở lần deploy sau.</li>
+<li><b>Nền tảng khác</b> (iOS, Android, React Native): dùng file <a href="geoagent.tokens.json" download>geoagent.tokens.json</a> (chuẩn W3C DTCG) với công cụ như Style Dictionary.</li></ol></section>`;
+
+  const total = prims.length + sems.length + types.length + 1 + radii.length + shadows.length;
+  const NAV = [["primitive", "Màu gốc"], ["semantic", "Màu theo vai trò"], ["typography", "Kiểu chữ"], ["radius", "Bo góc"], ["shadow", "Đổ bóng"], ["usage", "Dùng trong code"]];
+  writeFileSync(resolve(out, "tokens.html"), `<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>GeoAgent — Design token</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Plus+Jakarta+Sans:wght@600&display=swap&subset=vietnamese">
+<link rel="stylesheet" href="catalog.css"><link rel="stylesheet" href="token-page.css"></head>
+<body>${masthead("token", "Design token")}
+<div class="layout"><aside class="catalog-nav" aria-label="Nhóm token"><p>GeoAgent Tokens</p><nav>${NAV.map(([id, l]) => `<a href="#${id}">${l}</a>`).join("")}</nav><a class="download-link" href="geoagent.tokens.json" download>${svg("download", { size: 18 })} Tải tokens.json</a><p class="download-hint">Chuẩn W3C DTCG. Nguồn chung của Figma và code.</p></aside>
+<main><div class="intro"><div><h1>Design token GeoAgent</h1><p>${total} token · Màu hai tầng (gốc → vai trò) · Tên khớp Figma, biến CSS và class Tailwind</p></div></div>
+<div class="toolbar tk-toolbar"><label class="search">${svg("search", { size: 18 })}<span class="sr-only">Tìm token</span><input id="tk-search" type="search" placeholder="Tìm tên, class hoặc mã màu" autocomplete="off"></label><span id="tk-count" role="status" aria-live="polite">${total} token</span><span id="copy-status" class="copy-status" role="status" aria-live="polite"></span></div>
+${primitiveSection}
+${semanticSection}
+${typeSection}
+${radiusSection}
+${shadowSection}
+<p id="tk-empty" hidden>Không tìm thấy token phù hợp. Thử tên ngắn hơn, ví dụ “brand” hoặc “ink”.</p>
+${usage}
+<footer>Sinh tự động từ tokens/geoagent.tokens.json bởi npm run icons:export. Không sửa tay trang này.</footer></main></div>
+<script type="module" src="token-page.js"></script></body></html>`);
+
+  writeFileSync(resolve(out, "token-page.css"), `
+.tk-toolbar{margin:28px 0 8px}.copy-status{font-size:13px;color:#0b5d1e;font-weight:600}.copy-status[data-failed]{color:#b3261e}.tk-section{margin:36px 0 8px;scroll-margin-top:20px}.tk-section>h2{font-size:20px;margin-bottom:8px}.tk-group{margin-bottom:22px}.tk-group h3{font-size:13px;font-weight:650;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px}
+.tk-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}.tk-card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.sw{display:block;height:64px;background:linear-gradient(var(--c),var(--c)),repeating-conic-gradient(#e7dfdb 0 25%,#fff 0 50%) 0 0/12px 12px;box-shadow:inset 0 -1px 0 rgb(29 20 22 / .06)}
+.tk-meta{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 12px 12px;font-size:12px;line-height:1.5;color:var(--muted)}.tk-meta b{font-size:13px;color:var(--ink)}.tk-meta .used{overflow-wrap:anywhere}
+.copy{display:inline-flex;align-items:center;min-height:28px;max-width:100%;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);cursor:pointer;text-align:left}.copy code{font:12px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}.copy:hover{border-color:#958884;background:#fcf8f7}.copy[data-copied]{border-color:#0b5d1e;box-shadow:inset 0 0 0 1px #0b5d1e}.copy[data-copied]::after{content:"✓";margin-left:6px;color:#0b5d1e;font-weight:700}.copy[data-failed]{border-color:#b3261e}
+.set-note code,.tk-usage code{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;padding:1px 5px;border-radius:4px;background:#f3ece8;color:var(--ink)}
+.tk-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}.tk-row{display:grid;grid-template-columns:44px minmax(180px,1fr) 340px minmax(0,1.2fr);gap:8px 18px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.sw.dot{width:44px;height:44px;border-radius:10px;box-shadow:inset 0 0 0 1px rgb(29 20 22 / .1)}.tk-name{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;font-size:12px;color:var(--muted)}.tk-name b{font-size:14px;color:var(--ink);overflow-wrap:anywhere}.tk-codes{display:flex;flex-wrap:wrap;gap:6px}.tk-desc{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+.tk-type{display:grid;grid-template-columns:minmax(200px,260px) minmax(0,1fr);gap:6px 28px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line)}.tk-type .tk-desc{grid-column:2}.tk-sample{margin:0;color:var(--ink)}
+.tk-shape .shape{display:block;width:72px;height:72px;margin:20px auto 8px;border:2px solid var(--brand);background:#f5d6d0}.tk-shadows{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}.tk-shadow{overflow:visible;background:#fcf8f7;border-color:transparent}.shadow-box{display:block;height:88px;margin:16px;border-radius:14px;background:#fff}
+.tk-usage ol{margin:0;padding-left:20px;display:grid;gap:12px;font-size:14px;line-height:1.6;max-width:760px}.tk-usage a{color:var(--brand)}#tk-empty{color:var(--muted);font-size:14px}
+@media(max-width:900px){.tk-row{grid-template-columns:44px minmax(0,1fr)}.tk-codes,.tk-desc{grid-column:2}.tk-type{grid-template-columns:minmax(0,1fr)}.tk-type .tk-desc{grid-column:1}}
+@media(max-width:600px){.tk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tk-shadows{grid-template-columns:minmax(0,1fr)}.tk-section>h2{font-size:18px}.tk-sample{overflow-wrap:anywhere}}
+@media(prefers-reduced-motion:no-preference){.copy{transition:border-color .15s,background-color .15s}}
+`);
+
+  writeFileSync(resolve(out, "token-page.js"), `
+// Tìm token và sao chép class / biến CSS (Async Clipboard, dự phòng execCommand khi không có quyền)
+const $ = (s) => document.querySelector(s);
+const norm = (s) => s.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase();
+const items = [...document.querySelectorAll("[data-search]")];
+for (const el of items) el.dataset.key = norm(el.dataset.search + " " + el.textContent);
+const search = $("#tk-search"), count = $("#tk-count"), empty = $("#tk-empty"), status = $("#copy-status");
+const filter = () => {
+  const q = norm(search.value.trim());
+  let n = 0;
+  for (const el of items) { const show = !q || el.dataset.key.includes(q); el.hidden = !show; if (show) n++; }
+  for (const g of document.querySelectorAll(".tk-group")) g.hidden = !g.querySelector("[data-search]:not([hidden])");
+  for (const s of document.querySelectorAll(".tk-section:not(.tk-usage)")) s.hidden = !s.querySelector("[data-search]:not([hidden])");
+  count.textContent = n + " token";
+  empty.hidden = n > 0;
+};
+search.addEventListener("input", filter);
+const legacyCopy = (text) => {
+  const field = Object.assign(document.createElement("textarea"), { value: text });
+  field.setAttribute("readonly", ""); field.style.cssText = "position:fixed;inset-block-start:0;opacity:0";
+  document.body.append(field); field.select();
+  try { return document.execCommand("copy"); } finally { field.remove(); }
+};
+const timers = new WeakMap();
+let last = "";
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest(".copy");
+  if (!button) return;
+  const text = button.dataset.copy;
+  let ok = true;
+  try { await navigator.clipboard.writeText(text); } catch { ok = legacyCopy(text); }
+  clearTimeout(timers.get(button));
+  button.removeAttribute("data-copied"); button.removeAttribute("data-failed");
+  button.setAttribute(ok ? "data-copied" : "data-failed", "");
+  let message = ok ? "Đã sao chép " + text : "Không sao chép được, hãy chọn chữ và sao chép tay";
+  if (message === last) message += "\\u00a0"; // VoiceOver bỏ qua thông báo trùng
+  last = message; status.textContent = message; status.toggleAttribute("data-failed", !ok);
+  timers.set(button, setTimeout(() => { button.removeAttribute("data-copied"); button.removeAttribute("data-failed"); status.textContent = ""; }, 2000));
+});
+`);
+}
+
 writeFileSync(resolve(out, "catalog.js"), `
 import { optimizeSvg } from './svg-optimizer.js';
 const $ = (selector, root = document) => root.querySelector(selector);

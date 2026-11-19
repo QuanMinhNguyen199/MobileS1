@@ -54,13 +54,13 @@ function DataTable({ head, rows, label }) {
 export default function MessageContent({ blocks }) {
   let lastHeading = null;
   return (
-    <div className="text-[15px] leading-[1.6] text-ink [overflow-wrap:anywhere] [&>*:last-child]:mb-0">
+    <div className="text-message text-ink [overflow-wrap:anywhere] [&>*:last-child]:mb-0">
       {blocks.map((b, i) => {
         switch (b.type) {
           case "h":
             lastHeading = b.text;
             return (
-              <h3 key={i} className="mt-0 mb-2 text-[15px] leading-snug font-semibold text-ink">
+              <h3 key={i} className="mt-0 mb-2 text-message-heading text-ink">
                 {b.text}
               </h3>
             );

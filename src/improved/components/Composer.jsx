@@ -28,12 +28,12 @@ export default function Composer({ onSend, placeholder = "Nhắn tin" }) {
       {/* Như Gemini: chữ cạnh và dưới ô soạn tin nhạt dần vào màu nền, không làm mờ (blur), không có dải che */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgb(252_248_247_/_0),rgb(252_248_247_/_0.6)_45%,rgb(252_248_247_/_0.85))]"
+        className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b/srgb from-canvas/0 via-canvas/60 via-45% to-canvas/85"
       />
       {/* Cùng khung với cột tin nhắn (ChatPane): mép ô soạn trùng mép nội dung */}
       <div className="mx-auto w-full max-w-[1040px] px-8 md:px-[72px]">
         {/* Dải che phía sau là kính mờ (thấy lờ mờ nội dung bên dưới); ô soạn tin trắng đặc để chữ luôn dễ đọc */}
-        <div className="flex items-end gap-1 rounded-[28px] border border-line-strong bg-surface p-2 shadow-[0_4px_16px_rgb(29_20_22_/_0.08)]">
+        <div className="flex items-end gap-1 rounded-composer border border-line-strong bg-surface p-2 shadow-composer">
           <button
             type="button"
             aria-label="Đính kèm tệp"
@@ -51,7 +51,7 @@ export default function Composer({ onSend, placeholder = "Nhắn tin" }) {
             onKeyDown={onKeyDown}
             placeholder={placeholder}
             enterKeyHint="send"
-            className="field-sizing-content max-h-[8lh] min-h-[1lh] w-full min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-[15px] leading-[1.45] outline-none placeholder:text-ink-2"
+            className="field-sizing-content max-h-[8lh] min-h-[1lh] w-full min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-input outline-none placeholder:text-ink-2"
           />
           {/* Góc phải: micro luôn có; khi có chữ, micro trượt sang trái nhường chỗ cho nút gửi */}
           <motion.button
@@ -75,7 +75,7 @@ export default function Composer({ onSend, placeholder = "Nhắn tin" }) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.6 }}
                 transition={{ type: "spring", bounce: 0, visualDuration: 0.2 }}
-                className="grid size-10 shrink-0 place-items-center rounded-full bg-brand text-white hover:bg-[#8a1218] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                className="grid size-10 shrink-0 place-items-center rounded-full bg-brand text-white hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               >
                 <SendIcon />
               </motion.button>

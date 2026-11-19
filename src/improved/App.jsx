@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CONVERSATIONS } from "./data.js";
 import Sidebar from "./components/Sidebar.jsx";
+import DesktopSidebar from "./components/DesktopSidebar.jsx";
 import ChatPane from "./components/ChatPane.jsx";
 import { watchScrolling } from "./scrollbars.js";
 
@@ -88,10 +89,10 @@ export default function App({ logoRef, logoHidden }) {
     logoHidden,
   };
 
-  // Máy tính: sidebar cố định bên trái. Điện thoại: màn chat chiếm toàn màn hình, danh sách mở từ nút menu.
+  // Máy tính: kéo đổi chiều rộng hoặc thu về thanh menu. Điện thoại: danh sách dạng ngăn kéo.
   return (
     <div className="flex h-dvh bg-surface text-ink">
-      {!isMobile && <Sidebar {...sidebarProps} logoRef={logoRef} className="w-[300px] shrink-0" />}
+      <DesktopSidebar {...sidebarProps} hidden={isMobile} logoRef={isMobile ? undefined : logoRef} />
       <ChatPane
         conversation={active}
         typing={typing}
@@ -110,7 +111,7 @@ export default function App({ logoRef, logoHidden }) {
               key="scrim"
               aria-hidden="true"
               onClick={closeDrawer}
-              className="fixed inset-0 z-40 bg-[rgb(29_20_22_/_0.4)]"
+              className="fixed inset-0 z-40 bg-scrim"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -122,7 +123,7 @@ export default function App({ logoRef, logoHidden }) {
               aria-modal="true"
               aria-label="Danh sách hội thoại"
               onKeyDown={(e) => e.key === "Escape" && closeDrawer()}
-              className="fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-[340px] shadow-[8px_0_32px_rgb(29_20_22_/_0.18)]"
+              className="fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-[340px] shadow-drawer"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
