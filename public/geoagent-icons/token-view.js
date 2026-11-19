@@ -5,7 +5,7 @@
 // Module thuần: chỉ nhận object JSON, trả về chuỗi HTML. Không dùng DOM, không dùng API của Node.
 
 export const esc = (s) => String(s).replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-const code = (text) => `<button type="button" class="copy" data-copy="${esc(text)}"><code>${esc(text)}</code></button>`;
+const code = (text) => `<button type="button" class="copy" data-copy="${esc(text)}" aria-label="Sao chép ${esc(text)}"><code>${esc(text)}</code></button>`;
 const searchable = (...parts) => esc(parts.filter((p) => p != null && p !== "").join(" "));
 const section = (id, title, meta, note, body) =>
   `<section class="tk-section" id="${id}" aria-labelledby="h-${id}"><h2 id="h-${id}">${title}${meta ? `<span>${meta}</span>` : ""}</h2>${note ? `<p class="set-note">${note}</p>` : ""}${body}</section>`;
@@ -83,16 +83,38 @@ const shadowCss = (value, resolve) =>
     .join(", ");
 const SAMPLE = "Ước tính chi phí đo đạc địa chính cho 3 thửa đất";
 
+// Names in this view describe the layer; source paths and CSS names stay intact.
+const variableName = (name) => name.replace(/^(base|global|primitive|components?)[/.]/, "").replace(/[/.\-]/g, "_");
+const aliasName = (name) => "alias_" + variableName(name.replace(/^--/, "").replace(/^(semantic|alias(?:es)?|colors?)[/.]/, ""));
+const aliasRef = (value) => typeof value === "string" && value.match(/^\{([^}]+)\}$/)?.[1];
+const table = (label, headers, body, cls = "") => `<div class="tk-table-wrap" role="region" aria-label="${esc(label)}" tabindex="0"><table class="tk-table ${cls}"><caption class="sr-only">${esc(label)}</caption><thead><tr>${headers.map(h => `<th scope="col">${esc(h)}</th>`).join("")}</tr></thead>${body}</table></div>`;
+const row = (search, name, cells) => `<tr data-search="${search}"><th scope="row">${name}</th>${cells.map(c => `<td>${c}</td>`).join("")}</tr>`;
+const group = (name, rows, columns) => `<tbody class="tk-group"><tr class="tk-group-title"><th colspan="${columns}" scope="rowgroup">${esc(name)}</th></tr>${rows}</tbody>`;
+const swatch = (c) => `<span aria-hidden="true" class="tk-swatch" style="--c:${c ? esc(c.css) : "transparent"}"></span>`;
+const colorValue = (c, ref) => `<div class="tk-value">${swatch(c)}<div>${ref ? code(ref) : c ? code(c.a < 1 ? c.css : c.hex ? c.hex.toUpperCase() : c.css) : '<span class="warn">Không đọc được</span>'}${ref && c ? `<span class="tk-resolved">${esc(colorLabel(c))}</span>` : ""}</div></div>`;
+const description = (text) => `<span class="tk-desc">${esc(text || "—")}</span>`;
+
 // =====================================================================
-// Cách 1: file của GeoAgent (có primitive + semantic): hiển thị hai tầng, class Tailwind
+// Cách 1: file của GeoAgent, 3 tầng global → alias → component (file cũ: primitive + semantic). Có class Tailwind.
+const GLOBAL_REF = /^\{(?:global|primitive)\.(.+)\}$/;
+const ALIAS_REF = /^\{(?:alias|semantic)\.(.+)\}$/;
+// Tiền tố class của token Component theo tên bộ phận
+const utilFor = (part) =>
+  /(^|-)bg(-|$)|(^|-)tile$/.test(part) ? "bg"
+  : /(^|-)(border|divider|indicator)(-|$)|^status-ring$/.test(part) ? "border"
+  : /(^|-)ring$/.test(part) ? "outline"
+  : part === "accent" ? "accent"
+  : /(^|-)(text|label|icon|placeholder|meta|sender|strong|link|bullet)(-|$)/.test(part) ? "text"
+  : "bg";
 const tiered = (T) => {
   const resolve = makeResolver(T);
   const problems = [];
-  const prims = leaves(T.primitive).map(([p, t]) => ({ ref: p.join("."), name: p.join("/"), color: readColor(t.$value) }));
+  const G = T.global || T.primitive, A = T.alias || T.semantic;
+  const prims = leaves(G).map(([p, t]) => ({ ref: p.join("."), name: p.join("/"), color: readColor(t.$value) }));
   for (const p of prims) if (!p.color) problems.push(`Màu gốc ${p.name} không đọc được giá trị`);
   const primByRef = Object.fromEntries(prims.map((p) => [p.ref, p]));
-  const sems = leaves(T.semantic).map(([p, t]) => {
-    const ref = (typeof t.$value === "string" && t.$value.match(/^\{primitive\.(.+)\}$/)) || [];
+  const sems = leaves(A).map(([p, t]) => {
+    const ref = (typeof t.$value === "string" && t.$value.match(GLOBAL_REF)) || [];
     const prim = primByRef[ref[1]];
     if (!prim) problems.push(`Màu vai trò ${p.join("/")} không trỏ về màu gốc (${JSON.stringify(t.$value)})`);
     const css = ext(t).css || "--" + p.at(-1);
@@ -100,41 +122,83 @@ const tiered = (T) => {
     // Tiền tố theo vai trò: màu chữ → text-, đường viền → border-, viền focus → outline-, còn lại → bg-
     const util = n === "focus" ? "outline" : p[0] === "text" || /(^|-)ink(-|$)|^on-|-fg$/.test(n) ? "text" : p[0] === "border" || /(^|-)(edge|divider|line|rule)(-|$)/.test(n) ? "border" : "bg";
     const color = prim?.color || readColor(resolve(t.$value).value);
-    return { group: p[0], name: p.join("/"), css, cls: `${util}-${n}`, prim, color, desc: t.$description || "" };
+    // Bản tối (nếu có): $extensions.geoagent.dark trỏ về một màu gốc
+    const darkRef = (typeof ext(t).dark === "string" && ext(t).dark.match(GLOBAL_REF)) || [];
+    const dark = darkRef[1] ? primByRef[darkRef[1]] : null;
+    if (ext(t).dark && !dark) problems.push(`Màu vai trò ${p.join("/")}: bản tối không trỏ về màu gốc (${ext(t).dark})`);
+    return { group: p[0], name: p.join("/"), css, cls: `${util}-${n}`, prim, color, dark, desc: t.$description || "" };
   });
   const usedBy = {};
   for (const s of sems) if (s.prim) (usedBy[s.prim.name] ||= []).push(s.name.split("/").pop());
+  for (const s of sems) if (s.dark && s.dark !== s.prim) (usedBy[s.dark.name] ||= []).push(s.name.split("/").pop() + " (tối)");
+  const darkCount = sems.filter((s) => s.dark).length;
   const families = [...new Set(prims.map((p) => p.name.split("/")[0]))];
   const GROUP_LABEL = { brand: "Thương hiệu", sidebar: "Sidebar (nền đỏ)", surface: "Nền", text: "Chữ", border: "Viền và đường kẻ", state: "Trạng thái", avatar: "Avatar" };
   const groups = [...new Set(sems.map((s) => s.group))];
-  const swatch = (c, cls = "sw") => `<span class="${cls}" style="--c:${c ? esc(c.css) : "transparent"}"></span>`;
+  const primitive = section("primitive", "Global", `${prims.length} biến · primitive`,
+    "Giá trị màu gốc. Cột Alias sử dụng cho biết vai trò nào đang tham chiếu đến biến này.",
+    table("Global — màu gốc", ["Tên biến", "Giá trị", "Alias sử dụng"], families.map(f => group(f, prims.filter(p => p.name.startsWith(f + "/")).map(p => row(
+      searchable(p.name, variableName(p.name), p.color?.hex, ...(usedBy[p.name] || []).map(aliasName)),
+      code(variableName(p.name)),
+      [colorValue(p.color), description(usedBy[p.name]?.map(aliasName).join(", ") || "Chưa có alias tham chiếu")],
+    )).join(""), 3)).join(""), "tk-table-global"));
 
-  const primitive = section("primitive", "Màu gốc", `${prims.length} · tầng 1`,
-    "Chỉ tầng này chứa mã màu. Đổi màu cho dự án khác: sửa ở đây (Figma: GeoAgent / Primitives), mọi màu vai trò đổi theo. <b>Không dùng trong component</b>: nút sao chép ở đây cho mã hex, để trao đổi với designer hoặc nhập vào công cụ khác. Trong code, dùng màu theo vai trò bên dưới.",
-    families.map((f) => `<div class="tk-group"><h3>${esc(f)}</h3><ul class="tk-grid">${prims.filter((p) => p.name.startsWith(f + "/")).map((p) => `<li class="tk-card" data-search="${searchable(p.name, p.color?.hex, ...(usedBy[p.name] || []))}">${swatch(p.color)}<div class="tk-meta"><b>${esc(p.name)}</b>${p.color ? code(p.color.hex ? p.color.hex.toUpperCase() : p.color.css) : "<span>?</span>"}${p.color && p.color.a < 1 ? `<span>Độ đục ${Math.round(p.color.a * 100)}%</span>` : ""}<span class="used">${usedBy[p.name] ? "→ " + esc(usedBy[p.name].join(", ")) : "→ chưa dùng"}</span></div></li>`).join("")}</ul></div>`).join(""));
+  const semantic = section("semantic", "Alias", `${sems.length} biến${darkCount ? " · Light / Dark" : ""}`,
+    "Tên hiển thị theo vai trò, với tiền tố alias_. Giá trị là tham chiếu về Global; tên biến CSS và class trong code giữ nguyên.",
+    table("Alias — màu theo vai trò", ["Tên alias", "Light", ...(darkCount ? ["Dark"] : []), "Dùng trong code", "Mô tả"], groups.map(g => group(GROUP_LABEL[g] || g, sems.filter(s => s.group === g).map(s => row(
+      searchable(s.name, aliasName(s.css), s.css, s.cls, s.prim?.name, s.color?.hex, s.dark?.name, s.dark?.color?.hex, s.desc),
+      `<span title="${esc(s.name)}">${code(aliasName(s.css))}</span>`,
+      [colorValue(s.color, s.prim ? variableName(s.prim.name) : undefined),
+        ...(darkCount ? [colorValue(s.dark?.color || s.color, s.dark ? variableName(s.dark.name) : s.prim ? variableName(s.prim.name) : undefined)] : []),
+        `<div class="tk-codes">${code(s.cls)}${code(`var(${s.css})`)}</div>`, description(s.desc)],
+    )).join(""), darkCount ? 5 : 4)).join(""), "tk-table-alias"));
 
-  const semantic = section("semantic", "Màu theo vai trò", `${sems.length} · tầng 2`,
-    "Component chỉ dùng tầng này. Tên Figma lấy phần sau dấu “/” là tên class: <code>brand/brand</code> → <code>bg-brand</code>, <code>text/ink-2</code> → <code>text-ink-2</code>. Ưu tiên class Tailwind; dùng <code>var(--…)</code> ở nơi không viết được class (style inline, file CSS, thư viện ngoài, SVG).",
-    groups.map((g) => `<div class="tk-group"><h3>${esc(GROUP_LABEL[g] || g)}</h3><ul class="tk-list">${sems.filter((s) => s.group === g).map((s) => `<li class="tk-row" data-search="${searchable(s.name, s.css, s.cls, s.prim?.name, s.color?.hex, s.desc)}">${swatch(s.color, "sw dot")}<div class="tk-name"><b>${esc(s.name)}</b><span>${s.prim ? esc(s.prim.name) + " · " + esc(colorLabel(s.prim.color || { css: "?", a: 1 })) : '<span class="warn">không trỏ về màu gốc</span>'}</span></div><div class="tk-codes">${code(s.cls)}${code(`var(${s.css})`)}</div><p class="tk-desc">${esc(s.desc)}</p></li>`).join("")}</ul></div>`).join(""));
+  // Tầng 3 · Component: bộ phận của component trỏ về một alias; Light/Dark là giá trị cuối sau alias
+  const semByPath = Object.fromEntries(sems.map((s) => [s.name.replace("/", "."), s]));
+  const comps = leaves(T.component).map(([p, t]) => {
+    const ref = (typeof t.$value === "string" && t.$value.match(ALIAS_REF)) || [];
+    const sem = semByPath[ref[1]];
+    if (!sem) problems.push(`Component ${p.join("/")} không trỏ về alias (${JSON.stringify(t.$value)})`);
+    const css = ext(t).css || "--" + p.join("-");
+    return { group: p[0], name: p.join("/"), css, cls: `${utilFor(p.slice(1).join("-"))}-${css.slice(2)}`, sem, desc: t.$description || "" };
+  });
+  const component = comps.length ? section("component", "Component", `${comps.length} biến${darkCount ? " · Light / Dark" : ""}`,
+    "Mỗi bộ phận của component trỏ về một alias. Code component dùng tầng này, nên đổi màu riêng một bộ phận chỉ cần trỏ nó sang alias khác. Light/Dark là màu cuối cùng sau khi đi qua alias.",
+    table("Component — bộ phận của component", ["Tên component", "Light", ...(darkCount ? ["Dark"] : []), "Alias", "Dùng trong code", "Mô tả"],
+      [...new Set(comps.map((c) => c.group))].map((g) => group(g, comps.filter((c) => c.group === g).map((c) => row(
+        searchable(c.name, variableName(c.name), c.css, c.cls, c.sem && aliasName(c.sem.css), c.sem?.name, c.desc),
+        `<span title="${esc(c.name)}">${code(variableName(c.name))}</span>`,
+        [colorValue(c.sem?.color), ...(darkCount ? [colorValue(c.sem?.dark?.color || c.sem?.color)] : []),
+          c.sem ? code(aliasName(c.sem.css)) : '<span class="warn">không trỏ về alias</span>',
+          `<div class="tk-codes">${code(c.cls)}${code(`var(${c.css})`)}</div>`, description(c.desc)],
+      )).join(""), darkCount ? 6 : 5)).join(""), "tk-table-component")) : "";
 
   const types = leaves(T.typography).map(([p, t]) => ({ key: p.at(-1), v: resolve(t.$value).value || {}, figma: ext(t).figma || p.join("/"), desc: t.$description || "" }));
   const unread = T.fontWeight?.unread;
-  const typography = types.length ? section("typography", "Kiểu chữ", String(types.length),
-    "Một class đặt cả cỡ chữ, khoảng dòng và độ đậm. Kiểu chữ thường (14/20, 12/16) dùng sẵn <code>text-sm</code>, <code>text-xs</code> của Tailwind.",
-    `<ul class="tk-list">${types.map((t) => `<li class="tk-type" data-search="${searchable("text-" + t.key, t.figma, t.desc, t.v.fontFamily)}"><div class="tk-name"><b>${esc(t.figma)}</b><span>${esc(typeMeta(t.v))}</span>${code((t.key === "wordmark" ? "font-heading " : "") + "text-" + t.key)}</div><p class="tk-sample" style="${typeStyle(t.v)}">${SAMPLE}</p><p class="tk-desc">${esc(t.desc)}</p></li>`).join("")}${unread ? `<li class="tk-type" data-search="font-unread tên chưa đọc ${esc(unread.$value)}"><div class="tk-name"><b>Label/List title unread</b><span>Inter ${esc(unread.$value)} · dùng kèm text-sm</span>${code("text-sm font-unread")}</div><p class="tk-sample" style="font-size:14px;line-height:20px;font-weight:${esc(unread.$value)}">Phòng Kế toán</p><p class="tk-desc">${esc(unread.$description || "")}</p></li>` : ""}</ul>`) : "";
+  const typography = types.length || unread ? section("typography", "Kiểu chữ", String(types.length + (unread ? 1 : 0)), "",
+    table("Biến kiểu chữ", ["Tên", "Giá trị / xem trước", "Dùng trong code", "Mô tả"], `<tbody>${types.map(t => row(
+      searchable("text-" + t.key, t.figma, t.desc, t.v.fontFamily), code(t.figma),
+      [`<span class="tk-resolved">${esc(typeMeta(t.v))}</span><p class="tk-sample" style="${typeStyle(t.v)}">${SAMPLE}</p>`, code((t.key === "wordmark" ? "font-heading " : "") + "text-" + t.key), description(t.desc)],
+    )).join("")}${unread ? row(searchable("font-unread", "tên chưa đọc", unread.$value), code("Label/List title unread"),
+      [`<span class="tk-resolved">Inter ${esc(unread.$value)} · 14px / 20px</span><p class="tk-sample" style="font-size:14px;line-height:20px;font-weight:${esc(unread.$value)}">Phòng Kế toán</p>`, code("text-sm font-unread"), description(unread.$description)]) : ""}</tbody>`, "tk-table-type")) : "";
 
   const radii = leaves(T.radius).map(([p, t]) => ({ key: p.at(-1), v: dim(resolve(t.$value).value), desc: t.$description || "" }));
-  const radius = radii.length ? section("radius", "Bo góc", String(radii.length),
-    "Bong bóng tin bo 20, góc phía người gửi bo 6: tin người dùng <code>rounded-bubble rounded-br-bubble-tip</code>, tin bot <code>rounded-bubble rounded-tl-bubble-tip</code>.",
-    `<ul class="tk-grid">${radii.map((r) => `<li class="tk-card tk-shape" data-search="${searchable("rounded-" + r.key, r.v, r.desc)}"><span class="shape" style="border-radius:${esc(r.v)}"></span><div class="tk-meta"><b>radius/${esc(r.key)}</b><span>${esc(r.v)}</span>${code("rounded-" + r.key)}<span class="used">${esc(r.desc)}</span></div></li>`).join("")}</ul>`) : "";
+  const radius = radii.length ? section("radius", "Bo góc", String(radii.length), "",
+    table("Biến bo góc", ["Tên", "Giá trị", "Dùng trong code", "Mô tả"], `<tbody>${radii.map(r => row(
+      searchable("rounded-" + r.key, r.v, r.desc), code("radius/" + r.key),
+      [`<div class="tk-value"><span aria-hidden="true" class="tk-radius-sample" style="border-radius:${esc(r.v)}"></span><code>${esc(r.v)}</code></div>`, code("rounded-" + r.key), description(r.desc)],
+    )).join("")}</tbody>`, "tk-table-detail")) : "";
 
   const shadows = leaves(T.shadow).map(([p, t]) => ({ key: p.at(-1), css: shadowCss(resolve(t.$value).value, resolve), figma: ext(t).figma || p.join("/"), desc: t.$description || "" }));
-  const shadow = shadows.length ? section("shadow", "Đổ bóng", String(shadows.length), "Bóng mềm tông nâu mực, không dùng đen thuần.",
-    `<ul class="tk-grid tk-shadows">${shadows.map((s) => `<li class="tk-card tk-shadow" data-search="${searchable("shadow-" + s.key, s.figma, s.desc)}"><span class="shadow-box" style="box-shadow:${esc(s.css)}"></span><div class="tk-meta"><b>${esc(s.figma)}</b>${code("shadow-" + s.key)}<span class="used">${esc(s.desc)}</span></div></li>`).join("")}</ul>`) : "";
+  const shadow = shadows.length ? section("shadow", "Đổ bóng", String(shadows.length), "",
+    table("Biến đổ bóng", ["Tên", "Giá trị / xem trước", "Dùng trong code", "Mô tả"], `<tbody>${shadows.map(s => row(
+      searchable("shadow-" + s.key, s.figma, s.desc, s.css), code(s.figma),
+      [`<div class="tk-value"><span aria-hidden="true" class="tk-shadow-sample" style="box-shadow:${esc(s.css)}"></span><code class="tk-raw-value">${esc(s.css)}</code></div>`, code("shadow-" + s.key), description(s.desc)],
+    )).join("")}</tbody>`, "tk-table-detail")) : "";
 
-  const total = prims.length + sems.length + types.length + (unread ? 1 : 0) + radii.length + shadows.length;
-  const nav = [["primitive", "Màu gốc"], ["semantic", "Màu theo vai trò"], types.length && ["typography", "Kiểu chữ"], radii.length && ["radius", "Bo góc"], shadows.length && ["shadow", "Đổ bóng"]].filter(Boolean);
-  return { kind: "geoagent", total, nav, problems, html: primitive + semantic + typography + radius + shadow };
+  const total = prims.length + sems.length + comps.length + types.length + (unread ? 1 : 0) + radii.length + shadows.length;
+  const nav = [["primitive", "Global"], ["semantic", "Alias"], comps.length && ["component", "Component"], (types.length || unread) && ["typography", "Kiểu chữ"], radii.length && ["radius", "Bo góc"], shadows.length && ["shadow", "Đổ bóng"]].filter(Boolean);
+  return { kind: "geoagent", total, nav, problems, html: primitive + semantic + component + typography + radius + shadow };
 };
 
 // =====================================================================
@@ -145,40 +209,47 @@ const generic = (T) => {
   const all = leaves(T).map(([p, t]) => {
     const r = resolve(t.$value);
     if (r.broken) problems.push(`${p.join(".")} trỏ tới token không có: {${r.broken}}`);
-    const alias = typeof t.$value === "string" && /^\{.+\}$/.test(t.$value) ? t.$value : null;
+    const alias = aliasRef(t.$value);
     return { path: p.join("."), type: t.$type || guessType(r.value), value: r.value, alias, desc: t.$description || "" };
   });
-  const by = (type) => all.filter((t) => t.type === type);
-  const aliasNote = (t) => (t.alias ? `<span class="used">→ ${esc(t.alias)}</span>` : "");
-
-  const colors = by("color").map((t) => ({ ...t, c: readColor(t.value) }));
-  for (const t of colors) if (!t.c && !problems.some((p) => p.startsWith(t.path))) problems.push(`${t.path}: không đọc được màu`);
-  const colorFamilies = [...new Set(colors.map((t) => t.path.split(".").slice(0, -1).join(".") || "(gốc)"))];
-  const colorHtml = colors.length ? section("g-color", "Màu", String(colors.length), "Nhóm theo đường dẫn trong file. Bấm để sao chép mã màu.",
-    colorFamilies.map((f) => `<div class="tk-group"><h3>${esc(f)}</h3><ul class="tk-grid">${colors.filter((t) => (t.path.split(".").slice(0, -1).join(".") || "(gốc)") === f).map((t) => `<li class="tk-card" data-search="${searchable(t.path, t.c?.hex, t.alias, t.desc)}"><span class="sw" style="--c:${t.c ? esc(t.c.css) : "transparent"}"></span><div class="tk-meta"><b>${esc(t.path.split(".").pop())}</b>${t.c ? code(t.c.hex ? t.c.hex.toUpperCase() : t.c.css) : '<span class="warn">không đọc được</span>'}${t.c && t.c.a < 1 ? `<span>Độ đục ${Math.round(t.c.a * 100)}%</span>` : ""}${aliasNote(t)}${t.desc ? `<span class="used">${esc(t.desc)}</span>` : ""}</div></li>`).join("")}</ul></div>`).join("")) : "";
-
-  const types = by("typography").filter((t) => t.value && typeof t.value === "object");
+  const isComponent = t => /^components?\./.test(t.path);
+  const names = Object.fromEntries(all.map(t => [t.path, t.alias && !isComponent(t) ? aliasName(t.path) : variableName(t.path)]));
+  const label = t => names[t.path];
+  const reference = t => t.alias ? names[t.alias] || variableName(t.alias) : undefined;
+  const colorTokens = all.filter(t => t.type === "color").map(t => ({ ...t, c: readColor(t.value) }));
+  for (const t of colorTokens) if (!t.c && !problems.some(p => p.startsWith(t.path))) problems.push(`${t.path}: không đọc được màu`);
+  const colorTable = (tokens, id, title) => tokens.length ? section(id, title, String(tokens.length), "",
+    table(title, ["Tên biến", "Giá trị / tham chiếu", "Mô tả"], `<tbody>${tokens.map(t => row(searchable(t.path, label(t), t.alias, reference(t), t.c?.hex, t.desc),
+      `<span title="${esc(t.path)}">${code(label(t))}</span>`, [colorValue(t.c, reference(t)), description(t.desc)],
+    )).join("")}</tbody>`, "tk-table-global")) : "";
+  const components = colorTokens.filter(isComponent);
+  const globals = colorTokens.filter(t => !t.alias && !isComponent(t)), aliases = colorTokens.filter(t => t.alias && !isComponent(t));
+  const types = all.filter(t => t.type === "typography" && t.value && typeof t.value === "object");
   const typeHtml = types.length ? section("g-typography", "Kiểu chữ", String(types.length), "",
-    `<ul class="tk-list">${types.map((t) => `<li class="tk-type" data-search="${searchable(t.path, t.desc)}"><div class="tk-name"><b>${esc(t.path)}</b><span>${esc(typeMeta(t.value))}</span>${aliasNote(t)}</div><p class="tk-sample" style="${typeStyle(t.value)}">${SAMPLE}</p>${t.desc ? `<p class="tk-desc">${esc(t.desc)}</p>` : ""}</li>`).join("")}</ul>`) : "";
-
-  const shadows = by("shadow").filter((t) => t.value);
+    table("Biến kiểu chữ", ["Tên biến", "Giá trị / xem trước", "Tham chiếu", "Mô tả"], `<tbody>${types.map(t => row(searchable(t.path, label(t), t.desc), code(label(t)),
+      [`<span class="tk-resolved">${esc(typeMeta(t.value))}</span><p class="tk-sample" style="${typeStyle(t.value)}">${SAMPLE}</p>`, reference(t) ? code(reference(t)) : "—", description(t.desc)],
+    )).join("")}</tbody>`, "tk-table-type")) : "";
+  const shadows = all.filter(t => t.type === "shadow" && t.value);
   const shadowHtml = shadows.length ? section("g-shadow", "Đổ bóng", String(shadows.length), "",
-    `<ul class="tk-grid tk-shadows">${shadows.map((t) => { const css = shadowCss(t.value, resolve); return `<li class="tk-card tk-shadow" data-search="${searchable(t.path, t.desc)}"><span class="shadow-box" style="box-shadow:${esc(css)}"></span><div class="tk-meta"><b>${esc(t.path)}</b>${code(css)}${aliasNote(t)}</div></li>`; }).join("")}</ul>`) : "";
-
-  const shown = new Set(["color", "typography", "shadow"]);
-  const rest = all.filter((t) => !shown.has(t.type));
-  const restHtml = rest.length ? section("g-other", "Token khác", String(rest.length), "Kích thước, khoảng cách, font, độ đậm, thời gian…",
-    `<ul class="tk-list">${rest.map((t) => { const v = typeof t.value === "object" ? JSON.stringify(t.value) : String(t.value ?? ""); return `<li class="tk-row tk-row-plain" data-search="${searchable(t.path, t.type, v, t.desc)}"><span class="tk-type-tag">${esc(t.type || "?")}</span><div class="tk-name"><b>${esc(t.path)}</b>${t.alias ? `<span>→ ${esc(t.alias)}</span>` : ""}</div><div class="tk-codes">${code(v)}</div><p class="tk-desc">${esc(t.desc)}</p></li>`; }).join("")}</ul>`) : "";
-
-  const nav = [colors.length && ["g-color", "Màu"], types.length && ["g-typography", "Kiểu chữ"], shadows.length && ["g-shadow", "Đổ bóng"], rest.length && ["g-other", "Token khác"]].filter(Boolean);
-  return { kind: "generic", total: all.length, nav, problems, html: colorHtml + typeHtml + shadowHtml + restHtml };
+    table("Biến đổ bóng", ["Tên biến", "Giá trị / xem trước", "Tham chiếu", "Mô tả"], `<tbody>${shadows.map(t => {
+      const css = shadowCss(t.value, resolve);
+      return row(searchable(t.path, label(t), t.desc), code(label(t)), [`<div class="tk-value"><span aria-hidden="true" class="tk-shadow-sample" style="box-shadow:${esc(css)}"></span>${code(css)}</div>`, reference(t) ? code(reference(t)) : "—", description(t.desc)]);
+    }).join("")}</tbody>`, "tk-table-detail")) : "";
+  const rest = all.filter(t => !["color", "typography", "shadow"].includes(t.type));
+  const restHtml = rest.length ? section("g-other", "Token khác", String(rest.length), "",
+    table("Biến khác", ["Tên biến", "Loại", "Giá trị / tham chiếu", "Mô tả"], `<tbody>${rest.map(t => {
+      const value = typeof t.value === "object" ? JSON.stringify(t.value) : String(t.value ?? "");
+      return row(searchable(t.path, label(t), t.alias, t.type, value, t.desc), code(label(t)), [esc(t.type || "—"), `<div class="tk-codes">${reference(t) ? code(reference(t)) : ""}${code(value)}</div>`, description(t.desc)]);
+    }).join("")}</tbody>`, "tk-table-detail")) : "";
+  const nav = [globals.length && ["g-global", "Global"], aliases.length && ["g-alias", "Alias"], components.length && ["g-component", "Component"], types.length && ["g-typography", "Kiểu chữ"], shadows.length && ["g-shadow", "Đổ bóng"], rest.length && ["g-other", "Token khác"]].filter(Boolean);
+  return { kind: "generic", total: all.length, nav, problems, html: colorTable(globals, "g-global", "Global") + colorTable(aliases, "g-alias", "Alias") + colorTable(components, "g-component", "Component") + typeHtml + shadowHtml + restHtml };
 };
 // File cũ không ghi $type: đoán theo giá trị
 const guessType = (v) => (typeof v === "string" && (hexRe.test(v) || /^(rgb|hsl)a?\(/i.test(v)) ? "color" : v && typeof v === "object" && "fontSize" in v ? "typography" : v && typeof v === "object" && ("blur" in v || (Array.isArray(v) && v[0]?.blur != null)) ? "shadow" : undefined);
 
 export function renderTokenView(T) {
   if (!T || typeof T !== "object" || Array.isArray(T)) throw new Error("File không phải object JSON.");
-  const view = T.primitive && T.semantic ? tiered(T) : generic(T);
+  const view = (T.global && T.alias) || (T.primitive && T.semantic) ? tiered(T) : generic(T);
   if (!view.total) throw new Error("Không tìm thấy token nào (cần các mục có \"$value\" theo chuẩn W3C DTCG).");
   return view;
 }

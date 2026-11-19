@@ -80,7 +80,7 @@ const loadFile = async (file) => {
       html: view.html,
       navHtml: view.nav.map(([id, l]) => `<a href="#${id}">${esc(l)}</a>`).join("") + '<a href="#usage">Dùng trong code</a>',
       heading: "Đang xem: " + file.name,
-      line: `${view.total} token · ${view.kind === "geoagent" ? "Cấu trúc GeoAgent (màu gốc → vai trò)" : "Nhóm theo loại token ($type)"}`,
+      line: `${view.total} token · ${view.kind === "geoagent" ? "Global → Alias → Component · Light / Dark" : "Global → Alias · Nhóm theo loại token ($type)"}`,
       total: view.total + " token",
     });
     showProblems(view.problems);

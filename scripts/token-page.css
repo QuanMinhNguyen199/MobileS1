@@ -1,0 +1,78 @@
+.tk-toolbar { margin: 28px 0 8px; }
+.tk-section { margin: 32px 0; scroll-margin-top: 20px; }
+.tk-section > h2 { font-size: 20px; margin-block-end: 8px; }
+.tk-section .set-note { max-inline-size: 88ch; margin-block-end: 16px; }
+.tk-table-wrap {
+  container-type: inline-size;
+  overflow: auto;
+  max-inline-size: 100%;
+  max-block-size: 520px;
+  border: 1px solid var(--line);
+  background: white;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.tk-table { inline-size: 100%; min-inline-size: 740px; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-size: 13px; line-height: 1.5; }
+.tk-table-alias { min-inline-size: 1080px; }
+.tk-table-type, .tk-table-detail { min-inline-size: 940px; }
+.tk-table th, .tk-table td { padding: 10px 14px; text-align: start; vertical-align: middle; border-block-end: 1px solid var(--line); overflow-wrap: anywhere; }
+.tk-table thead { position: sticky; inset-block-start: 0; z-index: 3; }
+.tk-table thead th { background: #f6f1ee; font-size: 12px; font-weight: 500; color: var(--muted); }
+.tk-table th:first-child { inline-size: 24%; }
+.tk-table-global th:nth-child(2) { inline-size: 28%; }
+.tk-table-alias th:first-child { inline-size: 22%; }
+.tk-table-alias thead th:nth-child(2), .tk-table-alias thead th:nth-child(3) { inline-size: 18%; }
+.tk-table-alias thead th:nth-child(4) { inline-size: 20%; }
+.tk-table tbody th[scope="row"] { position: sticky; inset-inline-start: 0; z-index: 1; background: white; font-weight: 500; }
+.tk-table thead th:first-child { position: sticky; inset-inline-start: 0; z-index: 4; }
+.tk-table .tk-group-title th { padding-block: 7px; background: #fcf8f7; color: var(--muted); font-size: 12px; font-weight: 600; }
+.tk-table tbody tr[data-search]:hover > * { background: #fcf8f7; }
+.tk-table tbody:last-child tr:last-child > * { border-block-end: 0; }
+.tk-value { display: flex; align-items: center; gap: 10px; min-inline-size: 0; }
+.tk-value > div { flex: 1; min-inline-size: 0; }
+.tk-swatch { display: inline-block; flex: none; inline-size: 20px; block-size: 20px; border: 1px solid var(--line); border-radius: 3px; background: linear-gradient(var(--c), var(--c)), repeating-conic-gradient(#e7dfdb 0 25%, white 0 50%) 0 0 / 8px 8px; } /* taste-skill-ignore: checkerboard reveals the actual alpha channel of a color token. */
+.tk-resolved { display: block; margin-block-start: 2px; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.tk-desc { margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.tk-codes { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.tk-sample { margin: 6px 0 0; color: var(--ink); }
+.tk-radius-sample { flex: none; inline-size: 32px; block-size: 32px; border: 1px solid var(--brand); background: #f5d6d0; }
+.tk-shadow-sample { flex: none; inline-size: 36px; block-size: 28px; margin: 10px 4px; border-radius: 4px; background: white; }
+.tk-raw-value { font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; } /* taste-skill-ignore: this is literal CSS code. */
+.copy { display: inline-flex; align-items: center; gap: 6px; min-block-size: 28px; max-inline-size: 100%; padding: 2px 4px; margin-inline-start: -4px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--ink); cursor: pointer; text-align: start; }
+.copy code { font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+.copy:hover { background: #f6f1ee; border-color: var(--line); }
+.copy[data-copied] { border-color: #0b5d1e; }
+.copy[data-failed] { border-color: #b3261e; }
+.copy-status { font-size: 13px; color: #0b5d1e; font-weight: 600; }
+.copy-status[data-failed], .warn { color: #b3261e; }
+.set-note code, .tk-usage code { font: 12px ui-monospace, SFMono-Regular, Consolas, monospace; padding: 1px 5px; border-radius: 4px; background: #f6f1ee; color: var(--ink); }
+.tk-usage ol { margin: 0; padding-inline-start: 20px; display: grid; gap: 12px; font-size: 14px; line-height: 1.6; max-inline-size: 760px; }
+.tk-usage a { color: var(--brand); }
+#tk-empty { color: var(--muted); font-size: 14px; }
+.tk-drop { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-block-start: 24px; padding: 14px 16px; border: 1px dashed #958884; border-radius: 8px; background: white; }
+.tk-drop-text { display: flex; align-items: center; gap: 12px; color: var(--muted); }
+.tk-drop-text p { margin: 0; display: flex; flex-direction: column; font-size: 13px; line-height: 1.5; }
+.tk-drop-text b { color: var(--ink); font-size: 14px; }
+.tk-pick { position: relative; white-space: nowrap; }
+.tk-pick:has(input:focus-visible) { outline: 2px solid #1a5fd6; outline-offset: 2px; }
+.tk-drop[data-over] { border-color: var(--brand); border-style: solid; background: #fcf8f7; }
+.tk-drop[data-over] .tk-drop-text { color: var(--brand); }
+.tk-drop[data-state="loading"] { opacity: .6; }
+.tk-viewing { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-block-start: 12px; padding: 10px 14px; border-radius: 8px; background: #f5d6d0; color: #5c0f13; }
+.tk-viewing p { margin: 0; font-size: 13px; font-weight: 600; }
+.tk-problems { margin-block-start: 12px; padding: 12px 14px; border: 1px solid #e3a59b; border-radius: 8px; background: #fff6f4; color: #7a1519; font-size: 13px; }
+.tk-problems p { margin: 0 0 6px; }
+.tk-problems ul { margin: 0; padding-inline-start: 18px; line-height: 1.6; overflow-wrap: anywhere; }
+@container (inline-size < 600px) {
+  .tk-table th, .tk-table td { padding-inline: 10px; }
+  .tk-table th:first-child { inline-size: 190px; }
+}
+@media (max-width: 600px) {
+  .tk-drop { flex-direction: column; align-items: stretch; }
+  .tk-drop-text > svg { display: none; }
+  .tk-section > h2 { font-size: 18px; }
+  .tk-table-wrap { max-block-size: 440px; }
+}
+@media (pointer: coarse) { .copy { min-block-size: 44px; } }
+@media (forced-colors: active) { .tk-swatch { border-color: CanvasText; } }
+@media (prefers-reduced-motion: no-preference) { .copy { transition: border-color .15s, background-color .15s; } }

@@ -76,3 +76,6 @@ export const SignInIcon = icon("sign-in");
 export const AssistantIcon = icon("assistant");
 export const MicIcon = icon("microphone");
 export const ShareIcon = icon("share");
+export const SettingsIcon = icon("settings");
+export const ExternalLinkIcon = icon("external-link");
+export const DocumentIcon = icon("document");

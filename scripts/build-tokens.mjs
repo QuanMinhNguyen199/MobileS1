@@ -38,11 +38,12 @@ const out = (s = "") => lines.push(s);
 out("/* SINH TỰ ĐỘNG bởi scripts/build-tokens.mjs từ tokens/geoagent.tokens.json. Không sửa tay: sửa token rồi chạy `npm run tokens`. */");
 out();
 
-// ---- Tầng 1 + tầng 2: biến CSS (chỉ áp dụng cho bản improved)
-const prim = leaves(T.primitive, ["primitive"]);
-const sem = leaves(T.semantic, ["semantic"]);
+// ---- 3 tầng: global (mã màu) → alias (vai trò, sáng/tối) → component (bộ phận). Chỉ áp dụng cho bản improved.
+const prim = leaves(T.global, ["global"]);
+const sem = leaves(T.alias, ["alias"]);
+const comp = leaves(T.component || {}, ["component"]);
 out(`${SCOPE} {`);
-out("  /* Tầng 1 · Primitive: mã màu gốc. Đổi màu cho dự án khác: sửa ở đây (qua token JSON). */");
+out("  /* Tầng 1 · Global: mã màu gốc. Đổi màu cho dự án khác: sửa ở đây (qua token JSON). */");
 const primCss = new Map();
 for (const [p, tok] of prim) {
   const name = cssName(tok, "--" + p.slice(1).join("-"));
@@ -50,22 +51,59 @@ for (const [p, tok] of prim) {
   out(`  ${name}: ${colorCss(tok.$value, p.join("."))};`);
 }
 out();
-out("  /* Tầng 2 · Semantic: vai trò, luôn trỏ về primitive. Component chỉ dùng tầng này. */");
+out("  /* Tầng 2 · Alias: vai trò, luôn trỏ về global; có bản sáng và bản tối. */");
 const semNames = [];
+const darkPairs = []; // [tên biến, primitive sáng, primitive tối]
+const aliasOf = (value, where) => {
+  const m = typeof value === "string" && value.match(/^\{(.+)\}$/);
+  if (!m) { errors.push(`${where}: phải trỏ về {global...}, đang là ${JSON.stringify(value)}`); return null; }
+  if (!primCss.has(m[1])) { errors.push(`${where}: không có global ${m[1]}`); return null; }
+  return primCss.get(m[1]);
+};
 for (const [p, tok] of sem) {
   const name = cssName(tok, "--" + p.at(-1));
-  const m = typeof tok.$value === "string" && tok.$value.match(/^\{(.+)\}$/);
-  if (!m) { errors.push(`${p.join(".")}: semantic phải là alias {primitive...}, đang là ${JSON.stringify(tok.$value)}`); continue; }
-  if (!primCss.has(m[1])) { errors.push(`${p.join(".")}: không có primitive ${m[1]}`); continue; }
+  const light = aliasOf(tok.$value, p.join("."));
+  if (!light) continue;
   semNames.push(name);
-  out(`  ${name}: var(${primCss.get(m[1])});${tok.$description ? " /* " + tok.$description + " */" : ""}`);
+  out(`  ${name}: var(${light});${tok.$description ? " /* " + tok.$description + " */" : ""}`);
+  const darkRef = tok.$extensions?.geoagent?.dark;
+  if (darkRef) { const dark = aliasOf(darkRef, p.join(".") + " (bản tối)"); if (dark && dark !== light) darkPairs.push([name, light, dark]); }
+}
+if (darkPairs.length) {
+  out();
+  out("  /* Giao diện tối. Trình duyệt cũ (chưa có light-dark()): theo cài đặt sáng/tối của máy. */");
+  out("  @media (prefers-color-scheme: dark) {");
+  for (const [name, , dark] of darkPairs) out(`    ${name}: var(${dark});`);
+  out("  }");
+  out("  /* Trình duyệt mới: light-dark() theo color-scheme của trang, nên lựa chọn Sáng/Tối trong Cài đặt của app có tác dụng. */");
+  out("  @supports (color: light-dark(white, black)) {");
+  for (const [name, light, dark] of darkPairs) out(`    ${name}: light-dark(var(${light}), var(${dark}));`);
+  out("  }");
+  out("  /* Lựa chọn thủ công luôn thắng màu theo hệ thống, kể cả khi chưa hỗ trợ light-dark(). */");
+  for (const [scheme, index] of [["light", 1], ["dark", 2]]) {
+    out(`  &:has(> head > meta[name="color-scheme"][content="${scheme}"]) {`);
+    for (const pair of darkPairs) out(`    ${pair[0]}: var(${pair[index]});`);
+    out("  }");
+  }
+}
+
+// Tầng 3 · Component: bộ phận của component, trỏ về alias nên tự theo sáng/tối
+const aliasCss = new Map(sem.map(([p, tok]) => [p.join("."), cssName(tok, "--" + p.at(-1))]));
+const compNames = [];
+if (comp.length) { out(); out("  /* Tầng 3 · Component: bộ phận của từng component, trỏ về alias. Code component dùng tầng này. */"); }
+for (const [p, tok] of comp) {
+  const name = cssName(tok, "--" + p.slice(1).join("-"));
+  const m = typeof tok.$value === "string" && tok.$value.match(/^\{(alias\..+)\}$/);
+  if (!m || !aliasCss.has(m[1])) { errors.push(`${p.join(".")}: phải trỏ về một alias {alias...}, đang là ${JSON.stringify(tok.$value)}`); continue; }
+  compNames.push(name);
+  out(`  ${name}: var(${aliasCss.get(m[1])});${tok.$description ? " /* " + tok.$description + " */" : ""}`);
 }
 out("}");
 out();
 
-// ---- Tailwind: class màu bg-*, text-*, border-* cho mọi biến semantic
+// ---- Tailwind: class màu bg-*, text-*, border-* cho mọi biến alias và component
 out("@theme inline {");
-for (const name of semNames) out(`  --color-${name.slice(2)}: var(${name});`);
+for (const name of [...semNames, ...compNames]) out(`  --color-${name.slice(2)}: var(${name});`);
 out("}");
 out();
 
@@ -99,11 +137,44 @@ if (errors.length) {
   process.exit(1);
 }
 const css = lines.join("\n") + "\n";
+
+// ---- Bảng token cho plugin Figma (figma-plugin/code.js, giữa hai dấu <token-data>):
+// plugin tạo màu gốc, màu vai trò và mode Dark từ bảng này, nên Figma luôn khớp file token.
+const PLUGIN = path.join(root, "figma-plugin/code.js");
+const refName = (v, tier = "global") => {
+  const m = typeof v === "string" && v.match(/^\{([a-z]+)\.(.+)\}$/);
+  return m && m[1] === tier ? m[2].replace(".", "/") : null;
+};
+const pluginData = {
+  primitives: prim.map(([p, tok]) => {
+    const v = tok.$value;
+    const row = [p.slice(1).join("/"), typeof v === "string" ? v.toLowerCase() : v.hex.toLowerCase()];
+    if (typeof v === "object" && v.alpha != null && v.alpha !== 1) row.push(v.alpha);
+    return row;
+  }),
+  semantic: sem.map(([p, tok]) => ({
+    name: p.slice(1).join("/"),
+    light: refName(tok.$value),
+    dark: refName(tok.$extensions?.geoagent?.dark) || refName(tok.$value),
+    css: cssName(tok, "--" + p.at(-1)),
+    desc: tok.$description || "",
+  })),
+  component: comp.map(([p, tok]) => ({ name: p.slice(1).join("/"), alias: refName(tok.$value, "alias"), css: cssName(tok, "--" + p.slice(1).join("-")), desc: tok.$description || "" })),
+};
+const pluginBlock = `// <token-data> SINH TỰ ĐỘNG bởi npm run tokens từ tokens/geoagent.tokens.json. Không sửa tay.\nconst TOKEN_DATA = ${JSON.stringify(pluginData)};\n// </token-data>`;
+const pluginSrc = fs.existsSync(PLUGIN) ? fs.readFileSync(PLUGIN, "utf8") : null;
+const pluginNext = pluginSrc?.replace(/\/\/ <token-data>[\s\S]*?\/\/ <\/token-data>/, pluginBlock);
+
 if (process.argv.includes("--check")) {
   const cur = fs.existsSync(OUT) ? fs.readFileSync(OUT, "utf8") : "";
   if (cur !== css) { console.error("src/tokens.css chưa khớp tokens JSON. Chạy: npm run tokens"); process.exit(1); }
-  console.log("src/tokens.css khớp tokens JSON.");
+  if (pluginSrc && pluginSrc !== pluginNext) { console.error("figma-plugin/code.js (bảng token) chưa khớp tokens JSON. Chạy: npm run tokens"); process.exit(1); }
+  console.log("src/tokens.css và bảng token của plugin Figma khớp tokens JSON.");
 } else {
   fs.writeFileSync(OUT, css);
-  console.log(`Đã ghi src/tokens.css: ${prim.length} primitive, ${semNames.length} semantic, ${leaves(T.typography).length} kiểu chữ, ${leaves(T.shadow).length} đổ bóng.`);
+  if (pluginSrc) {
+    if (!pluginSrc.includes("// <token-data>")) console.warn("figma-plugin/code.js chưa có dấu <token-data>: bỏ qua cập nhật plugin.");
+    else if (pluginNext !== pluginSrc) { fs.writeFileSync(PLUGIN, pluginNext); console.log("Đã cập nhật bảng token trong figma-plugin/code.js."); }
+  }
+  console.log(`Đã ghi src/tokens.css: ${prim.length} global, ${semNames.length} alias (${darkPairs.length} có bản tối), ${compNames.length} component, ${leaves(T.typography).length} kiểu chữ, ${leaves(T.shadow).length} đổ bóng.`);
 }

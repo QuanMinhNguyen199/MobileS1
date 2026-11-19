@@ -1,7 +1,7 @@
 /* SINH TỰ ĐỘNG bởi scripts/build-tokens.mjs từ tokens/geoagent.tokens.json. Không sửa tay: sửa token rồi chạy `npm run tokens`. */
 
 :root[data-variant="improved"] {
-  /* Tầng 1 · Primitive: mã màu gốc. Đổi màu cho dự án khác: sửa ở đây (qua token JSON). */
+  /* Tầng 1 · Global: mã màu gốc. Đổi màu cho dự án khác: sửa ở đây (qua token JSON). */
   --base-white: #ffffff;
   --red-50: #f8e3e1;
   --red-100: #f8e2da;
@@ -15,6 +15,21 @@
   --red-800: #8a1218;
   --red-850: #85101a;
   --red-900: #741015;
+  --ember-100: #f1e3dd;
+  --ember-150: #ecd6cf;
+  --ember-200: #f2bcb7;
+  --ember-250: #dcbdb5;
+  --ember-350: #ee8079;
+  --ember-450: #a2635a;
+  --ember-550: #d1353b;
+  --ember-600: #c62a31;
+  --ember-700: #a51d23;
+  --ember-750: #74463f;
+  --ember-850: #661d21;
+  --ember-880: #561217;
+  --ember-900: #4b2022;
+  --ember-920: #4a2224;
+  --ember-950: #400b10;
   --rose-700: #7a4b47;
   --warm-25: #fff7f0;
   --warm-50: #fcf8f7;
@@ -29,20 +44,40 @@
   --warm-550: #958884;
   --warm-700: #6b5f5c;
   --warm-950: #1d1416;
+  --night-50: #f5ece7;
+  --night-300: #b9aba6;
+  --night-500: #8a7b76;
+  --night-650: #4a3c36;
+  --night-700: #403430;
+  --night-750: #362b28;
+  --night-800: #2e2421;
+  --night-900: #211916;
+  --night-950: #17110f;
   --gold-100: #f6ecd6;
+  --gold-200: #f0d595;
   --gold-400: #e9b84a;
   --gold-800: #6e4a08;
+  --gold-900: #45361b;
   --gold-950: #3d1205;
+  --blue-300: #79a6ff;
   --blue-600: #1a5fd6;
   --teal-50: #e3eef0;
+  --teal-200: #aadbe3;
   --teal-800: #1f5560;
+  --teal-900: #1d3a40;
   --violet-50: #ece6f3;
+  --violet-200: #d2c4ec;
   --violet-800: #4e3a6e;
+  --violet-900: #362b49;
   --alpha-warm-25-a15: rgb(255 247 240 / 0.15);
   --alpha-warm-25-a16: rgb(255 247 240 / 0.16);
   --alpha-warm-950-a40: rgb(29 20 22 / 0.4);
+  --alpha-warm-950-a35: rgb(29 20 22 / 0.35);
+  --alpha-warm-25-a35: rgb(255 247 240 / 0.35);
+  --alpha-warm-25-a50: rgb(255 247 240 / 0.5);
+  --alpha-black-a55: rgb(0 0 0 / 0.55);
 
-  /* Tầng 2 · Semantic: vai trò, luôn trỏ về primitive. Component chỉ dùng tầng này. */
+  /* Tầng 2 · Alias: vai trò, luôn trỏ về global; có bản sáng và bản tối. */
   --brand: var(--red-700); /* Màu thương hiệu: nút chính, nút gửi, chấm danh sách */
   --brand-hover: var(--red-800); /* Nút chính khi rê chuột */
   --brand-pressed: var(--red-900); /* Nút chính khi nhấn */
@@ -59,6 +94,8 @@
   --on-frame-muted-strong: var(--red-100); /* Chữ phụ khi rê chuột */
   --on-frame-active-muted: var(--rose-700); /* Chữ phụ trong mục đang chọn */
   --divider: var(--alpha-warm-25-a15); /* Đường kẻ trên nền đỏ */
+  --on-frame-active: var(--red-700); /* Chữ trên viên sáng của mục đang chọn (tên, chữ cái avatar) */
+  --scrollbar-frame: var(--alpha-warm-25-a50); /* Thanh cuộn trên sidebar đỏ */
   --surface: var(--base-white); /* Nền trắng: header, thẻ, ô soạn tin, bóng bot */
   --surface-2: var(--warm-150); /* Nền nút trung tính khi rê chuột */
   --canvas: var(--warm-50); /* Nền vùng hội thoại */
@@ -66,8 +103,11 @@
   --panel-hover: var(--warm-250); /* Panel khi rê chuột */
   --panel-active: var(--warm-350); /* Panel khi nhấn */
   --scrim: var(--alpha-warm-950-a40); /* Lớp phủ sau ngăn kéo trên điện thoại */
+  --scrollbar: var(--alpha-warm-950-a35); /* Thanh cuộn trên nền sáng/tối */
   --ink: var(--warm-950); /* Chữ chính */
   --ink-2: var(--warm-700); /* Chữ phụ, icon trung tính, giờ gửi */
+  --link: var(--red-700); /* Chữ link trong tin nhắn (luôn kèm gạch chân) */
+  --on-brand: var(--base-white); /* Chữ và icon trên nền thương hiệu (nút chính, nút gửi) */
   --line: var(--warm-300); /* Viền nhạt: nút cuộn, đầu bảng */
   --rule: var(--warm-200); /* Đường kẻ: header, hàng bảng, phân cách */
   --line-strong: var(--warm-550); /* Viền điều khiển (ô soạn tin), 3,42:1 trên trắng */
@@ -84,6 +124,260 @@
   --avatar-violet-fg: var(--violet-800); /* Avatar sắc 4 (chữ) */
   --avatar-selected-bg: var(--red-150); /* Avatar trong mục sidebar đang chọn */
   --avatar-frame-bg: var(--alpha-warm-25-a16); /* Avatar trên sidebar đỏ: trắng ấm 16% */
+
+  /* Giao diện tối. Trình duyệt cũ (chưa có light-dark()): theo cài đặt sáng/tối của máy. */
+  @media (prefers-color-scheme: dark) {
+    --brand: var(--ember-600);
+    --brand-hover: var(--ember-550);
+    --brand-pressed: var(--ember-700);
+    --brand-soft: var(--ember-900);
+    --frame: var(--ember-880);
+    --frame-hover: var(--ember-850);
+    --frame-active: var(--ember-100);
+    --frame-sunken: var(--ember-950);
+    --frame-edge: var(--ember-450);
+    --on-frame: var(--night-50);
+    --on-frame-muted: var(--ember-250);
+    --on-frame-muted-strong: var(--ember-150);
+    --on-frame-active-muted: var(--ember-750);
+    --surface: var(--night-900);
+    --surface-2: var(--night-800);
+    --canvas: var(--night-950);
+    --panel: var(--night-800);
+    --panel-hover: var(--night-750);
+    --panel-active: var(--night-700);
+    --scrim: var(--alpha-black-a55);
+    --scrollbar: var(--alpha-warm-25-a35);
+    --ink: var(--night-50);
+    --ink-2: var(--night-300);
+    --link: var(--ember-350);
+    --line: var(--night-700);
+    --rule: var(--night-800);
+    --line-strong: var(--night-500);
+    --bubble-edge: var(--night-650);
+    --focus: var(--blue-300);
+    --status-offline: var(--night-500);
+    --avatar-red-bg: var(--ember-920);
+    --avatar-red-fg: var(--ember-200);
+    --avatar-amber-bg: var(--gold-900);
+    --avatar-amber-fg: var(--gold-200);
+    --avatar-teal-bg: var(--teal-900);
+    --avatar-teal-fg: var(--teal-200);
+    --avatar-violet-bg: var(--violet-900);
+    --avatar-violet-fg: var(--violet-200);
+  }
+  /* Trình duyệt mới: light-dark() theo color-scheme của trang, nên lựa chọn Sáng/Tối trong Cài đặt của app có tác dụng. */
+  @supports (color: light-dark(white, black)) {
+    --brand: light-dark(var(--red-700), var(--ember-600));
+    --brand-hover: light-dark(var(--red-800), var(--ember-550));
+    --brand-pressed: light-dark(var(--red-900), var(--ember-700));
+    --brand-soft: light-dark(var(--red-200), var(--ember-900));
+    --frame: light-dark(var(--red-700), var(--ember-880));
+    --frame-hover: light-dark(var(--red-600), var(--ember-850));
+    --frame-active: light-dark(var(--warm-25), var(--ember-100));
+    --frame-sunken: light-dark(var(--red-850), var(--ember-950));
+    --frame-edge: light-dark(var(--red-400), var(--ember-450));
+    --on-frame: light-dark(var(--warm-25), var(--night-50));
+    --on-frame-muted: light-dark(var(--red-250), var(--ember-250));
+    --on-frame-muted-strong: light-dark(var(--red-100), var(--ember-150));
+    --on-frame-active-muted: light-dark(var(--rose-700), var(--ember-750));
+    --surface: light-dark(var(--base-white), var(--night-900));
+    --surface-2: light-dark(var(--warm-150), var(--night-800));
+    --canvas: light-dark(var(--warm-50), var(--night-950));
+    --panel: light-dark(var(--warm-100), var(--night-800));
+    --panel-hover: light-dark(var(--warm-250), var(--night-750));
+    --panel-active: light-dark(var(--warm-350), var(--night-700));
+    --scrim: light-dark(var(--alpha-warm-950-a40), var(--alpha-black-a55));
+    --scrollbar: light-dark(var(--alpha-warm-950-a35), var(--alpha-warm-25-a35));
+    --ink: light-dark(var(--warm-950), var(--night-50));
+    --ink-2: light-dark(var(--warm-700), var(--night-300));
+    --link: light-dark(var(--red-700), var(--ember-350));
+    --line: light-dark(var(--warm-300), var(--night-700));
+    --rule: light-dark(var(--warm-200), var(--night-800));
+    --line-strong: light-dark(var(--warm-550), var(--night-500));
+    --bubble-edge: light-dark(var(--warm-400), var(--night-650));
+    --focus: light-dark(var(--blue-600), var(--blue-300));
+    --status-offline: light-dark(var(--warm-500), var(--night-500));
+    --avatar-red-bg: light-dark(var(--red-50), var(--ember-920));
+    --avatar-red-fg: light-dark(var(--red-750), var(--ember-200));
+    --avatar-amber-bg: light-dark(var(--gold-100), var(--gold-900));
+    --avatar-amber-fg: light-dark(var(--gold-800), var(--gold-200));
+    --avatar-teal-bg: light-dark(var(--teal-50), var(--teal-900));
+    --avatar-teal-fg: light-dark(var(--teal-800), var(--teal-200));
+    --avatar-violet-bg: light-dark(var(--violet-50), var(--violet-900));
+    --avatar-violet-fg: light-dark(var(--violet-800), var(--violet-200));
+  }
+  /* Lựa chọn thủ công luôn thắng màu theo hệ thống, kể cả khi chưa hỗ trợ light-dark(). */
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    --brand: var(--red-700);
+    --brand-hover: var(--red-800);
+    --brand-pressed: var(--red-900);
+    --brand-soft: var(--red-200);
+    --frame: var(--red-700);
+    --frame-hover: var(--red-600);
+    --frame-active: var(--warm-25);
+    --frame-sunken: var(--red-850);
+    --frame-edge: var(--red-400);
+    --on-frame: var(--warm-25);
+    --on-frame-muted: var(--red-250);
+    --on-frame-muted-strong: var(--red-100);
+    --on-frame-active-muted: var(--rose-700);
+    --surface: var(--base-white);
+    --surface-2: var(--warm-150);
+    --canvas: var(--warm-50);
+    --panel: var(--warm-100);
+    --panel-hover: var(--warm-250);
+    --panel-active: var(--warm-350);
+    --scrim: var(--alpha-warm-950-a40);
+    --scrollbar: var(--alpha-warm-950-a35);
+    --ink: var(--warm-950);
+    --ink-2: var(--warm-700);
+    --link: var(--red-700);
+    --line: var(--warm-300);
+    --rule: var(--warm-200);
+    --line-strong: var(--warm-550);
+    --bubble-edge: var(--warm-400);
+    --focus: var(--blue-600);
+    --status-offline: var(--warm-500);
+    --avatar-red-bg: var(--red-50);
+    --avatar-red-fg: var(--red-750);
+    --avatar-amber-bg: var(--gold-100);
+    --avatar-amber-fg: var(--gold-800);
+    --avatar-teal-bg: var(--teal-50);
+    --avatar-teal-fg: var(--teal-800);
+    --avatar-violet-bg: var(--violet-50);
+    --avatar-violet-fg: var(--violet-800);
+  }
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    --brand: var(--ember-600);
+    --brand-hover: var(--ember-550);
+    --brand-pressed: var(--ember-700);
+    --brand-soft: var(--ember-900);
+    --frame: var(--ember-880);
+    --frame-hover: var(--ember-850);
+    --frame-active: var(--ember-100);
+    --frame-sunken: var(--ember-950);
+    --frame-edge: var(--ember-450);
+    --on-frame: var(--night-50);
+    --on-frame-muted: var(--ember-250);
+    --on-frame-muted-strong: var(--ember-150);
+    --on-frame-active-muted: var(--ember-750);
+    --surface: var(--night-900);
+    --surface-2: var(--night-800);
+    --canvas: var(--night-950);
+    --panel: var(--night-800);
+    --panel-hover: var(--night-750);
+    --panel-active: var(--night-700);
+    --scrim: var(--alpha-black-a55);
+    --scrollbar: var(--alpha-warm-25-a35);
+    --ink: var(--night-50);
+    --ink-2: var(--night-300);
+    --link: var(--ember-350);
+    --line: var(--night-700);
+    --rule: var(--night-800);
+    --line-strong: var(--night-500);
+    --bubble-edge: var(--night-650);
+    --focus: var(--blue-300);
+    --status-offline: var(--night-500);
+    --avatar-red-bg: var(--ember-920);
+    --avatar-red-fg: var(--ember-200);
+    --avatar-amber-bg: var(--gold-900);
+    --avatar-amber-fg: var(--gold-200);
+    --avatar-teal-bg: var(--teal-900);
+    --avatar-teal-fg: var(--teal-200);
+    --avatar-violet-bg: var(--violet-900);
+    --avatar-violet-fg: var(--violet-200);
+  }
+
+  /* Tầng 3 · Component: bộ phận của từng component, trỏ về alias. Code component dùng tầng này. */
+  --focus-ring: var(--focus); /* Viền focus bàn phím trên nền sáng */
+  --app-bg: var(--surface); /* Nền ứng dụng */
+  --app-text: var(--ink); /* Chữ mặc định của ứng dụng */
+  --sidebar-bg: var(--frame); /* Nền sidebar */
+  --sidebar-text: var(--on-frame); /* Chữ chính trên sidebar */
+  --sidebar-text-muted: var(--on-frame-muted); /* Chữ phụ trên sidebar */
+  --sidebar-text-muted-hover: var(--on-frame-muted-strong); /* Chữ phụ khi rê chuột / đang mở */
+  --sidebar-icon: var(--on-frame-muted); /* Icon trên sidebar */
+  --sidebar-item-bg-hover: var(--frame-hover); /* Nền mục khi rê chuột */
+  --sidebar-item-bg-selected: var(--frame-active); /* Nền mục đang chọn */
+  --sidebar-item-text-selected: var(--on-frame-active); /* Chữ mục đang chọn */
+  --sidebar-divider: var(--divider); /* Đường kẻ trên sidebar */
+  --sidebar-focus-ring: var(--on-frame); /* Viền focus trên sidebar */
+  --sidebar-unread-dot: var(--gold); /* Chấm chưa đọc */
+  --search-bg: var(--frame-sunken); /* Nền ô tìm kiếm */
+  --search-border: var(--frame-edge); /* Viền ô tìm kiếm */
+  --search-border-focus: var(--on-frame); /* Viền khi đang gõ */
+  --search-text: var(--on-frame); /* Chữ đang gõ */
+  --search-placeholder: var(--on-frame-muted); /* Chữ gợi ý */
+  --tab-text: var(--on-frame-muted); /* Tab lọc */
+  --tab-text-selected: var(--on-frame); /* Tab đang chọn */
+  --tab-indicator: var(--gold); /* Gạch chân tab đang chọn */
+  --chat-bg: var(--canvas); /* Nền vùng hội thoại và header kính mờ */
+  --chat-header-border: var(--rule); /* Đường kẻ dưới header khi đã cuộn */
+  --chat-typing-dot: var(--ink-2); /* Chấm “đang trả lời” */
+  --message-user-bg: var(--brand-soft); /* Bong bóng tin người dùng */
+  --message-user-meta: var(--ink-2); /* Giờ gửi */
+  --message-bot-bg: var(--surface); /* Thẻ tin của bot */
+  --message-bot-border: var(--bubble-edge); /* Viền thẻ tin bot */
+  --message-bot-sender: var(--ink); /* Tên người gửi */
+  --message-bot-meta: var(--ink-2); /* Giờ gửi */
+  --content-text: var(--ink); /* Chữ câu trả lời */
+  --content-strong: var(--ink); /* Chữ đậm */
+  --content-link: var(--link); /* Link (luôn gạch chân) */
+  --content-bullet: var(--brand); /* Chấm đầu dòng */
+  --content-divider: var(--rule); /* Đường phân cách giữa các mục */
+  --table-head-text: var(--ink-2); /* Đầu cột */
+  --table-head-border: var(--line); /* Kẻ dưới đầu cột */
+  --table-row-border: var(--rule); /* Kẻ giữa các hàng */
+  --table-cell-text: var(--ink); /* Ô dữ liệu */
+  --composer-bg: var(--surface); /* Nền ô soạn tin */
+  --composer-border: var(--line-strong); /* Viền ô soạn tin */
+  --composer-placeholder: var(--ink-2); /* Chữ gợi ý */
+  --composer-icon: var(--ink-2); /* Icon đính kèm, micro */
+  --composer-icon-hover: var(--ink); /* Icon khi rê chuột */
+  --composer-icon-bg-hover: var(--panel); /* Nền nút tròn khi rê chuột */
+  --composer-fade: var(--canvas); /* Dải mờ phía sau ô soạn tin */
+  --composer-send-bg: var(--brand); /* Nút gửi */
+  --composer-send-bg-hover: var(--brand-hover); /* Nút gửi khi rê chuột */
+  --composer-send-icon: var(--on-brand); /* Icon nút gửi */
+  --button-primary-bg: var(--brand); /* Nút chính */
+  --button-primary-bg-hover: var(--brand-hover); /* Khi rê chuột */
+  --button-primary-bg-pressed: var(--brand-pressed); /* Khi nhấn */
+  --button-primary-label: var(--on-brand); /* Chữ và icon */
+  --button-secondary-border: var(--line-strong); /* Viền nút phụ */
+  --button-secondary-text: var(--ink); /* Chữ nút phụ */
+  --button-secondary-bg-hover: var(--surface-2); /* Nền khi rê chuột */
+  --icon-button-icon: var(--ink-2); /* Icon */
+  --icon-button-icon-hover: var(--ink); /* Icon khi rê chuột */
+  --icon-button-bg-hover: var(--surface-2); /* Nền khi rê chuột */
+  --scroll-button-bg: var(--surface); /* Nền nút cuộn */
+  --scroll-button-border: var(--line); /* Viền */
+  --scroll-button-icon: var(--ink-2); /* Icon */
+  --scroll-button-icon-hover: var(--ink); /* Icon khi rê chuột */
+  --menu-bg: var(--surface); /* Nền bảng Cài đặt */
+  --menu-border: var(--line); /* Viền */
+  --menu-text: var(--ink); /* Chữ */
+  --menu-text-muted: var(--ink-2); /* Chữ phụ, tiêu đề nhóm */
+  --menu-item-bg-hover: var(--surface-2); /* Mục khi rê chuột */
+  --menu-accent: var(--brand); /* Ô chọn (radio) */
+  --login-card-bg: var(--surface); /* Thẻ đăng nhập */
+  --login-card-text: var(--ink); /* Chữ */
+  --login-card-text-muted: var(--ink-2); /* Chữ phụ */
+  --login-card-divider: var(--rule); /* Đường kẻ chân thẻ */
+  --select-bg-hover: var(--surface-2); /* Ô chọn ngôn ngữ khi rê chuột */
+  --avatar-status: var(--status-offline); /* Chấm trạng thái */
+  --avatar-status-ring: var(--surface); /* Viền quanh chấm trạng thái */
+  --bot-avatar-bg: var(--frame); /* Nền avatar trợ lý */
+  --bot-avatar-icon: var(--gold); /* Icon trợ lý */
+  --web-pane-bg: var(--surface); /* Khung web (máy tính) */
+  --web-pane-frame-bg: var(--surface-2); /* Nền vùng trang nhúng */
+  --web-pane-border: var(--rule); /* Đường kẻ ngăn */
+  --web-pane-text: var(--ink); /* Chữ */
+  --web-pane-text-muted: var(--ink-2); /* Chữ phụ */
+  --web-pane-card-bg: var(--surface); /* Thẻ tóm tắt */
+  --web-pane-card-border: var(--line); /* Viền thẻ tóm tắt */
+  --web-pane-icon-tile: var(--panel); /* Ô icon trang */
+  --overlay-scrim: var(--scrim); /* Lớp phủ sau ngăn kéo */
 }
 
 @theme inline {
@@ -103,6 +397,8 @@
   --color-on-frame-muted-strong: var(--on-frame-muted-strong);
   --color-on-frame-active-muted: var(--on-frame-active-muted);
   --color-divider: var(--divider);
+  --color-on-frame-active: var(--on-frame-active);
+  --color-scrollbar-frame: var(--scrollbar-frame);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-canvas: var(--canvas);
@@ -110,8 +406,11 @@
   --color-panel-hover: var(--panel-hover);
   --color-panel-active: var(--panel-active);
   --color-scrim: var(--scrim);
+  --color-scrollbar: var(--scrollbar);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
+  --color-link: var(--link);
+  --color-on-brand: var(--on-brand);
   --color-line: var(--line);
   --color-rule: var(--rule);
   --color-line-strong: var(--line-strong);
@@ -128,6 +427,94 @@
   --color-avatar-violet-fg: var(--avatar-violet-fg);
   --color-avatar-selected-bg: var(--avatar-selected-bg);
   --color-avatar-frame-bg: var(--avatar-frame-bg);
+  --color-focus-ring: var(--focus-ring);
+  --color-app-bg: var(--app-bg);
+  --color-app-text: var(--app-text);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-text-muted: var(--sidebar-text-muted);
+  --color-sidebar-text-muted-hover: var(--sidebar-text-muted-hover);
+  --color-sidebar-icon: var(--sidebar-icon);
+  --color-sidebar-item-bg-hover: var(--sidebar-item-bg-hover);
+  --color-sidebar-item-bg-selected: var(--sidebar-item-bg-selected);
+  --color-sidebar-item-text-selected: var(--sidebar-item-text-selected);
+  --color-sidebar-divider: var(--sidebar-divider);
+  --color-sidebar-focus-ring: var(--sidebar-focus-ring);
+  --color-sidebar-unread-dot: var(--sidebar-unread-dot);
+  --color-search-bg: var(--search-bg);
+  --color-search-border: var(--search-border);
+  --color-search-border-focus: var(--search-border-focus);
+  --color-search-text: var(--search-text);
+  --color-search-placeholder: var(--search-placeholder);
+  --color-tab-text: var(--tab-text);
+  --color-tab-text-selected: var(--tab-text-selected);
+  --color-tab-indicator: var(--tab-indicator);
+  --color-chat-bg: var(--chat-bg);
+  --color-chat-header-border: var(--chat-header-border);
+  --color-chat-typing-dot: var(--chat-typing-dot);
+  --color-message-user-bg: var(--message-user-bg);
+  --color-message-user-meta: var(--message-user-meta);
+  --color-message-bot-bg: var(--message-bot-bg);
+  --color-message-bot-border: var(--message-bot-border);
+  --color-message-bot-sender: var(--message-bot-sender);
+  --color-message-bot-meta: var(--message-bot-meta);
+  --color-content-text: var(--content-text);
+  --color-content-strong: var(--content-strong);
+  --color-content-link: var(--content-link);
+  --color-content-bullet: var(--content-bullet);
+  --color-content-divider: var(--content-divider);
+  --color-table-head-text: var(--table-head-text);
+  --color-table-head-border: var(--table-head-border);
+  --color-table-row-border: var(--table-row-border);
+  --color-table-cell-text: var(--table-cell-text);
+  --color-composer-bg: var(--composer-bg);
+  --color-composer-border: var(--composer-border);
+  --color-composer-placeholder: var(--composer-placeholder);
+  --color-composer-icon: var(--composer-icon);
+  --color-composer-icon-hover: var(--composer-icon-hover);
+  --color-composer-icon-bg-hover: var(--composer-icon-bg-hover);
+  --color-composer-fade: var(--composer-fade);
+  --color-composer-send-bg: var(--composer-send-bg);
+  --color-composer-send-bg-hover: var(--composer-send-bg-hover);
+  --color-composer-send-icon: var(--composer-send-icon);
+  --color-button-primary-bg: var(--button-primary-bg);
+  --color-button-primary-bg-hover: var(--button-primary-bg-hover);
+  --color-button-primary-bg-pressed: var(--button-primary-bg-pressed);
+  --color-button-primary-label: var(--button-primary-label);
+  --color-button-secondary-border: var(--button-secondary-border);
+  --color-button-secondary-text: var(--button-secondary-text);
+  --color-button-secondary-bg-hover: var(--button-secondary-bg-hover);
+  --color-icon-button-icon: var(--icon-button-icon);
+  --color-icon-button-icon-hover: var(--icon-button-icon-hover);
+  --color-icon-button-bg-hover: var(--icon-button-bg-hover);
+  --color-scroll-button-bg: var(--scroll-button-bg);
+  --color-scroll-button-border: var(--scroll-button-border);
+  --color-scroll-button-icon: var(--scroll-button-icon);
+  --color-scroll-button-icon-hover: var(--scroll-button-icon-hover);
+  --color-menu-bg: var(--menu-bg);
+  --color-menu-border: var(--menu-border);
+  --color-menu-text: var(--menu-text);
+  --color-menu-text-muted: var(--menu-text-muted);
+  --color-menu-item-bg-hover: var(--menu-item-bg-hover);
+  --color-menu-accent: var(--menu-accent);
+  --color-login-card-bg: var(--login-card-bg);
+  --color-login-card-text: var(--login-card-text);
+  --color-login-card-text-muted: var(--login-card-text-muted);
+  --color-login-card-divider: var(--login-card-divider);
+  --color-select-bg-hover: var(--select-bg-hover);
+  --color-avatar-status: var(--avatar-status);
+  --color-avatar-status-ring: var(--avatar-status-ring);
+  --color-bot-avatar-bg: var(--bot-avatar-bg);
+  --color-bot-avatar-icon: var(--bot-avatar-icon);
+  --color-web-pane-bg: var(--web-pane-bg);
+  --color-web-pane-frame-bg: var(--web-pane-frame-bg);
+  --color-web-pane-border: var(--web-pane-border);
+  --color-web-pane-text: var(--web-pane-text);
+  --color-web-pane-text-muted: var(--web-pane-text-muted);
+  --color-web-pane-card-bg: var(--web-pane-card-bg);
+  --color-web-pane-card-border: var(--web-pane-card-border);
+  --color-web-pane-icon-tile: var(--web-pane-icon-tile);
+  --color-overlay-scrim: var(--overlay-scrim);
 }
 
 @theme {

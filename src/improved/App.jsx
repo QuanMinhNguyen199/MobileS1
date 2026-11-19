@@ -4,6 +4,7 @@ import { CONVERSATIONS } from "./data.js";
 import Sidebar from "./components/Sidebar.jsx";
 import DesktopSidebar from "./components/DesktopSidebar.jsx";
 import ChatPane from "./components/ChatPane.jsx";
+import DesktopWebPane from "./components/DesktopWebPane.jsx";
 import { watchScrolling } from "./scrollbars.js";
 
 const now = () => new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
@@ -28,6 +29,15 @@ export default function App({ logoRef, logoHidden }) {
   const [query, setQuery] = useState("");
   const timer = useRef(null);
   const isMobile = useIsMobile();
+  // Máy tính: link đang mở trong khung web bên phải khung chat (không phải modal)
+  const [web, setWeb] = useState(null);
+  const webOrigin = useRef(null);
+  const openWeb = (link, origin) => { webOrigin.current = origin; setWeb(link); };
+  const closeWeb = () => {
+    setWeb(null);
+    const origin = webOrigin.current;
+    requestAnimationFrame(() => (origin?.isConnected ? origin : document.getElementById("chat-title"))?.focus({ preventScroll: true }));
+  };
 
   useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => watchScrolling(), []);
@@ -35,6 +45,7 @@ export default function App({ logoRef, logoHidden }) {
   // Đóng ngăn kéo khi chuyển sang máy tính; Esc để đóng
   useEffect(() => {
     if (!isMobile) setDrawer(false);
+    else setWeb(null); // sang điện thoại: khung web máy tính đóng, điện thoại dùng khung riêng
   }, [isMobile]);
 
   const closeDrawer = () => {
@@ -91,18 +102,20 @@ export default function App({ logoRef, logoHidden }) {
 
   // Máy tính: kéo đổi chiều rộng hoặc thu về thanh menu. Điện thoại: danh sách dạng ngăn kéo.
   return (
-    <div className="flex h-dvh bg-surface text-ink">
+    <div className="flex h-dvh bg-app-bg text-app-text">
       <DesktopSidebar {...sidebarProps} hidden={isMobile} logoRef={isMobile ? undefined : logoRef} />
       <ChatPane
         conversation={active}
         typing={typing}
         onSend={send}
         onMenu={() => setDrawer(true)}
-        logoRef={isMobile ? logoRef : undefined}
-        logoHidden={logoHidden}
+        onOpenWeb={isMobile ? undefined : openWeb}
+        compact={!isMobile && Boolean(web)}
         inert={drawer}
-        className="min-w-0 flex-1"
+        className={!isMobile && web ? "w-[clamp(380px,36vw,520px)] shrink-0" : "min-w-0 flex-1"}
       />
+      {/* Máy tính: khung web bên phải khung chat */}
+      {!isMobile && web && <DesktopWebPane link={web} onClose={closeWeb} className="min-w-0 flex-1 border-l border-web-pane-border" />}
 
       <AnimatePresence>
         {isMobile && drawer && (
@@ -111,7 +124,7 @@ export default function App({ logoRef, logoHidden }) {
               key="scrim"
               aria-hidden="true"
               onClick={closeDrawer}
-              className="fixed inset-0 z-40 bg-scrim"
+              className="fixed inset-0 z-40 bg-overlay-scrim"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

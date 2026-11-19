@@ -1,6 +1,6 @@
 {
-  "$description": "GeoAgent design tokens (chuẩn W3C DTCG). Nguồn gốc của src/tokens.css: sửa file này hoặc xuất lại từ plugin Figma, rồi chạy `npm run tokens`.",
-  "primitive": {
+  "$description": "GeoAgent design tokens (chuẩn W3C DTCG), 3 tầng: global (mã màu) → alias (vai trò, có bản sáng/tối ở $extensions.geoagent.dark) → component (bộ phận của component, trỏ về alias). Sửa file này hoặc xuất lại từ plugin Figma, rồi chạy `npm run tokens`.",
+  "global": {
     "base": {
       "white": {
         "$type": "color",
@@ -131,6 +131,158 @@
           "geoagent": {
             "css": "--red-900",
             "figma": "red/900"
+          }
+        }
+      }
+    },
+    "ember": {
+      "100": {
+        "$type": "color",
+        "$value": "#f1e3dd",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-100",
+            "figma": "ember/100"
+          }
+        }
+      },
+      "150": {
+        "$type": "color",
+        "$value": "#ecd6cf",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-150",
+            "figma": "ember/150"
+          }
+        }
+      },
+      "200": {
+        "$type": "color",
+        "$value": "#f2bcb7",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-200",
+            "figma": "ember/200"
+          }
+        }
+      },
+      "250": {
+        "$type": "color",
+        "$value": "#dcbdb5",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-250",
+            "figma": "ember/250"
+          }
+        }
+      },
+      "350": {
+        "$type": "color",
+        "$value": "#ee8079",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-350",
+            "figma": "ember/350"
+          }
+        }
+      },
+      "450": {
+        "$type": "color",
+        "$value": "#a2635a",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-450",
+            "figma": "ember/450"
+          }
+        }
+      },
+      "550": {
+        "$type": "color",
+        "$value": "#d1353b",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-550",
+            "figma": "ember/550"
+          }
+        }
+      },
+      "600": {
+        "$type": "color",
+        "$value": "#c62a31",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-600",
+            "figma": "ember/600"
+          }
+        }
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#a51d23",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-700",
+            "figma": "ember/700"
+          }
+        }
+      },
+      "750": {
+        "$type": "color",
+        "$value": "#74463f",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-750",
+            "figma": "ember/750"
+          }
+        }
+      },
+      "850": {
+        "$type": "color",
+        "$value": "#661d21",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-850",
+            "figma": "ember/850"
+          }
+        }
+      },
+      "880": {
+        "$type": "color",
+        "$value": "#561217",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-880",
+            "figma": "ember/880"
+          }
+        }
+      },
+      "900": {
+        "$type": "color",
+        "$value": "#4b2022",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-900",
+            "figma": "ember/900"
+          }
+        }
+      },
+      "920": {
+        "$type": "color",
+        "$value": "#4a2224",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-920",
+            "figma": "ember/920"
+          }
+        }
+      },
+      "950": {
+        "$type": "color",
+        "$value": "#400b10",
+        "$extensions": {
+          "geoagent": {
+            "css": "--ember-950",
+            "figma": "ember/950"
           }
         }
       }
@@ -279,6 +431,98 @@
         }
       }
     },
+    "night": {
+      "50": {
+        "$type": "color",
+        "$value": "#f5ece7",
+        "$extensions": {
+          "geoagent": {
+            "css": "--night-50",
+            "figma": "night/50"
+          }
+        }
+      },
+      "300": {
+        "$type": "color",
+        "$value": "#b9aba6",
+        "$extensions": {
+          "geoagent": {
+            "css": "--night-300",
+            "figma": "night/300"
+          }
+        }
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#8a7b76",
+        "$extensions": {
+          "geoagent": {
+            "css": "--night-500",
+            "figma": "night/500"
+          }
+        }
+      },
+      "650": {
+        "$type": "color",
+        "$value": "#4a3c36",
+        "$extensions": {
+          "geoagent": {
+            "css": "--night-650",
+            "figma": "night/650"
+          }
+        }
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#403430",
+        "$extensions": {
+          "geoagent": {
+            "css": "--night-700",
+            "figma": "night/700"
+          }
+        }
+      },
+      "750": {
+        "$type": "color",
+        "$value": "#362b28",
+        "$extensions": {
+          "geoagent": {
+            "css": "--night-750",
+            "figma": "night/750"
+          }
+        }
+      },
+      "800": {
+        "$type": "color",
+        "$value": "#2e2421",
+        "$extensions": {
+          "geoagent": {
+            "css": "--night-800",
+            "figma": "night/800"
+          }
+        }
+      },
+      "900": {
+        "$type": "color",
+        "$value": "#211916",
+        "$extensions": {
+          "geoagent": {
+            "css": "--night-900",
+            "figma": "night/900"
+          }
+        }
+      },
+      "950": {
+        "$type": "color",
+        "$value": "#17110f",
+        "$extensions": {
+          "geoagent": {
+            "css": "--night-950",
+            "figma": "night/950"
+          }
+        }
+      }
+    },
     "gold": {
       "100": {
         "$type": "color",
@@ -287,6 +531,16 @@
           "geoagent": {
             "css": "--gold-100",
             "figma": "gold/100"
+          }
+        }
+      },
+      "200": {
+        "$type": "color",
+        "$value": "#f0d595",
+        "$extensions": {
+          "geoagent": {
+            "css": "--gold-200",
+            "figma": "gold/200"
           }
         }
       },
@@ -310,6 +564,16 @@
           }
         }
       },
+      "900": {
+        "$type": "color",
+        "$value": "#45361b",
+        "$extensions": {
+          "geoagent": {
+            "css": "--gold-900",
+            "figma": "gold/900"
+          }
+        }
+      },
       "950": {
         "$type": "color",
         "$value": "#3d1205",
@@ -322,6 +586,16 @@
       }
     },
     "blue": {
+      "300": {
+        "$type": "color",
+        "$value": "#79a6ff",
+        "$extensions": {
+          "geoagent": {
+            "css": "--blue-300",
+            "figma": "blue/300"
+          }
+        }
+      },
       "600": {
         "$type": "color",
         "$value": "#1a5fd6",
@@ -344,6 +618,16 @@
           }
         }
       },
+      "200": {
+        "$type": "color",
+        "$value": "#aadbe3",
+        "$extensions": {
+          "geoagent": {
+            "css": "--teal-200",
+            "figma": "teal/200"
+          }
+        }
+      },
       "800": {
         "$type": "color",
         "$value": "#1f5560",
@@ -351,6 +635,16 @@
           "geoagent": {
             "css": "--teal-800",
             "figma": "teal/800"
+          }
+        }
+      },
+      "900": {
+        "$type": "color",
+        "$value": "#1d3a40",
+        "$extensions": {
+          "geoagent": {
+            "css": "--teal-900",
+            "figma": "teal/900"
           }
         }
       }
@@ -366,6 +660,16 @@
           }
         }
       },
+      "200": {
+        "$type": "color",
+        "$value": "#d2c4ec",
+        "$extensions": {
+          "geoagent": {
+            "css": "--violet-200",
+            "figma": "violet/200"
+          }
+        }
+      },
       "800": {
         "$type": "color",
         "$value": "#4e3a6e",
@@ -373,6 +677,16 @@
           "geoagent": {
             "css": "--violet-800",
             "figma": "violet/800"
+          }
+        }
+      },
+      "900": {
+        "$type": "color",
+        "$value": "#362b49",
+        "$extensions": {
+          "geoagent": {
+            "css": "--violet-900",
+            "figma": "violet/900"
           }
         }
       }
@@ -434,74 +748,156 @@
             "figma": "alpha/warm-950-a40"
           }
         }
+      },
+      "warm-950-a35": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1137,
+            0.0784,
+            0.0863
+          ],
+          "alpha": 0.35,
+          "hex": "#1d1416"
+        },
+        "$extensions": {
+          "geoagent": {
+            "css": "--alpha-warm-950-a35",
+            "figma": "alpha/warm-950-a35"
+          }
+        }
+      },
+      "warm-25-a35": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.9686,
+            0.9412
+          ],
+          "alpha": 0.35,
+          "hex": "#fff7f0"
+        },
+        "$extensions": {
+          "geoagent": {
+            "css": "--alpha-warm-25-a35",
+            "figma": "alpha/warm-25-a35"
+          }
+        }
+      },
+      "warm-25-a50": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.9686,
+            0.9412
+          ],
+          "alpha": 0.5,
+          "hex": "#fff7f0"
+        },
+        "$extensions": {
+          "geoagent": {
+            "css": "--alpha-warm-25-a50",
+            "figma": "alpha/warm-25-a50"
+          }
+        }
+      },
+      "black-a55": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "alpha": 0.55,
+          "hex": "#000000"
+        },
+        "$extensions": {
+          "geoagent": {
+            "css": "--alpha-black-a55",
+            "figma": "alpha/black-a55"
+          }
+        }
       }
     }
   },
-  "semantic": {
+  "alias": {
     "brand": {
       "brand": {
         "$type": "color",
-        "$value": "{primitive.red.700}",
+        "$value": "{global.red.700}",
         "$description": "Màu thương hiệu: nút chính, nút gửi, chấm danh sách",
         "$extensions": {
           "geoagent": {
             "css": "--brand",
-            "figma": "brand/brand"
+            "figma": "brand/brand",
+            "dark": "{global.ember.600}"
           }
         }
       },
       "brand-hover": {
         "$type": "color",
-        "$value": "{primitive.red.800}",
+        "$value": "{global.red.800}",
         "$description": "Nút chính khi rê chuột",
         "$extensions": {
           "geoagent": {
             "css": "--brand-hover",
-            "figma": "brand/brand-hover"
+            "figma": "brand/brand-hover",
+            "dark": "{global.ember.550}"
           }
         }
       },
       "brand-pressed": {
         "$type": "color",
-        "$value": "{primitive.red.900}",
+        "$value": "{global.red.900}",
         "$description": "Nút chính khi nhấn",
         "$extensions": {
           "geoagent": {
             "css": "--brand-pressed",
-            "figma": "brand/brand-pressed"
+            "figma": "brand/brand-pressed",
+            "dark": "{global.ember.700}"
           }
         }
       },
       "brand-soft": {
         "$type": "color",
-        "$value": "{primitive.red.200}",
+        "$value": "{global.red.200}",
         "$description": "Bong bóng tin của người dùng",
         "$extensions": {
           "geoagent": {
             "css": "--brand-soft",
-            "figma": "brand/brand-soft"
+            "figma": "brand/brand-soft",
+            "dark": "{global.ember.900}"
           }
         }
       },
       "gold": {
         "$type": "color",
-        "$value": "{primitive.gold.400}",
+        "$value": "{global.gold.400}",
         "$description": "Vàng nhấn: tab đang chọn, chấm chưa đọc, icon trợ lý",
         "$extensions": {
           "geoagent": {
             "css": "--gold",
-            "figma": "brand/gold"
+            "figma": "brand/gold",
+            "dark": "{global.gold.400}"
           }
         }
       },
       "gold-ink": {
         "$type": "color",
-        "$value": "{primitive.gold.950}",
+        "$value": "{global.gold.950}",
         "$description": "Chữ trên nền vàng",
         "$extensions": {
           "geoagent": {
             "css": "--gold-ink",
-            "figma": "brand/gold-ink"
+            "figma": "brand/gold-ink",
+            "dark": "{global.gold.950}"
           }
         }
       }
@@ -509,111 +905,145 @@
     "sidebar": {
       "frame": {
         "$type": "color",
-        "$value": "{primitive.red.700}",
+        "$value": "{global.red.700}",
         "$description": "Nền sidebar và màn đăng nhập",
         "$extensions": {
           "geoagent": {
             "css": "--frame",
-            "figma": "sidebar/frame"
+            "figma": "sidebar/frame",
+            "dark": "{global.ember.880}"
           }
         }
       },
       "frame-hover": {
         "$type": "color",
-        "$value": "{primitive.red.600}",
+        "$value": "{global.red.600}",
         "$description": "Mục sidebar khi rê chuột",
         "$extensions": {
           "geoagent": {
             "css": "--frame-hover",
-            "figma": "sidebar/frame-hover"
+            "figma": "sidebar/frame-hover",
+            "dark": "{global.ember.850}"
           }
         }
       },
       "frame-active": {
         "$type": "color",
-        "$value": "{primitive.warm.25}",
+        "$value": "{global.warm.25}",
         "$description": "Mục sidebar đang chọn (viên trắng ấm)",
         "$extensions": {
           "geoagent": {
             "css": "--frame-active",
-            "figma": "sidebar/frame-active"
+            "figma": "sidebar/frame-active",
+            "dark": "{global.ember.100}"
           }
         }
       },
       "frame-sunken": {
         "$type": "color",
-        "$value": "{primitive.red.850}",
+        "$value": "{global.red.850}",
         "$description": "Ô tìm kiếm trên nền đỏ",
         "$extensions": {
           "geoagent": {
             "css": "--frame-sunken",
-            "figma": "sidebar/frame-sunken"
+            "figma": "sidebar/frame-sunken",
+            "dark": "{global.ember.950}"
           }
         }
       },
       "frame-edge": {
         "$type": "color",
-        "$value": "{primitive.red.400}",
+        "$value": "{global.red.400}",
         "$description": "Viền ô tìm kiếm, vạch kéo sidebar",
         "$extensions": {
           "geoagent": {
             "css": "--frame-edge",
-            "figma": "sidebar/frame-edge"
+            "figma": "sidebar/frame-edge",
+            "dark": "{global.ember.450}"
           }
         }
       },
       "on-frame": {
         "$type": "color",
-        "$value": "{primitive.warm.25}",
+        "$value": "{global.warm.25}",
         "$description": "Chữ chính trên nền đỏ",
         "$extensions": {
           "geoagent": {
             "css": "--on-frame",
-            "figma": "sidebar/on-frame"
+            "figma": "sidebar/on-frame",
+            "dark": "{global.night.50}"
           }
         }
       },
       "on-frame-muted": {
         "$type": "color",
-        "$value": "{primitive.red.250}",
+        "$value": "{global.red.250}",
         "$description": "Chữ phụ trên nền đỏ",
         "$extensions": {
           "geoagent": {
             "css": "--on-frame-muted",
-            "figma": "sidebar/on-frame-muted"
+            "figma": "sidebar/on-frame-muted",
+            "dark": "{global.ember.250}"
           }
         }
       },
       "on-frame-muted-strong": {
         "$type": "color",
-        "$value": "{primitive.red.100}",
+        "$value": "{global.red.100}",
         "$description": "Chữ phụ khi rê chuột",
         "$extensions": {
           "geoagent": {
             "css": "--on-frame-muted-strong",
-            "figma": "sidebar/on-frame-muted-strong"
+            "figma": "sidebar/on-frame-muted-strong",
+            "dark": "{global.ember.150}"
           }
         }
       },
       "on-frame-active-muted": {
         "$type": "color",
-        "$value": "{primitive.rose.700}",
+        "$value": "{global.rose.700}",
         "$description": "Chữ phụ trong mục đang chọn",
         "$extensions": {
           "geoagent": {
             "css": "--on-frame-active-muted",
-            "figma": "sidebar/on-frame-active-muted"
+            "figma": "sidebar/on-frame-active-muted",
+            "dark": "{global.ember.750}"
           }
         }
       },
       "divider": {
         "$type": "color",
-        "$value": "{primitive.alpha.warm-25-a15}",
+        "$value": "{global.alpha.warm-25-a15}",
         "$description": "Đường kẻ trên nền đỏ",
         "$extensions": {
           "geoagent": {
             "css": "--divider",
-            "figma": "sidebar/divider"
+            "figma": "sidebar/divider",
+            "dark": "{global.alpha.warm-25-a15}"
+          }
+        }
+      },
+      "on-frame-active": {
+        "$type": "color",
+        "$value": "{global.red.700}",
+        "$description": "Chữ trên viên sáng của mục đang chọn (tên, chữ cái avatar)",
+        "$extensions": {
+          "geoagent": {
+            "css": "--on-frame-active",
+            "figma": "sidebar/on-frame-active",
+            "dark": "{global.red.700}"
+          }
+        }
+      },
+      "scrollbar": {
+        "$type": "color",
+        "$value": "{global.alpha.warm-25-a50}",
+        "$description": "Thanh cuộn trên sidebar đỏ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--scrollbar-frame",
+            "figma": "sidebar/scrollbar",
+            "dark": "{global.alpha.warm-25-a50}"
           }
         }
       }
@@ -621,78 +1051,97 @@
     "surface": {
       "surface": {
         "$type": "color",
-        "$value": "{primitive.base.white}",
+        "$value": "{global.base.white}",
         "$description": "Nền trắng: header, thẻ, ô soạn tin, bóng bot",
         "$extensions": {
           "geoagent": {
             "css": "--surface",
-            "figma": "surface/surface"
+            "figma": "surface/surface",
+            "dark": "{global.night.900}"
           }
         }
       },
       "surface-2": {
         "$type": "color",
-        "$value": "{primitive.warm.150}",
+        "$value": "{global.warm.150}",
         "$description": "Nền nút trung tính khi rê chuột",
         "$extensions": {
           "geoagent": {
             "css": "--surface-2",
-            "figma": "surface/surface-2"
+            "figma": "surface/surface-2",
+            "dark": "{global.night.800}"
           }
         }
       },
       "canvas": {
         "$type": "color",
-        "$value": "{primitive.warm.50}",
+        "$value": "{global.warm.50}",
         "$description": "Nền vùng hội thoại",
         "$extensions": {
           "geoagent": {
             "css": "--canvas",
-            "figma": "surface/canvas"
+            "figma": "surface/canvas",
+            "dark": "{global.night.950}"
           }
         }
       },
       "panel": {
         "$type": "color",
-        "$value": "{primitive.warm.100}",
+        "$value": "{global.warm.100}",
         "$description": "Nút tròn trong ô soạn tin khi rê chuột",
         "$extensions": {
           "geoagent": {
             "css": "--panel",
-            "figma": "surface/panel"
+            "figma": "surface/panel",
+            "dark": "{global.night.800}"
           }
         }
       },
       "panel-hover": {
         "$type": "color",
-        "$value": "{primitive.warm.250}",
+        "$value": "{global.warm.250}",
         "$description": "Panel khi rê chuột",
         "$extensions": {
           "geoagent": {
             "css": "--panel-hover",
-            "figma": "surface/panel-hover"
+            "figma": "surface/panel-hover",
+            "dark": "{global.night.750}"
           }
         }
       },
       "panel-active": {
         "$type": "color",
-        "$value": "{primitive.warm.350}",
+        "$value": "{global.warm.350}",
         "$description": "Panel khi nhấn",
         "$extensions": {
           "geoagent": {
             "css": "--panel-active",
-            "figma": "surface/panel-active"
+            "figma": "surface/panel-active",
+            "dark": "{global.night.700}"
           }
         }
       },
       "scrim": {
         "$type": "color",
-        "$value": "{primitive.alpha.warm-950-a40}",
+        "$value": "{global.alpha.warm-950-a40}",
         "$description": "Lớp phủ sau ngăn kéo trên điện thoại",
         "$extensions": {
           "geoagent": {
             "css": "--scrim",
-            "figma": "surface/scrim"
+            "figma": "surface/scrim",
+            "dark": "{global.alpha.black-a55}"
+          }
+        }
+      },
+      "scrollbar": {
+        "$type": "color",
+        "$value": "{global.alpha.warm-950-a35}",
+        "$description": "Thanh cuộn trên nền sáng/tối",
+        "$extensions": {
+          "geoagent": {
+            "css": "--scrollbar",
+            "figma": "surface/scrollbar",
+            "dark": "{global.alpha.warm-25-a35}"
           }
         }
       }
@@ -700,23 +1149,49 @@
     "text": {
       "ink": {
         "$type": "color",
-        "$value": "{primitive.warm.950}",
+        "$value": "{global.warm.950}",
         "$description": "Chữ chính",
         "$extensions": {
           "geoagent": {
             "css": "--ink",
-            "figma": "text/ink"
+            "figma": "text/ink",
+            "dark": "{global.night.50}"
           }
         }
       },
       "ink-2": {
         "$type": "color",
-        "$value": "{primitive.warm.700}",
+        "$value": "{global.warm.700}",
         "$description": "Chữ phụ, icon trung tính, giờ gửi",
         "$extensions": {
           "geoagent": {
             "css": "--ink-2",
-            "figma": "text/ink-2"
+            "figma": "text/ink-2",
+            "dark": "{global.night.300}"
+          }
+        }
+      },
+      "link": {
+        "$type": "color",
+        "$value": "{global.red.700}",
+        "$description": "Chữ link trong tin nhắn (luôn kèm gạch chân)",
+        "$extensions": {
+          "geoagent": {
+            "css": "--link",
+            "figma": "text/link",
+            "dark": "{global.ember.350}"
+          }
+        }
+      },
+      "on-brand": {
+        "$type": "color",
+        "$value": "{global.base.white}",
+        "$description": "Chữ và icon trên nền thương hiệu (nút chính, nút gửi)",
+        "$extensions": {
+          "geoagent": {
+            "css": "--on-brand",
+            "figma": "text/on-brand",
+            "dark": "{global.base.white}"
           }
         }
       }
@@ -724,45 +1199,49 @@
     "border": {
       "line": {
         "$type": "color",
-        "$value": "{primitive.warm.300}",
+        "$value": "{global.warm.300}",
         "$description": "Viền nhạt: nút cuộn, đầu bảng",
         "$extensions": {
           "geoagent": {
             "css": "--line",
-            "figma": "border/line"
+            "figma": "border/line",
+            "dark": "{global.night.700}"
           }
         }
       },
       "rule": {
         "$type": "color",
-        "$value": "{primitive.warm.200}",
+        "$value": "{global.warm.200}",
         "$description": "Đường kẻ: header, hàng bảng, phân cách",
         "$extensions": {
           "geoagent": {
             "css": "--rule",
-            "figma": "border/rule"
+            "figma": "border/rule",
+            "dark": "{global.night.800}"
           }
         }
       },
       "line-strong": {
         "$type": "color",
-        "$value": "{primitive.warm.550}",
+        "$value": "{global.warm.550}",
         "$description": "Viền điều khiển (ô soạn tin), 3,42:1 trên trắng",
         "$extensions": {
           "geoagent": {
             "css": "--line-strong",
-            "figma": "border/line-strong"
+            "figma": "border/line-strong",
+            "dark": "{global.night.500}"
           }
         }
       },
       "bubble-edge": {
         "$type": "color",
-        "$value": "{primitive.warm.400}",
+        "$value": "{global.warm.400}",
         "$description": "Viền bóng tin của bot",
         "$extensions": {
           "geoagent": {
             "css": "--bubble-edge",
-            "figma": "border/bubble-edge"
+            "figma": "border/bubble-edge",
+            "dark": "{global.night.650}"
           }
         }
       }
@@ -770,23 +1249,25 @@
     "state": {
       "focus": {
         "$type": "color",
-        "$value": "{primitive.blue.600}",
+        "$value": "{global.blue.600}",
         "$description": "Viền focus bàn phím",
         "$extensions": {
           "geoagent": {
             "css": "--focus",
-            "figma": "state/focus"
+            "figma": "state/focus",
+            "dark": "{global.blue.300}"
           }
         }
       },
       "offline": {
         "$type": "color",
-        "$value": "{primitive.warm.500}",
+        "$value": "{global.warm.500}",
         "$description": "Chấm trạng thái trên avatar",
         "$extensions": {
           "geoagent": {
             "css": "--status-offline",
-            "figma": "state/offline"
+            "figma": "state/offline",
+            "dark": "{global.night.500}"
           }
         }
       }
@@ -794,111 +1275,1135 @@
     "avatar": {
       "red-bg": {
         "$type": "color",
-        "$value": "{primitive.red.50}",
+        "$value": "{global.red.50}",
         "$description": "Avatar sắc 1 (nền)",
         "$extensions": {
           "geoagent": {
             "css": "--avatar-red-bg",
-            "figma": "avatar/red-bg"
+            "figma": "avatar/red-bg",
+            "dark": "{global.ember.920}"
           }
         }
       },
       "red-fg": {
         "$type": "color",
-        "$value": "{primitive.red.750}",
+        "$value": "{global.red.750}",
         "$description": "Avatar sắc 1 (chữ)",
         "$extensions": {
           "geoagent": {
             "css": "--avatar-red-fg",
-            "figma": "avatar/red-fg"
+            "figma": "avatar/red-fg",
+            "dark": "{global.ember.200}"
           }
         }
       },
       "amber-bg": {
         "$type": "color",
-        "$value": "{primitive.gold.100}",
+        "$value": "{global.gold.100}",
         "$description": "Avatar sắc 2 (nền)",
         "$extensions": {
           "geoagent": {
             "css": "--avatar-amber-bg",
-            "figma": "avatar/amber-bg"
+            "figma": "avatar/amber-bg",
+            "dark": "{global.gold.900}"
           }
         }
       },
       "amber-fg": {
         "$type": "color",
-        "$value": "{primitive.gold.800}",
+        "$value": "{global.gold.800}",
         "$description": "Avatar sắc 2 (chữ)",
         "$extensions": {
           "geoagent": {
             "css": "--avatar-amber-fg",
-            "figma": "avatar/amber-fg"
+            "figma": "avatar/amber-fg",
+            "dark": "{global.gold.200}"
           }
         }
       },
       "teal-bg": {
         "$type": "color",
-        "$value": "{primitive.teal.50}",
+        "$value": "{global.teal.50}",
         "$description": "Avatar sắc 3 (nền)",
         "$extensions": {
           "geoagent": {
             "css": "--avatar-teal-bg",
-            "figma": "avatar/teal-bg"
+            "figma": "avatar/teal-bg",
+            "dark": "{global.teal.900}"
           }
         }
       },
       "teal-fg": {
         "$type": "color",
-        "$value": "{primitive.teal.800}",
+        "$value": "{global.teal.800}",
         "$description": "Avatar sắc 3 (chữ)",
         "$extensions": {
           "geoagent": {
             "css": "--avatar-teal-fg",
-            "figma": "avatar/teal-fg"
+            "figma": "avatar/teal-fg",
+            "dark": "{global.teal.200}"
           }
         }
       },
       "violet-bg": {
         "$type": "color",
-        "$value": "{primitive.violet.50}",
+        "$value": "{global.violet.50}",
         "$description": "Avatar sắc 4 (nền)",
         "$extensions": {
           "geoagent": {
             "css": "--avatar-violet-bg",
-            "figma": "avatar/violet-bg"
+            "figma": "avatar/violet-bg",
+            "dark": "{global.violet.900}"
           }
         }
       },
       "violet-fg": {
         "$type": "color",
-        "$value": "{primitive.violet.800}",
+        "$value": "{global.violet.800}",
         "$description": "Avatar sắc 4 (chữ)",
         "$extensions": {
           "geoagent": {
             "css": "--avatar-violet-fg",
-            "figma": "avatar/violet-fg"
+            "figma": "avatar/violet-fg",
+            "dark": "{global.violet.200}"
           }
         }
       },
       "selected-bg": {
         "$type": "color",
-        "$value": "{primitive.red.150}",
+        "$value": "{global.red.150}",
         "$description": "Avatar trong mục sidebar đang chọn",
         "$extensions": {
           "geoagent": {
             "css": "--avatar-selected-bg",
-            "figma": "avatar/selected-bg"
+            "figma": "avatar/selected-bg",
+            "dark": "{global.red.150}"
           }
         }
       },
       "frame-bg": {
         "$type": "color",
-        "$value": "{primitive.alpha.warm-25-a16}",
+        "$value": "{global.alpha.warm-25-a16}",
         "$description": "Avatar trên sidebar đỏ: trắng ấm 16%",
         "$extensions": {
           "geoagent": {
             "css": "--avatar-frame-bg",
-            "figma": "avatar/frame-bg"
+            "figma": "avatar/frame-bg",
+            "dark": "{global.alpha.warm-25-a16}"
+          }
+        }
+      }
+    }
+  },
+  "component": {
+    "focus": {
+      "ring": {
+        "$type": "color",
+        "$value": "{alias.state.focus}",
+        "$description": "Viền focus bàn phím trên nền sáng",
+        "$extensions": {
+          "geoagent": {
+            "css": "--focus-ring",
+            "figma": "focus/ring"
+          }
+        }
+      }
+    },
+    "app": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface}",
+        "$description": "Nền ứng dụng",
+        "$extensions": {
+          "geoagent": {
+            "css": "--app-bg",
+            "figma": "app/bg"
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Chữ mặc định của ứng dụng",
+        "$extensions": {
+          "geoagent": {
+            "css": "--app-text",
+            "figma": "app/text"
+          }
+        }
+      }
+    },
+    "sidebar": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.sidebar.frame}",
+        "$description": "Nền sidebar",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-bg",
+            "figma": "sidebar/bg"
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame}",
+        "$description": "Chữ chính trên sidebar",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-text",
+            "figma": "sidebar/text"
+          }
+        }
+      },
+      "text-muted": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame-muted}",
+        "$description": "Chữ phụ trên sidebar",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-text-muted",
+            "figma": "sidebar/text-muted"
+          }
+        }
+      },
+      "text-muted-hover": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame-muted-strong}",
+        "$description": "Chữ phụ khi rê chuột / đang mở",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-text-muted-hover",
+            "figma": "sidebar/text-muted-hover"
+          }
+        }
+      },
+      "icon": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame-muted}",
+        "$description": "Icon trên sidebar",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-icon",
+            "figma": "sidebar/icon"
+          }
+        }
+      },
+      "item-bg-hover": {
+        "$type": "color",
+        "$value": "{alias.sidebar.frame-hover}",
+        "$description": "Nền mục khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-item-bg-hover",
+            "figma": "sidebar/item-bg-hover"
+          }
+        }
+      },
+      "item-bg-selected": {
+        "$type": "color",
+        "$value": "{alias.sidebar.frame-active}",
+        "$description": "Nền mục đang chọn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-item-bg-selected",
+            "figma": "sidebar/item-bg-selected"
+          }
+        }
+      },
+      "item-text-selected": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame-active}",
+        "$description": "Chữ mục đang chọn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-item-text-selected",
+            "figma": "sidebar/item-text-selected"
+          }
+        }
+      },
+      "divider": {
+        "$type": "color",
+        "$value": "{alias.sidebar.divider}",
+        "$description": "Đường kẻ trên sidebar",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-divider",
+            "figma": "sidebar/divider"
+          }
+        }
+      },
+      "focus-ring": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame}",
+        "$description": "Viền focus trên sidebar",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-focus-ring",
+            "figma": "sidebar/focus-ring"
+          }
+        }
+      },
+      "unread-dot": {
+        "$type": "color",
+        "$value": "{alias.brand.gold}",
+        "$description": "Chấm chưa đọc",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-unread-dot",
+            "figma": "sidebar/unread-dot"
+          }
+        }
+      }
+    },
+    "search": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.sidebar.frame-sunken}",
+        "$description": "Nền ô tìm kiếm",
+        "$extensions": {
+          "geoagent": {
+            "css": "--search-bg",
+            "figma": "search/bg"
+          }
+        }
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{alias.sidebar.frame-edge}",
+        "$description": "Viền ô tìm kiếm",
+        "$extensions": {
+          "geoagent": {
+            "css": "--search-border",
+            "figma": "search/border"
+          }
+        }
+      },
+      "border-focus": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame}",
+        "$description": "Viền khi đang gõ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--search-border-focus",
+            "figma": "search/border-focus"
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame}",
+        "$description": "Chữ đang gõ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--search-text",
+            "figma": "search/text"
+          }
+        }
+      },
+      "placeholder": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame-muted}",
+        "$description": "Chữ gợi ý",
+        "$extensions": {
+          "geoagent": {
+            "css": "--search-placeholder",
+            "figma": "search/placeholder"
+          }
+        }
+      }
+    },
+    "tab": {
+      "text": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame-muted}",
+        "$description": "Tab lọc",
+        "$extensions": {
+          "geoagent": {
+            "css": "--tab-text",
+            "figma": "tab/text"
+          }
+        }
+      },
+      "text-selected": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame}",
+        "$description": "Tab đang chọn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--tab-text-selected",
+            "figma": "tab/text-selected"
+          }
+        }
+      },
+      "indicator": {
+        "$type": "color",
+        "$value": "{alias.brand.gold}",
+        "$description": "Gạch chân tab đang chọn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--tab-indicator",
+            "figma": "tab/indicator"
+          }
+        }
+      }
+    },
+    "chat": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.canvas}",
+        "$description": "Nền vùng hội thoại và header kính mờ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--chat-bg",
+            "figma": "chat/bg"
+          }
+        }
+      },
+      "header-border": {
+        "$type": "color",
+        "$value": "{alias.border.rule}",
+        "$description": "Đường kẻ dưới header khi đã cuộn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--chat-header-border",
+            "figma": "chat/header-border"
+          }
+        }
+      },
+      "typing-dot": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Chấm “đang trả lời”",
+        "$extensions": {
+          "geoagent": {
+            "css": "--chat-typing-dot",
+            "figma": "chat/typing-dot"
+          }
+        }
+      }
+    },
+    "message-user": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.brand.brand-soft}",
+        "$description": "Bong bóng tin người dùng",
+        "$extensions": {
+          "geoagent": {
+            "css": "--message-user-bg",
+            "figma": "message-user/bg"
+          }
+        }
+      },
+      "meta": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Giờ gửi",
+        "$extensions": {
+          "geoagent": {
+            "css": "--message-user-meta",
+            "figma": "message-user/meta"
+          }
+        }
+      }
+    },
+    "message-bot": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface}",
+        "$description": "Thẻ tin của bot",
+        "$extensions": {
+          "geoagent": {
+            "css": "--message-bot-bg",
+            "figma": "message-bot/bg"
+          }
+        }
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{alias.border.bubble-edge}",
+        "$description": "Viền thẻ tin bot",
+        "$extensions": {
+          "geoagent": {
+            "css": "--message-bot-border",
+            "figma": "message-bot/border"
+          }
+        }
+      },
+      "sender": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Tên người gửi",
+        "$extensions": {
+          "geoagent": {
+            "css": "--message-bot-sender",
+            "figma": "message-bot/sender"
+          }
+        }
+      },
+      "meta": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Giờ gửi",
+        "$extensions": {
+          "geoagent": {
+            "css": "--message-bot-meta",
+            "figma": "message-bot/meta"
+          }
+        }
+      }
+    },
+    "content": {
+      "text": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Chữ câu trả lời",
+        "$extensions": {
+          "geoagent": {
+            "css": "--content-text",
+            "figma": "content/text"
+          }
+        }
+      },
+      "strong": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Chữ đậm",
+        "$extensions": {
+          "geoagent": {
+            "css": "--content-strong",
+            "figma": "content/strong"
+          }
+        }
+      },
+      "link": {
+        "$type": "color",
+        "$value": "{alias.text.link}",
+        "$description": "Link (luôn gạch chân)",
+        "$extensions": {
+          "geoagent": {
+            "css": "--content-link",
+            "figma": "content/link"
+          }
+        }
+      },
+      "bullet": {
+        "$type": "color",
+        "$value": "{alias.brand.brand}",
+        "$description": "Chấm đầu dòng",
+        "$extensions": {
+          "geoagent": {
+            "css": "--content-bullet",
+            "figma": "content/bullet"
+          }
+        }
+      },
+      "divider": {
+        "$type": "color",
+        "$value": "{alias.border.rule}",
+        "$description": "Đường phân cách giữa các mục",
+        "$extensions": {
+          "geoagent": {
+            "css": "--content-divider",
+            "figma": "content/divider"
+          }
+        }
+      }
+    },
+    "table": {
+      "head-text": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Đầu cột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--table-head-text",
+            "figma": "table/head-text"
+          }
+        }
+      },
+      "head-border": {
+        "$type": "color",
+        "$value": "{alias.border.line}",
+        "$description": "Kẻ dưới đầu cột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--table-head-border",
+            "figma": "table/head-border"
+          }
+        }
+      },
+      "row-border": {
+        "$type": "color",
+        "$value": "{alias.border.rule}",
+        "$description": "Kẻ giữa các hàng",
+        "$extensions": {
+          "geoagent": {
+            "css": "--table-row-border",
+            "figma": "table/row-border"
+          }
+        }
+      },
+      "cell-text": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Ô dữ liệu",
+        "$extensions": {
+          "geoagent": {
+            "css": "--table-cell-text",
+            "figma": "table/cell-text"
+          }
+        }
+      }
+    },
+    "composer": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface}",
+        "$description": "Nền ô soạn tin",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-bg",
+            "figma": "composer/bg"
+          }
+        }
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{alias.border.line-strong}",
+        "$description": "Viền ô soạn tin",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-border",
+            "figma": "composer/border"
+          }
+        }
+      },
+      "placeholder": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Chữ gợi ý",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-placeholder",
+            "figma": "composer/placeholder"
+          }
+        }
+      },
+      "icon": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Icon đính kèm, micro",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-icon",
+            "figma": "composer/icon"
+          }
+        }
+      },
+      "icon-hover": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Icon khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-icon-hover",
+            "figma": "composer/icon-hover"
+          }
+        }
+      },
+      "icon-bg-hover": {
+        "$type": "color",
+        "$value": "{alias.surface.panel}",
+        "$description": "Nền nút tròn khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-icon-bg-hover",
+            "figma": "composer/icon-bg-hover"
+          }
+        }
+      },
+      "fade": {
+        "$type": "color",
+        "$value": "{alias.surface.canvas}",
+        "$description": "Dải mờ phía sau ô soạn tin",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-fade",
+            "figma": "composer/fade"
+          }
+        }
+      },
+      "send-bg": {
+        "$type": "color",
+        "$value": "{alias.brand.brand}",
+        "$description": "Nút gửi",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-send-bg",
+            "figma": "composer/send-bg"
+          }
+        }
+      },
+      "send-bg-hover": {
+        "$type": "color",
+        "$value": "{alias.brand.brand-hover}",
+        "$description": "Nút gửi khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-send-bg-hover",
+            "figma": "composer/send-bg-hover"
+          }
+        }
+      },
+      "send-icon": {
+        "$type": "color",
+        "$value": "{alias.text.on-brand}",
+        "$description": "Icon nút gửi",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-send-icon",
+            "figma": "composer/send-icon"
+          }
+        }
+      }
+    },
+    "button-primary": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.brand.brand}",
+        "$description": "Nút chính",
+        "$extensions": {
+          "geoagent": {
+            "css": "--button-primary-bg",
+            "figma": "button-primary/bg"
+          }
+        }
+      },
+      "bg-hover": {
+        "$type": "color",
+        "$value": "{alias.brand.brand-hover}",
+        "$description": "Khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--button-primary-bg-hover",
+            "figma": "button-primary/bg-hover"
+          }
+        }
+      },
+      "bg-pressed": {
+        "$type": "color",
+        "$value": "{alias.brand.brand-pressed}",
+        "$description": "Khi nhấn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--button-primary-bg-pressed",
+            "figma": "button-primary/bg-pressed"
+          }
+        }
+      },
+      "label": {
+        "$type": "color",
+        "$value": "{alias.text.on-brand}",
+        "$description": "Chữ và icon",
+        "$extensions": {
+          "geoagent": {
+            "css": "--button-primary-label",
+            "figma": "button-primary/label"
+          }
+        }
+      }
+    },
+    "button-secondary": {
+      "border": {
+        "$type": "color",
+        "$value": "{alias.border.line-strong}",
+        "$description": "Viền nút phụ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--button-secondary-border",
+            "figma": "button-secondary/border"
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Chữ nút phụ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--button-secondary-text",
+            "figma": "button-secondary/text"
+          }
+        }
+      },
+      "bg-hover": {
+        "$type": "color",
+        "$value": "{alias.surface.surface-2}",
+        "$description": "Nền khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--button-secondary-bg-hover",
+            "figma": "button-secondary/bg-hover"
+          }
+        }
+      }
+    },
+    "icon-button": {
+      "icon": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Icon",
+        "$extensions": {
+          "geoagent": {
+            "css": "--icon-button-icon",
+            "figma": "icon-button/icon"
+          }
+        }
+      },
+      "icon-hover": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Icon khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--icon-button-icon-hover",
+            "figma": "icon-button/icon-hover"
+          }
+        }
+      },
+      "bg-hover": {
+        "$type": "color",
+        "$value": "{alias.surface.surface-2}",
+        "$description": "Nền khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--icon-button-bg-hover",
+            "figma": "icon-button/bg-hover"
+          }
+        }
+      }
+    },
+    "scroll-button": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface}",
+        "$description": "Nền nút cuộn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--scroll-button-bg",
+            "figma": "scroll-button/bg"
+          }
+        }
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{alias.border.line}",
+        "$description": "Viền",
+        "$extensions": {
+          "geoagent": {
+            "css": "--scroll-button-border",
+            "figma": "scroll-button/border"
+          }
+        }
+      },
+      "icon": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Icon",
+        "$extensions": {
+          "geoagent": {
+            "css": "--scroll-button-icon",
+            "figma": "scroll-button/icon"
+          }
+        }
+      },
+      "icon-hover": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Icon khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--scroll-button-icon-hover",
+            "figma": "scroll-button/icon-hover"
+          }
+        }
+      }
+    },
+    "menu": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface}",
+        "$description": "Nền bảng Cài đặt",
+        "$extensions": {
+          "geoagent": {
+            "css": "--menu-bg",
+            "figma": "menu/bg"
+          }
+        }
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{alias.border.line}",
+        "$description": "Viền",
+        "$extensions": {
+          "geoagent": {
+            "css": "--menu-border",
+            "figma": "menu/border"
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Chữ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--menu-text",
+            "figma": "menu/text"
+          }
+        }
+      },
+      "text-muted": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Chữ phụ, tiêu đề nhóm",
+        "$extensions": {
+          "geoagent": {
+            "css": "--menu-text-muted",
+            "figma": "menu/text-muted"
+          }
+        }
+      },
+      "item-bg-hover": {
+        "$type": "color",
+        "$value": "{alias.surface.surface-2}",
+        "$description": "Mục khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--menu-item-bg-hover",
+            "figma": "menu/item-bg-hover"
+          }
+        }
+      },
+      "accent": {
+        "$type": "color",
+        "$value": "{alias.brand.brand}",
+        "$description": "Ô chọn (radio)",
+        "$extensions": {
+          "geoagent": {
+            "css": "--menu-accent",
+            "figma": "menu/accent"
+          }
+        }
+      }
+    },
+    "login-card": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface}",
+        "$description": "Thẻ đăng nhập",
+        "$extensions": {
+          "geoagent": {
+            "css": "--login-card-bg",
+            "figma": "login-card/bg"
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Chữ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--login-card-text",
+            "figma": "login-card/text"
+          }
+        }
+      },
+      "text-muted": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Chữ phụ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--login-card-text-muted",
+            "figma": "login-card/text-muted"
+          }
+        }
+      },
+      "divider": {
+        "$type": "color",
+        "$value": "{alias.border.rule}",
+        "$description": "Đường kẻ chân thẻ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--login-card-divider",
+            "figma": "login-card/divider"
+          }
+        }
+      }
+    },
+    "select": {
+      "bg-hover": {
+        "$type": "color",
+        "$value": "{alias.surface.surface-2}",
+        "$description": "Ô chọn ngôn ngữ khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--select-bg-hover",
+            "figma": "select/bg-hover"
+          }
+        }
+      }
+    },
+    "avatar": {
+      "status": {
+        "$type": "color",
+        "$value": "{alias.state.offline}",
+        "$description": "Chấm trạng thái",
+        "$extensions": {
+          "geoagent": {
+            "css": "--avatar-status",
+            "figma": "avatar/status"
+          }
+        }
+      },
+      "status-ring": {
+        "$type": "color",
+        "$value": "{alias.surface.surface}",
+        "$description": "Viền quanh chấm trạng thái",
+        "$extensions": {
+          "geoagent": {
+            "css": "--avatar-status-ring",
+            "figma": "avatar/status-ring"
+          }
+        }
+      }
+    },
+    "bot-avatar": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.sidebar.frame}",
+        "$description": "Nền avatar trợ lý",
+        "$extensions": {
+          "geoagent": {
+            "css": "--bot-avatar-bg",
+            "figma": "bot-avatar/bg"
+          }
+        }
+      },
+      "icon": {
+        "$type": "color",
+        "$value": "{alias.brand.gold}",
+        "$description": "Icon trợ lý",
+        "$extensions": {
+          "geoagent": {
+            "css": "--bot-avatar-icon",
+            "figma": "bot-avatar/icon"
+          }
+        }
+      }
+    },
+    "web-pane": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface}",
+        "$description": "Khung web (máy tính)",
+        "$extensions": {
+          "geoagent": {
+            "css": "--web-pane-bg",
+            "figma": "web-pane/bg"
+          }
+        }
+      },
+      "frame-bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface-2}",
+        "$description": "Nền vùng trang nhúng",
+        "$extensions": {
+          "geoagent": {
+            "css": "--web-pane-frame-bg",
+            "figma": "web-pane/frame-bg"
+          }
+        }
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{alias.border.rule}",
+        "$description": "Đường kẻ ngăn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--web-pane-border",
+            "figma": "web-pane/border"
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Chữ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--web-pane-text",
+            "figma": "web-pane/text"
+          }
+        }
+      },
+      "text-muted": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Chữ phụ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--web-pane-text-muted",
+            "figma": "web-pane/text-muted"
+          }
+        }
+      },
+      "card-bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface}",
+        "$description": "Thẻ tóm tắt",
+        "$extensions": {
+          "geoagent": {
+            "css": "--web-pane-card-bg",
+            "figma": "web-pane/card-bg"
+          }
+        }
+      },
+      "card-border": {
+        "$type": "color",
+        "$value": "{alias.border.line}",
+        "$description": "Viền thẻ tóm tắt",
+        "$extensions": {
+          "geoagent": {
+            "css": "--web-pane-card-border",
+            "figma": "web-pane/card-border"
+          }
+        }
+      },
+      "icon-tile": {
+        "$type": "color",
+        "$value": "{alias.surface.panel}",
+        "$description": "Ô icon trang",
+        "$extensions": {
+          "geoagent": {
+            "css": "--web-pane-icon-tile",
+            "figma": "web-pane/icon-tile"
+          }
+        }
+      }
+    },
+    "overlay": {
+      "scrim": {
+        "$type": "color",
+        "$value": "{alias.surface.scrim}",
+        "$description": "Lớp phủ sau ngăn kéo",
+        "$extensions": {
+          "geoagent": {
+            "css": "--overlay-scrim",
+            "figma": "overlay/scrim"
           }
         }
       }

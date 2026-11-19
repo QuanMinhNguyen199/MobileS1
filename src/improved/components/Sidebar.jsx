@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { LOGIN_ASSETS } from "../assets.js";
 import { FILTERS } from "../data.js";
-import { Avatar } from "./ui.jsx";
 import { CloseIcon, EditIcon } from "../icons.jsx";
+import Settings from "./Settings.jsx";
 
 const TABS = [{ key: null, label: "Tất cả" }, ...FILTERS];
 const ME = "Nguyễn Minh Quân";
-const lastTime = (c) => c.messages.at(-1)?.time ?? "";
 
 // Sidebar đỏ thương hiệu. Kiểu chữ: Plus Jakarta Sans cho tên sản phẩm, Inter cho phần còn lại.
 export default function Sidebar({ conversations, activeId, showActive, onOpen, query, onQuery, logoRef, logoHidden, onClose, className = "" }) {
@@ -16,28 +15,28 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
   const items = conversations.filter((c) => {
     if (filter === "unread" && !c.unread) return false;
     if (filter && filter !== "unread" && !c.tags.includes(filter)) return false;
-    if (q && !`${c.name} ${c.preview}`.toLocaleLowerCase("vi").includes(q)) return false;
+    if (q && !`${c.topic ?? ""} ${c.name} ${c.preview}`.toLocaleLowerCase("vi").includes(q)) return false;
     return true;
   });
 
   return (
     <aside
       aria-label="Danh sách hội thoại"
-      className={`flex min-h-0 flex-col bg-frame pt-[var(--safe-top)] pb-[var(--safe-bottom)] text-on-frame ${className}`}
+      className={`flex min-h-0 flex-col bg-sidebar-bg pt-[var(--safe-top)] pb-[var(--safe-bottom)] text-sidebar-text ${className}`}
     >
       {/* Thương hiệu */}
       <div className="flex h-16 shrink-0 items-center gap-3 px-4">
         <img ref={logoRef} src={LOGIN_ASSETS.emblem} alt="" width="400" height="407" className={`h-auto w-8 shrink-0 ${logoHidden ? "invisible" : ""}`} />
         <div className="min-w-0 flex-1">
           <p className="font-heading text-wordmark">GeoAgent</p>
-          <p className="text-xs leading-4 text-on-frame-muted">Trợ lý AI thông minh</p>
+          <p className="text-xs leading-4 text-sidebar-text-muted">Trợ lý AI thông minh</p>
         </div>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
             aria-label="Đóng danh sách hội thoại"
-            className="-mr-1 grid size-10 place-items-center rounded-full text-on-frame-muted hover:bg-frame-hover hover:text-on-frame focus-visible:outline-2 focus-visible:outline-on-frame [&_svg]:size-5"
+            className="-mr-1 grid size-10 place-items-center rounded-full text-sidebar-icon hover:bg-sidebar-item-bg-hover hover:text-sidebar-text focus-visible:outline-2 focus-visible:outline-sidebar-focus-ring [&_svg]:size-5"
           >
             <CloseIcon />
           </button>
@@ -48,7 +47,7 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
       <div className="px-2">
         <button
           type="button"
-          className="flex h-10 items-center gap-3 rounded-full pr-4 pl-3 text-sm font-medium text-on-frame transition-colors hover:bg-frame-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-frame [&_svg]:size-[18px]"
+          className="flex h-10 items-center gap-3 rounded-full pr-4 pl-3 text-sm font-medium text-sidebar-text transition-colors hover:bg-sidebar-item-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-focus-ring [&_svg]:size-[18px]"
         >
           <EditIcon />
           Cuộc trò chuyện mới
@@ -56,7 +55,7 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
       </div>
 
       {/* Ô tìm kiếm: nền đỏ tối, viền và placeholder đủ rõ; nút xóa chỉ hiện khi đã gõ */}
-      <label className="relative mx-3 mt-2 flex h-10 items-center rounded-full border border-frame-edge bg-frame-sunken px-4 focus-within:border-on-frame focus-within:ring-1 focus-within:ring-on-frame">
+      <label className="relative mx-3 mt-2 flex h-10 items-center rounded-full border border-search-border bg-search-bg px-4 focus-within:border-search-border-focus focus-within:ring-1 focus-within:ring-search-border-focus">
         <span className="sr-only">Tìm hội thoại</span>
         <input
           type="search"
@@ -65,14 +64,14 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
           onKeyDown={(e) => e.key === "Escape" && onQuery("")}
           placeholder="Tìm hội thoại"
           autoComplete="off"
-          className="min-w-0 flex-1 bg-transparent text-sm text-on-frame outline-none placeholder:text-on-frame-muted [&::-webkit-search-cancel-button]:hidden"
+          className="min-w-0 flex-1 bg-transparent text-sm text-search-text outline-none placeholder:text-search-placeholder [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (
           <button
             type="button"
             aria-label="Xóa tìm kiếm"
             onClick={() => onQuery("")}
-            className="-mr-2 grid size-7 place-items-center rounded-full text-on-frame-muted hover:bg-frame-hover hover:text-on-frame [&_svg]:size-4"
+            className="-mr-2 grid size-7 place-items-center rounded-full text-sidebar-icon hover:bg-sidebar-item-bg-hover hover:text-sidebar-text [&_svg]:size-4"
           >
             <CloseIcon />
           </button>
@@ -80,7 +79,7 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
       </label>
 
       {/* Tab lọc: chia đều trong lề 16px hai bên */}
-      <div role="group" aria-label="Lọc hội thoại" className="mx-4 mt-3 flex justify-between border-b border-divider">
+      <div role="group" aria-label="Lọc hội thoại" className="mx-4 mt-3 flex justify-between border-b border-sidebar-divider">
         {TABS.map((t) => {
           const on = filter === t.key;
           return (
@@ -89,8 +88,8 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
               type="button"
               aria-pressed={on}
               onClick={() => setFilter(t.key)}
-              className={`-mb-px border-b-2 pt-1 pb-2 text-small whitespace-nowrap focus-visible:outline-2 focus-visible:outline-on-frame ${
-                on ? "border-gold text-on-frame font-semibold" : "border-transparent text-on-frame-muted hover:text-on-frame"
+              className={`-mb-px border-b-2 pt-1 pb-2 text-small whitespace-nowrap focus-visible:outline-2 focus-visible:outline-sidebar-focus-ring ${
+                on ? "border-tab-indicator text-tab-text-selected font-semibold" : "border-transparent text-tab-text hover:text-tab-text-selected"
               }`}
             >
               {t.label}
@@ -100,13 +99,14 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
       </div>
 
       {items.length === 0 ? (
-        <p className="m-0 flex-1 px-4 py-8 text-center text-sm text-on-frame-muted">Không có hội thoại phù hợp.</p>
+        <p className="m-0 flex-1 px-4 py-8 text-center text-sm text-sidebar-text-muted">Không có hội thoại phù hợp.</p>
       ) : (
         <ul className="m-0 min-h-0 flex-1 list-none space-y-0.5 overflow-y-auto px-2 py-2">
           {items.map((c) => {
             const selected = showActive && c.id === activeId;
             const unread = c.unread && !selected;
-            const muted = selected ? "text-on-frame-active-muted" : "text-on-frame-muted group-hover:text-on-frame-muted-strong";
+            const topic = c.topic ?? c.name; // phiên chưa có chủ đề tóm tắt thì tạm dùng tên
+            // Kiểu ChatGPT/Gemini: mỗi phiên một dòng chủ đề. Chưa đọc: chữ đậm và chấm vàng.
             return (
               <li key={c.id}>
                 <button
@@ -114,35 +114,23 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
                   data-id={c.id}
                   data-unread={unread || undefined}
                   aria-current={selected ? "true" : undefined}
+                  title={topic}
                   onClick={() => onOpen(c.id)}
-                  className={`group flex w-full items-center gap-3 rounded-2xl px-2.5 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-on-frame ${
-                    selected ? "bg-frame-active text-brand" : unread ? "text-on-frame hover:bg-frame-hover" : "text-on-frame-muted hover:bg-frame-hover"
+                  className={`flex min-h-10 w-full items-center gap-2 rounded-full px-3 py-2 text-left text-sm leading-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sidebar-focus-ring ${
+                    selected
+                      ? "bg-sidebar-item-bg-selected font-medium text-sidebar-item-text-selected"
+                      : unread
+                        ? "font-unread text-sidebar-text hover:bg-sidebar-item-bg-hover"
+                        : "text-sidebar-text-muted hover:bg-sidebar-item-bg-hover hover:text-sidebar-text-muted-hover"
                   }`}
                 >
-                  <Avatar name={c.name} size={36} tone={selected ? "selected" : "frame"} />
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-baseline gap-2">
-                      <span
-                        className={`min-w-0 flex-1 truncate text-sm leading-5 ${
-                          unread ? "font-unread" : selected ? "font-medium" : "font-normal"
-                        }`}
-                      >
-                        {c.name}
-                      </span>
-                      <span className={`shrink-0 text-xs leading-4 tabular-nums ${unread ? "font-semibold text-on-frame" : muted}`}>{lastTime(c)}</span>
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <span className={`min-w-0 flex-1 truncate text-small ${unread ? "font-semibold text-on-frame" : `font-normal ${muted}`}`}>
-                        {c.preview}
-                      </span>
-                      {unread && (
-                        <>
-                          <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-gold" />
-                          <span className="sr-only">Chưa đọc</span>
-                        </>
-                      )}
-                    </span>
-                  </span>
+                  <span className="min-w-0 flex-1 truncate">{topic}</span>
+                  {unread && (
+                    <>
+                      <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-sidebar-unread-dot" />
+                      <span className="sr-only">Chưa đọc</span>
+                    </>
+                  )}
                 </button>
               </li>
             );
@@ -151,9 +139,8 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, q
       )}
 
       {/* Người dùng */}
-      <div className="flex items-center gap-3 border-t border-divider px-4 py-3">
-        <Avatar name={ME} size={32} tone="frame" />
-        <span className="min-w-0 flex-1 truncate text-sm font-medium">{ME}</span>
+      <div className="border-t border-sidebar-divider px-2 py-2">
+        <Settings name={ME} />
       </div>
     </aside>
   );

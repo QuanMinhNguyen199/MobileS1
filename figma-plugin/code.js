@@ -184,8 +184,8 @@ async function main() {
 
   // ---------- Biến màu có độ trong suốt (giá trị lấy đúng từ code) ----------
   {
-    const colorCol = (await figma.variables.getLocalVariableCollectionsAsync()).find((c) => c.name === "GeoAgent / Color" || c.name === "GeoAgent / Semantic");
-    if (!colorCol) throw new Error('Thiếu bộ biến "GeoAgent / Semantic" (tên cũ "GeoAgent / Color")');
+    const colorCol = findCol(await figma.variables.getLocalVariableCollectionsAsync(), "alias", true);
+    if (!colorCol) throw new Error('Thiếu bộ biến "GeoAgent / Alias" (tên cũ "GeoAgent / Semantic", "GeoAgent / Color")');
     const mode = colorCol.modes[0].modeId;
     const ALPHA = [
       ["avatar/frame-bg", { r: 1, g: 247 / 255, b: 240 / 255, a: 0.16 }, ["FRAME_FILL", "SHAPE_FILL"], "var(--avatar-frame-bg)", "Avatar trên sidebar đỏ: trắng ấm 16%"],
@@ -198,6 +198,9 @@ async function main() {
       v.setValueForMode(mode, value); v.scopes = scopes; v.description = desc; v.setVariableCodeSyntax("WEB", code);
     }
   }
+
+  // ---------- Token: màu gốc, màu vai trò mới, mode Dark (tạo sớm để component gắn vào được ngay) ----------
+  await prepareTokens(V, vars);
 
   // ---------- Nối Figma với code: tên class Tailwind trên kiểu chữ, đổ bóng, bo góc ----------
   {
@@ -274,6 +277,10 @@ async function main() {
     for (const c of set("Avatar").children.filter((n) => n.name.indexOf("Tone=Frame") === 0)) {
       c.fills = [paint("avatar/frame-bg")];
     }
+    // Chữ cái của avatar trong mục đang chọn: màu vai trò riêng (khớp code: var(--on-frame-active))
+    for (const c of set("Avatar").children.filter((n) => n.name.indexOf("Tone=Selected") === 0)) {
+      for (const t of c.findAll((n) => n.type === "TEXT")) t.fills = [paint("sidebar/on-frame-active")];
+    }
     const ibInfo = splitAtFrameRow(set("Icon Button"), 48 + 3 * 36 + 2 * 24);
     const avInfo = splitAtFrameRow(set("Avatar"), 48 + 22 + 28 + 32 + 36 + 40 + 4 * 20);
     if (ibInfo.frameTop < ibInfo.otherBottom || avInfo.frameTop < avInfo.otherBottom) throw new Error("Hàng Frame chưa tách khỏi các hàng khác");
@@ -293,7 +300,7 @@ async function main() {
         radius(c, "radius/2xl");
         c.fills = sel ? [paint("sidebar/frame-active")] : state === "Hover" ? [paint("sidebar/frame-hover")] : [];
         const muted = sel ? "sidebar/on-frame-active-muted" : state === "Hover" ? "sidebar/on-frame-muted-strong" : "sidebar/on-frame-muted";
-        const main = sel ? "brand/brand" : "sidebar/on-frame";
+        const main = sel ? "sidebar/on-frame-active" : "sidebar/on-frame";
         const av = avatar(sel ? "Selected" : "Frame", 36, "P"); av.name = "Avatar"; c.appendChild(av);
         const col = AL("VERTICAL", { name: "Text", itemSpacing: 0 }); c.appendChild(col);
         const r1 = AL("HORIZONTAL", { name: "Row 1", itemSpacing: 8, counterAxisAlignItems: "BASELINE" }); col.appendChild(r1);
@@ -718,6 +725,19 @@ async function main() {
     }
     mLabel(mDrawer, "Danh sách mở (ngăn kéo)");
     log.push("+ Điện thoại: Đăng nhập, Màn chat, Ngăn kéo");
+
+    // Giao diện tối: bản sao các màn điện thoại, đặt mode Dark cho bộ GeoAgent / Semantic
+    if (DARK_STATUS.modeId) {
+      const darkRow = AL("HORIZONTAL", { name: "Mobile screens (dark)", itemSpacing: 48, counterAxisAlignItems: "MIN", layoutWrap: "WRAP", counterAxisSpacing: 48 });
+      mWrap.appendChild(T("Giao diện tối", 16, 24, "Semi Bold")); mWrap.appendChild(darkRow); fill(darkRow);
+      for (const [src, label] of [[mLogin, "Đăng nhập (tối)"], [mChat, "Màn chat (tối)"], [mDrawer, "Ngăn kéo (tối)"]]) {
+        const f = src.clone(); f.name = src.name + " (dark)";
+        try { f.setExplicitVariableModeForCollection(DARK_STATUS.collection, DARK_STATUS.modeId); }
+        catch (e) { DARK_STATUS.error = "Không đặt được mode Dark cho khung: " + (e.message || e); }
+        const w = AL("VERTICAL", { name: label, itemSpacing: 12 }); w.appendChild(T(label, 16, 24, "Semi Bold")); w.appendChild(f); darkRow.appendChild(w);
+      }
+      log.push("+ Điện thoại (tối)");
+    }
   }
 
   // Cách dùng trong code (React + Tailwind) ghi vào mô tả từng component: dev mở Inspect là thấy
@@ -769,26 +789,44 @@ async function exportTokens() {
   const cols = await figma.variables.getLocalVariableCollectionsAsync();
   const all = await figma.variables.getLocalVariablesAsync();
   const byId = {}; for (const v of all) byId[v.id] = v;
-  const prim = cols.find((c) => c.name === "GeoAgent / Primitives"), sem = cols.find((c) => c.name === "GeoAgent / Semantic"), size = cols.find((c) => c.name === "GeoAgent / Size");
+  const prim = findCol(cols, "global"), sem = findCol(cols, "alias"), compCol = findCol(cols, "component"), size = cols.find((c) => c.name === "GeoAgent / Size");
   const hex = (c) => "#" + [c.r, c.g, c.b].map((x) => Math.round(x * 255).toString(16).padStart(2, "0")).join("");
   const r4 = (x) => Math.round(x * 10000) / 10000, r3 = (x) => Math.round(x * 1000) / 1000;
   const color = (c) => (c.a == null || c.a >= 0.9995 ? hex(c) : { colorSpace: "srgb", components: [r4(Math.round(c.r * 255) / 255), r4(Math.round(c.g * 255) / 255), r4(Math.round(c.b * 255) / 255)], alpha: r3(c.a), hex: hex(c) });
   const set = (obj, path, val) => { const k = path.split("/"); let o = obj; for (const p of k.slice(0, -1)) o = o[p] = o[p] || {}; o[k[k.length - 1]] = val; };
   const css = (v) => { const m = (v.codeSyntax.WEB || "").match(/var\((--[^)]+)\)/); return m ? m[1] : null; };
-  const T = { $description: "GeoAgent design tokens (chuẩn W3C DTCG). Nguồn gốc của src/tokens.css: sửa file này hoặc xuất lại từ plugin Figma, rồi chạy `npm run tokens`.", primitive: {}, semantic: {}, radius: {}, typography: {}, fontWeight: {}, shadow: {} };
+  const T = { $description: "GeoAgent design tokens (chuẩn W3C DTCG), 3 tầng: global (mã màu) → alias (vai trò, có bản sáng/tối ở $extensions.geoagent.dark) → component (bộ phận của component, trỏ về alias). Sửa file này hoặc xuất lại từ plugin Figma, rồi chạy `npm run tokens`.", global: {}, alias: {}, component: {}, radius: {}, typography: {}, fontWeight: {}, shadow: {} };
   for (const id of prim ? prim.variableIds : []) {
     const v = byId[id];
-    set(T.primitive, v.name, { $type: "color", $value: color(Object.values(v.valuesByMode)[0]), $extensions: { geoagent: { css: css(v) || "--" + v.name.replace("/", "-"), figma: v.name } } });
+    set(T.global, v.name, { $type: "color", $value: color(Object.values(v.valuesByMode)[0]), $extensions: { geoagent: { css: css(v) || "--" + v.name.replace("/", "-"), figma: v.name } } });
   }
   for (const id of sem ? sem.variableIds : []) {
     const v = byId[id];
     if (v.resolvedType !== "COLOR") continue;
     const val = Object.values(v.valuesByMode)[0];
     const target = val && val.type === "VARIABLE_ALIAS" ? byId[val.id] : null;
-    const tok = { $type: "color", $value: target ? "{primitive." + target.name.replace("/", ".") + "}" : color(val) };
+    const tok = { $type: "color", $value: target ? "{global." + target.name.replace("/", ".") + "}" : color(val) };
     if (v.description) tok.$description = v.description;
     tok.$extensions = { geoagent: { css: css(v), figma: v.name } };
-    set(T.semantic, v.name, tok);
+    // Bản tối: lấy từ mode Dark nếu có; gói Figma không cho thêm mode thì lấy từ bảng token của plugin
+    const darkMode = sem.modes.find((m) => m.name === "Dark");
+    const dv = darkMode ? v.valuesByMode[darkMode.modeId] : null;
+    const darkName = dv && dv.type === "VARIABLE_ALIAS" && byId[dv.id] ? byId[dv.id].name : SEMANTIC_DARK[v.name];
+    if (darkName) tok.$extensions.geoagent.dark = "{global." + darkName.replace("/", ".") + "}";
+    set(T.alias, v.name, tok);
+  }
+  // Tầng 3 · Component: mỗi biến trỏ về một alias
+  for (const id of compCol ? compCol.variableIds : []) {
+    const v = byId[id];
+    if (v.resolvedType !== "COLOR") continue;
+    const val = Object.values(v.valuesByMode)[0];
+    const target = val && val.type === "VARIABLE_ALIAS" ? byId[val.id] : null;
+    if (!target) continue;
+    const tok = { $type: "color", $value: "{alias." + target.name.replace("/", ".") + "}" };
+    const desc = (v.description || "").split(" · trỏ về ")[0];
+    if (desc) tok.$description = desc;
+    tok.$extensions = { geoagent: { css: css(v) || "--" + v.name.replace("/", "-"), figma: v.name } };
+    set(T.component, v.name, tok);
   }
   const radii = {};
   for (const id of size ? size.variableIds : []) { const v = byId[id]; if (v.name.indexOf("radius/") === 0) radii[v.name.split("/")[1]] = Object.values(v.valuesByMode)[0]; }
@@ -817,39 +855,16 @@ async function exportTokens() {
 }
 
 // ---------- Token hai tầng: Primitive (mã màu) ← Semantic (vai trò, alias) ----------
-// Đổi màu cho dự án khác: chỉ sửa giá trị trong "GeoAgent / Primitives". Semantic và component tự theo.
+// Đổi màu cho dự án khác: chỉ sửa giá trị trong "GeoAgent / Global". Alias và Component tự theo.
 // Mã màu lấy đúng từ src/index.css và code component; không màu nào trên màn hình bị đổi.
-const PRIMITIVES = [
-  // [tên, hex, alpha (bỏ trống = 1), mô tả]
-  ["base/white", "#ffffff"],
-  ["red/50", "#f8e3e1"], ["red/100", "#f8e2da"], ["red/150", "#f6dcd6"], ["red/200", "#f5d6d0"], ["red/250", "#f2cfc6"],
-  ["red/400", "#e39a90"], ["red/600", "#ae2f33"], ["red/700", "#a3141a", 1, "Màu thương hiệu GeoAgent"], ["red/750", "#8a1c22"],
-  ["red/800", "#8a1218"], ["red/850", "#85101a"], ["red/900", "#741015"],
-  ["rose/700", "#7a4b47"],
-  ["warm/25", "#fff7f0"], ["warm/50", "#fcf8f7"], ["warm/100", "#f6f1ee"], ["warm/150", "#f5f1ee"], ["warm/200", "#f0e9e6"],
-  ["warm/250", "#eee6e2"], ["warm/300", "#e7dfdb"], ["warm/350", "#e7ddd8"], ["warm/400", "#d9cdc8"], ["warm/500", "#9a8f8c"],
-  ["warm/550", "#958884"], ["warm/700", "#6b5f5c"], ["warm/950", "#1d1416"],
-  ["gold/100", "#f6ecd6"], ["gold/400", "#e9b84a"], ["gold/800", "#6e4a08"], ["gold/950", "#3d1205"],
-  ["blue/600", "#1a5fd6"],
-  ["teal/50", "#e3eef0"], ["teal/800", "#1f5560"],
-  ["violet/50", "#ece6f3"], ["violet/800", "#4e3a6e"],
-  ["alpha/warm-25-a15", "#fff7f0", 0.15], ["alpha/warm-25-a16", "#fff7f0", 0.16], ["alpha/warm-950-a40", "#1d1416", 0.4],
-];
-const SEMANTIC_TO_PRIMITIVE = {
-  "brand/brand": "red/700", "brand/brand-hover": "red/800", "brand/brand-pressed": "red/900", "brand/brand-soft": "red/200",
-  "brand/gold": "gold/400", "brand/gold-ink": "gold/950",
-  "sidebar/frame": "red/700", "sidebar/frame-hover": "red/600", "sidebar/frame-active": "warm/25", "sidebar/frame-sunken": "red/850",
-  "sidebar/frame-edge": "red/400", "sidebar/on-frame": "warm/25", "sidebar/on-frame-muted": "red/250", "sidebar/on-frame-muted-strong": "red/100",
-  "sidebar/on-frame-active-muted": "rose/700", "sidebar/divider": "alpha/warm-25-a15",
-  "surface/surface": "base/white", "surface/surface-2": "warm/150", "surface/canvas": "warm/50", "surface/panel": "warm/100",
-  "surface/panel-hover": "warm/250", "surface/panel-active": "warm/350", "surface/scrim": "alpha/warm-950-a40",
-  "text/ink": "warm/950", "text/ink-2": "warm/700",
-  "border/line": "warm/300", "border/rule": "warm/200", "border/line-strong": "warm/550", "border/bubble-edge": "warm/400",
-  "state/focus": "blue/600", "state/offline": "warm/500",
-  "avatar/red-bg": "red/50", "avatar/red-fg": "red/750", "avatar/amber-bg": "gold/100", "avatar/amber-fg": "gold/800",
-  "avatar/teal-bg": "teal/50", "avatar/teal-fg": "teal/800", "avatar/violet-bg": "violet/50", "avatar/violet-fg": "violet/800",
-  "avatar/selected-bg": "red/150", "avatar/frame-bg": "alpha/warm-25-a16",
-};
+// <token-data> SINH TỰ ĐỘNG bởi npm run tokens từ tokens/geoagent.tokens.json. Không sửa tay.
+const TOKEN_DATA = {"primitives":[["base/white","#ffffff"],["red/50","#f8e3e1"],["red/100","#f8e2da"],["red/150","#f6dcd6"],["red/200","#f5d6d0"],["red/250","#f2cfc6"],["red/400","#e39a90"],["red/600","#ae2f33"],["red/700","#a3141a"],["red/750","#8a1c22"],["red/800","#8a1218"],["red/850","#85101a"],["red/900","#741015"],["ember/100","#f1e3dd"],["ember/150","#ecd6cf"],["ember/200","#f2bcb7"],["ember/250","#dcbdb5"],["ember/350","#ee8079"],["ember/450","#a2635a"],["ember/550","#d1353b"],["ember/600","#c62a31"],["ember/700","#a51d23"],["ember/750","#74463f"],["ember/850","#661d21"],["ember/880","#561217"],["ember/900","#4b2022"],["ember/920","#4a2224"],["ember/950","#400b10"],["rose/700","#7a4b47"],["warm/25","#fff7f0"],["warm/50","#fcf8f7"],["warm/100","#f6f1ee"],["warm/150","#f5f1ee"],["warm/200","#f0e9e6"],["warm/250","#eee6e2"],["warm/300","#e7dfdb"],["warm/350","#e7ddd8"],["warm/400","#d9cdc8"],["warm/500","#9a8f8c"],["warm/550","#958884"],["warm/700","#6b5f5c"],["warm/950","#1d1416"],["night/50","#f5ece7"],["night/300","#b9aba6"],["night/500","#8a7b76"],["night/650","#4a3c36"],["night/700","#403430"],["night/750","#362b28"],["night/800","#2e2421"],["night/900","#211916"],["night/950","#17110f"],["gold/100","#f6ecd6"],["gold/200","#f0d595"],["gold/400","#e9b84a"],["gold/800","#6e4a08"],["gold/900","#45361b"],["gold/950","#3d1205"],["blue/300","#79a6ff"],["blue/600","#1a5fd6"],["teal/50","#e3eef0"],["teal/200","#aadbe3"],["teal/800","#1f5560"],["teal/900","#1d3a40"],["violet/50","#ece6f3"],["violet/200","#d2c4ec"],["violet/800","#4e3a6e"],["violet/900","#362b49"],["alpha/warm-25-a15","#fff7f0",0.15],["alpha/warm-25-a16","#fff7f0",0.16],["alpha/warm-950-a40","#1d1416",0.4],["alpha/warm-950-a35","#1d1416",0.35],["alpha/warm-25-a35","#fff7f0",0.35],["alpha/warm-25-a50","#fff7f0",0.5],["alpha/black-a55","#000000",0.55]],"semantic":[{"name":"brand/brand","light":"red/700","dark":"ember/600","css":"--brand","desc":"Màu thương hiệu: nút chính, nút gửi, chấm danh sách"},{"name":"brand/brand-hover","light":"red/800","dark":"ember/550","css":"--brand-hover","desc":"Nút chính khi rê chuột"},{"name":"brand/brand-pressed","light":"red/900","dark":"ember/700","css":"--brand-pressed","desc":"Nút chính khi nhấn"},{"name":"brand/brand-soft","light":"red/200","dark":"ember/900","css":"--brand-soft","desc":"Bong bóng tin của người dùng"},{"name":"brand/gold","light":"gold/400","dark":"gold/400","css":"--gold","desc":"Vàng nhấn: tab đang chọn, chấm chưa đọc, icon trợ lý"},{"name":"brand/gold-ink","light":"gold/950","dark":"gold/950","css":"--gold-ink","desc":"Chữ trên nền vàng"},{"name":"sidebar/frame","light":"red/700","dark":"ember/880","css":"--frame","desc":"Nền sidebar và màn đăng nhập"},{"name":"sidebar/frame-hover","light":"red/600","dark":"ember/850","css":"--frame-hover","desc":"Mục sidebar khi rê chuột"},{"name":"sidebar/frame-active","light":"warm/25","dark":"ember/100","css":"--frame-active","desc":"Mục sidebar đang chọn (viên trắng ấm)"},{"name":"sidebar/frame-sunken","light":"red/850","dark":"ember/950","css":"--frame-sunken","desc":"Ô tìm kiếm trên nền đỏ"},{"name":"sidebar/frame-edge","light":"red/400","dark":"ember/450","css":"--frame-edge","desc":"Viền ô tìm kiếm, vạch kéo sidebar"},{"name":"sidebar/on-frame","light":"warm/25","dark":"night/50","css":"--on-frame","desc":"Chữ chính trên nền đỏ"},{"name":"sidebar/on-frame-muted","light":"red/250","dark":"ember/250","css":"--on-frame-muted","desc":"Chữ phụ trên nền đỏ"},{"name":"sidebar/on-frame-muted-strong","light":"red/100","dark":"ember/150","css":"--on-frame-muted-strong","desc":"Chữ phụ khi rê chuột"},{"name":"sidebar/on-frame-active-muted","light":"rose/700","dark":"ember/750","css":"--on-frame-active-muted","desc":"Chữ phụ trong mục đang chọn"},{"name":"sidebar/divider","light":"alpha/warm-25-a15","dark":"alpha/warm-25-a15","css":"--divider","desc":"Đường kẻ trên nền đỏ"},{"name":"sidebar/on-frame-active","light":"red/700","dark":"red/700","css":"--on-frame-active","desc":"Chữ trên viên sáng của mục đang chọn (tên, chữ cái avatar)"},{"name":"sidebar/scrollbar","light":"alpha/warm-25-a50","dark":"alpha/warm-25-a50","css":"--scrollbar-frame","desc":"Thanh cuộn trên sidebar đỏ"},{"name":"surface/surface","light":"base/white","dark":"night/900","css":"--surface","desc":"Nền trắng: header, thẻ, ô soạn tin, bóng bot"},{"name":"surface/surface-2","light":"warm/150","dark":"night/800","css":"--surface-2","desc":"Nền nút trung tính khi rê chuột"},{"name":"surface/canvas","light":"warm/50","dark":"night/950","css":"--canvas","desc":"Nền vùng hội thoại"},{"name":"surface/panel","light":"warm/100","dark":"night/800","css":"--panel","desc":"Nút tròn trong ô soạn tin khi rê chuột"},{"name":"surface/panel-hover","light":"warm/250","dark":"night/750","css":"--panel-hover","desc":"Panel khi rê chuột"},{"name":"surface/panel-active","light":"warm/350","dark":"night/700","css":"--panel-active","desc":"Panel khi nhấn"},{"name":"surface/scrim","light":"alpha/warm-950-a40","dark":"alpha/black-a55","css":"--scrim","desc":"Lớp phủ sau ngăn kéo trên điện thoại"},{"name":"surface/scrollbar","light":"alpha/warm-950-a35","dark":"alpha/warm-25-a35","css":"--scrollbar","desc":"Thanh cuộn trên nền sáng/tối"},{"name":"text/ink","light":"warm/950","dark":"night/50","css":"--ink","desc":"Chữ chính"},{"name":"text/ink-2","light":"warm/700","dark":"night/300","css":"--ink-2","desc":"Chữ phụ, icon trung tính, giờ gửi"},{"name":"text/link","light":"red/700","dark":"ember/350","css":"--link","desc":"Chữ link trong tin nhắn (luôn kèm gạch chân)"},{"name":"text/on-brand","light":"base/white","dark":"base/white","css":"--on-brand","desc":"Chữ và icon trên nền thương hiệu (nút chính, nút gửi)"},{"name":"border/line","light":"warm/300","dark":"night/700","css":"--line","desc":"Viền nhạt: nút cuộn, đầu bảng"},{"name":"border/rule","light":"warm/200","dark":"night/800","css":"--rule","desc":"Đường kẻ: header, hàng bảng, phân cách"},{"name":"border/line-strong","light":"warm/550","dark":"night/500","css":"--line-strong","desc":"Viền điều khiển (ô soạn tin), 3,42:1 trên trắng"},{"name":"border/bubble-edge","light":"warm/400","dark":"night/650","css":"--bubble-edge","desc":"Viền bóng tin của bot"},{"name":"state/focus","light":"blue/600","dark":"blue/300","css":"--focus","desc":"Viền focus bàn phím"},{"name":"state/offline","light":"warm/500","dark":"night/500","css":"--status-offline","desc":"Chấm trạng thái trên avatar"},{"name":"avatar/red-bg","light":"red/50","dark":"ember/920","css":"--avatar-red-bg","desc":"Avatar sắc 1 (nền)"},{"name":"avatar/red-fg","light":"red/750","dark":"ember/200","css":"--avatar-red-fg","desc":"Avatar sắc 1 (chữ)"},{"name":"avatar/amber-bg","light":"gold/100","dark":"gold/900","css":"--avatar-amber-bg","desc":"Avatar sắc 2 (nền)"},{"name":"avatar/amber-fg","light":"gold/800","dark":"gold/200","css":"--avatar-amber-fg","desc":"Avatar sắc 2 (chữ)"},{"name":"avatar/teal-bg","light":"teal/50","dark":"teal/900","css":"--avatar-teal-bg","desc":"Avatar sắc 3 (nền)"},{"name":"avatar/teal-fg","light":"teal/800","dark":"teal/200","css":"--avatar-teal-fg","desc":"Avatar sắc 3 (chữ)"},{"name":"avatar/violet-bg","light":"violet/50","dark":"violet/900","css":"--avatar-violet-bg","desc":"Avatar sắc 4 (nền)"},{"name":"avatar/violet-fg","light":"violet/800","dark":"violet/200","css":"--avatar-violet-fg","desc":"Avatar sắc 4 (chữ)"},{"name":"avatar/selected-bg","light":"red/150","dark":"red/150","css":"--avatar-selected-bg","desc":"Avatar trong mục sidebar đang chọn"},{"name":"avatar/frame-bg","light":"alpha/warm-25-a16","dark":"alpha/warm-25-a16","css":"--avatar-frame-bg","desc":"Avatar trên sidebar đỏ: trắng ấm 16%"}],"component":[{"name":"focus/ring","alias":"state/focus","css":"--focus-ring","desc":"Viền focus bàn phím trên nền sáng"},{"name":"app/bg","alias":"surface/surface","css":"--app-bg","desc":"Nền ứng dụng"},{"name":"app/text","alias":"text/ink","css":"--app-text","desc":"Chữ mặc định của ứng dụng"},{"name":"sidebar/bg","alias":"sidebar/frame","css":"--sidebar-bg","desc":"Nền sidebar"},{"name":"sidebar/text","alias":"sidebar/on-frame","css":"--sidebar-text","desc":"Chữ chính trên sidebar"},{"name":"sidebar/text-muted","alias":"sidebar/on-frame-muted","css":"--sidebar-text-muted","desc":"Chữ phụ trên sidebar"},{"name":"sidebar/text-muted-hover","alias":"sidebar/on-frame-muted-strong","css":"--sidebar-text-muted-hover","desc":"Chữ phụ khi rê chuột / đang mở"},{"name":"sidebar/icon","alias":"sidebar/on-frame-muted","css":"--sidebar-icon","desc":"Icon trên sidebar"},{"name":"sidebar/item-bg-hover","alias":"sidebar/frame-hover","css":"--sidebar-item-bg-hover","desc":"Nền mục khi rê chuột"},{"name":"sidebar/item-bg-selected","alias":"sidebar/frame-active","css":"--sidebar-item-bg-selected","desc":"Nền mục đang chọn"},{"name":"sidebar/item-text-selected","alias":"sidebar/on-frame-active","css":"--sidebar-item-text-selected","desc":"Chữ mục đang chọn"},{"name":"sidebar/divider","alias":"sidebar/divider","css":"--sidebar-divider","desc":"Đường kẻ trên sidebar"},{"name":"sidebar/focus-ring","alias":"sidebar/on-frame","css":"--sidebar-focus-ring","desc":"Viền focus trên sidebar"},{"name":"sidebar/unread-dot","alias":"brand/gold","css":"--sidebar-unread-dot","desc":"Chấm chưa đọc"},{"name":"search/bg","alias":"sidebar/frame-sunken","css":"--search-bg","desc":"Nền ô tìm kiếm"},{"name":"search/border","alias":"sidebar/frame-edge","css":"--search-border","desc":"Viền ô tìm kiếm"},{"name":"search/border-focus","alias":"sidebar/on-frame","css":"--search-border-focus","desc":"Viền khi đang gõ"},{"name":"search/text","alias":"sidebar/on-frame","css":"--search-text","desc":"Chữ đang gõ"},{"name":"search/placeholder","alias":"sidebar/on-frame-muted","css":"--search-placeholder","desc":"Chữ gợi ý"},{"name":"tab/text","alias":"sidebar/on-frame-muted","css":"--tab-text","desc":"Tab lọc"},{"name":"tab/text-selected","alias":"sidebar/on-frame","css":"--tab-text-selected","desc":"Tab đang chọn"},{"name":"tab/indicator","alias":"brand/gold","css":"--tab-indicator","desc":"Gạch chân tab đang chọn"},{"name":"chat/bg","alias":"surface/canvas","css":"--chat-bg","desc":"Nền vùng hội thoại và header kính mờ"},{"name":"chat/header-border","alias":"border/rule","css":"--chat-header-border","desc":"Đường kẻ dưới header khi đã cuộn"},{"name":"chat/typing-dot","alias":"text/ink-2","css":"--chat-typing-dot","desc":"Chấm “đang trả lời”"},{"name":"message-user/bg","alias":"brand/brand-soft","css":"--message-user-bg","desc":"Bong bóng tin người dùng"},{"name":"message-user/meta","alias":"text/ink-2","css":"--message-user-meta","desc":"Giờ gửi"},{"name":"message-bot/bg","alias":"surface/surface","css":"--message-bot-bg","desc":"Thẻ tin của bot"},{"name":"message-bot/border","alias":"border/bubble-edge","css":"--message-bot-border","desc":"Viền thẻ tin bot"},{"name":"message-bot/sender","alias":"text/ink","css":"--message-bot-sender","desc":"Tên người gửi"},{"name":"message-bot/meta","alias":"text/ink-2","css":"--message-bot-meta","desc":"Giờ gửi"},{"name":"content/text","alias":"text/ink","css":"--content-text","desc":"Chữ câu trả lời"},{"name":"content/strong","alias":"text/ink","css":"--content-strong","desc":"Chữ đậm"},{"name":"content/link","alias":"text/link","css":"--content-link","desc":"Link (luôn gạch chân)"},{"name":"content/bullet","alias":"brand/brand","css":"--content-bullet","desc":"Chấm đầu dòng"},{"name":"content/divider","alias":"border/rule","css":"--content-divider","desc":"Đường phân cách giữa các mục"},{"name":"table/head-text","alias":"text/ink-2","css":"--table-head-text","desc":"Đầu cột"},{"name":"table/head-border","alias":"border/line","css":"--table-head-border","desc":"Kẻ dưới đầu cột"},{"name":"table/row-border","alias":"border/rule","css":"--table-row-border","desc":"Kẻ giữa các hàng"},{"name":"table/cell-text","alias":"text/ink","css":"--table-cell-text","desc":"Ô dữ liệu"},{"name":"composer/bg","alias":"surface/surface","css":"--composer-bg","desc":"Nền ô soạn tin"},{"name":"composer/border","alias":"border/line-strong","css":"--composer-border","desc":"Viền ô soạn tin"},{"name":"composer/placeholder","alias":"text/ink-2","css":"--composer-placeholder","desc":"Chữ gợi ý"},{"name":"composer/icon","alias":"text/ink-2","css":"--composer-icon","desc":"Icon đính kèm, micro"},{"name":"composer/icon-hover","alias":"text/ink","css":"--composer-icon-hover","desc":"Icon khi rê chuột"},{"name":"composer/icon-bg-hover","alias":"surface/panel","css":"--composer-icon-bg-hover","desc":"Nền nút tròn khi rê chuột"},{"name":"composer/fade","alias":"surface/canvas","css":"--composer-fade","desc":"Dải mờ phía sau ô soạn tin"},{"name":"composer/send-bg","alias":"brand/brand","css":"--composer-send-bg","desc":"Nút gửi"},{"name":"composer/send-bg-hover","alias":"brand/brand-hover","css":"--composer-send-bg-hover","desc":"Nút gửi khi rê chuột"},{"name":"composer/send-icon","alias":"text/on-brand","css":"--composer-send-icon","desc":"Icon nút gửi"},{"name":"button-primary/bg","alias":"brand/brand","css":"--button-primary-bg","desc":"Nút chính"},{"name":"button-primary/bg-hover","alias":"brand/brand-hover","css":"--button-primary-bg-hover","desc":"Khi rê chuột"},{"name":"button-primary/bg-pressed","alias":"brand/brand-pressed","css":"--button-primary-bg-pressed","desc":"Khi nhấn"},{"name":"button-primary/label","alias":"text/on-brand","css":"--button-primary-label","desc":"Chữ và icon"},{"name":"button-secondary/border","alias":"border/line-strong","css":"--button-secondary-border","desc":"Viền nút phụ"},{"name":"button-secondary/text","alias":"text/ink","css":"--button-secondary-text","desc":"Chữ nút phụ"},{"name":"button-secondary/bg-hover","alias":"surface/surface-2","css":"--button-secondary-bg-hover","desc":"Nền khi rê chuột"},{"name":"icon-button/icon","alias":"text/ink-2","css":"--icon-button-icon","desc":"Icon"},{"name":"icon-button/icon-hover","alias":"text/ink","css":"--icon-button-icon-hover","desc":"Icon khi rê chuột"},{"name":"icon-button/bg-hover","alias":"surface/surface-2","css":"--icon-button-bg-hover","desc":"Nền khi rê chuột"},{"name":"scroll-button/bg","alias":"surface/surface","css":"--scroll-button-bg","desc":"Nền nút cuộn"},{"name":"scroll-button/border","alias":"border/line","css":"--scroll-button-border","desc":"Viền"},{"name":"scroll-button/icon","alias":"text/ink-2","css":"--scroll-button-icon","desc":"Icon"},{"name":"scroll-button/icon-hover","alias":"text/ink","css":"--scroll-button-icon-hover","desc":"Icon khi rê chuột"},{"name":"menu/bg","alias":"surface/surface","css":"--menu-bg","desc":"Nền bảng Cài đặt"},{"name":"menu/border","alias":"border/line","css":"--menu-border","desc":"Viền"},{"name":"menu/text","alias":"text/ink","css":"--menu-text","desc":"Chữ"},{"name":"menu/text-muted","alias":"text/ink-2","css":"--menu-text-muted","desc":"Chữ phụ, tiêu đề nhóm"},{"name":"menu/item-bg-hover","alias":"surface/surface-2","css":"--menu-item-bg-hover","desc":"Mục khi rê chuột"},{"name":"menu/accent","alias":"brand/brand","css":"--menu-accent","desc":"Ô chọn (radio)"},{"name":"login-card/bg","alias":"surface/surface","css":"--login-card-bg","desc":"Thẻ đăng nhập"},{"name":"login-card/text","alias":"text/ink","css":"--login-card-text","desc":"Chữ"},{"name":"login-card/text-muted","alias":"text/ink-2","css":"--login-card-text-muted","desc":"Chữ phụ"},{"name":"login-card/divider","alias":"border/rule","css":"--login-card-divider","desc":"Đường kẻ chân thẻ"},{"name":"select/bg-hover","alias":"surface/surface-2","css":"--select-bg-hover","desc":"Ô chọn ngôn ngữ khi rê chuột"},{"name":"avatar/status","alias":"state/offline","css":"--avatar-status","desc":"Chấm trạng thái"},{"name":"avatar/status-ring","alias":"surface/surface","css":"--avatar-status-ring","desc":"Viền quanh chấm trạng thái"},{"name":"bot-avatar/bg","alias":"sidebar/frame","css":"--bot-avatar-bg","desc":"Nền avatar trợ lý"},{"name":"bot-avatar/icon","alias":"brand/gold","css":"--bot-avatar-icon","desc":"Icon trợ lý"},{"name":"web-pane/bg","alias":"surface/surface","css":"--web-pane-bg","desc":"Khung web (máy tính)"},{"name":"web-pane/frame-bg","alias":"surface/surface-2","css":"--web-pane-frame-bg","desc":"Nền vùng trang nhúng"},{"name":"web-pane/border","alias":"border/rule","css":"--web-pane-border","desc":"Đường kẻ ngăn"},{"name":"web-pane/text","alias":"text/ink","css":"--web-pane-text","desc":"Chữ"},{"name":"web-pane/text-muted","alias":"text/ink-2","css":"--web-pane-text-muted","desc":"Chữ phụ"},{"name":"web-pane/card-bg","alias":"surface/surface","css":"--web-pane-card-bg","desc":"Thẻ tóm tắt"},{"name":"web-pane/card-border","alias":"border/line","css":"--web-pane-card-border","desc":"Viền thẻ tóm tắt"},{"name":"web-pane/icon-tile","alias":"surface/panel","css":"--web-pane-icon-tile","desc":"Ô icon trang"},{"name":"overlay/scrim","alias":"surface/scrim","css":"--overlay-scrim","desc":"Lớp phủ sau ngăn kéo"}]};
+// </token-data>
+// Bảng token sinh từ tokens/geoagent.tokens.json (npm run tokens). Bản tối: SEMANTIC_DARK.
+const PRIMITIVES = TOKEN_DATA.primitives; // [tên, hex, alpha?]
+const SEMANTIC_TO_PRIMITIVE = Object.fromEntries(TOKEN_DATA.semantic.map((s) => [s.name, s.light]));
+const SEMANTIC_DARK = Object.fromEntries(TOKEN_DATA.semantic.map((s) => [s.name, s.dark]));
+const SEMANTIC_INFO = Object.fromEntries(TOKEN_DATA.semantic.map((s) => [s.name, s]));
 const rgbOf = (hex, a) => { const h = hex.replace("#", ""); return { r: parseInt(h.slice(0, 2), 16) / 255, g: parseInt(h.slice(2, 4), 16) / 255, b: parseInt(h.slice(4, 6), 16) / 255, a: a == null ? 1 : a }; };
 const hexStr = (c) => "#" + [c.r, c.g, c.b].map((x) => Math.round(x * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
 // Giá trị cuối cùng của một biến màu, đi theo chuỗi alias
@@ -862,30 +877,96 @@ async function resolveColor(v) {
   return val;
 }
 
-async function tiers(root, V, vars, paint, T) {
+// Trạng thái mode Dark, dùng cho mẫu ghép, tự kiểm tra và xuất file
+const DARK_STATUS = { collection: null, modeId: null, error: null };
+
+// 3 tầng biến màu. Tìm bộ biến theo tên mới hoặc tên cũ, rồi đổi sang tên mới (giữ nguyên ID nên không đứt liên kết).
+const COL = {
+  global: { name: "GeoAgent / Global", old: ["GeoAgent / Primitives"] },
+  alias: { name: "GeoAgent / Alias", old: ["GeoAgent / Semantic", "GeoAgent / Color"] },
+  component: { name: "GeoAgent / Component", old: [] },
+};
+const findCol = (cols, tier, rename = false) => {
+  const c = cols.find((x) => x.name === COL[tier].name || COL[tier].old.indexOf(x.name) >= 0);
+  if (c && rename && c.name !== COL[tier].name) c.name = COL[tier].name;
+  return c || null;
+};
+
+async function prepareTokens(V, vars) {
   const cols = await figma.variables.getLocalVariableCollectionsAsync();
-  const sem = cols.find((c) => c.name === "GeoAgent / Color" || c.name === "GeoAgent / Semantic");
-  sem.name = "GeoAgent / Semantic";
-  let prim = cols.find((c) => c.name === "GeoAgent / Primitives");
-  if (!prim) { prim = figma.variables.createVariableCollection("GeoAgent / Primitives"); prim.renameMode(prim.modes[0].modeId, "Value"); log.push("+ bộ Primitives"); }
+  const sem = findCol(cols, "alias", true);
+  if (sem.modes[0].name !== "Light") sem.renameMode(sem.modes[0].modeId, "Light");
+  let prim = findCol(cols, "global", true);
+  if (!prim) { prim = figma.variables.createVariableCollection(COL.global.name); prim.renameMode(prim.modes[0].modeId, "Value"); log.push("+ bộ Global"); }
   const pm = prim.modes[0].modeId;
   const P = {};
   for (const v of vars) if (v.variableCollectionId === prim.id) P[v.name] = v;
-  for (const [name, hex, a, desc] of PRIMITIVES) {
+  for (const [name, hex, a] of PRIMITIVES) {
     let v = P[name];
-    if (!v) { v = figma.variables.createVariable(name, prim, "COLOR"); P[name] = v; }
+    if (!v) { v = figma.variables.createVariable(name, prim, "COLOR"); P[name] = v; vars.push(v); }
     v.setValueForMode(pm, rgbOf(hex, a));
     v.scopes = []; // ẩn khỏi bộ chọn màu: component chỉ gắn vào tầng Semantic
-    v.description = (desc ? desc + ". " : "") + "Tầng 1 (primitive): chỉ sửa ở đây khi đổi màu cho dự án khác.";
+    v.description = "Tầng 1 (primitive): chỉ sửa ở đây khi đổi màu cho dự án khác." + (/^(night|ember)\//.test(name) ? " Dùng cho giao diện tối." : "");
     v.setVariableCodeSyntax("WEB", "var(--" + name.replace("/", "-") + ")");
   }
+  // Mode Dark. Gói Figma giới hạn số mode mỗi bộ biến: không thêm được thì bản tối chỉ có trong code và file xuất.
+  let dark = sem.modes.find((m) => m.name === "Dark");
+  if (!dark) {
+    try { sem.addMode("Dark"); dark = sem.modes.find((m) => m.name === "Dark"); log.push("+ mode Dark"); }
+    catch (e) { DARK_STATUS.error = e && e.message ? e.message : String(e); }
+  }
+  DARK_STATUS.collection = sem;
+  DARK_STATUS.modeId = dark ? dark.modeId : null;
+  // Màu vai trò mới trong file token (vd. sidebar/on-frame-active, thanh cuộn): tạo và trỏ thẳng về màu gốc
+  const sm = sem.modes[0].modeId;
+  for (const info of TOKEN_DATA.semantic) {
+    if (V[info.name]) continue;
+    const v = figma.variables.createVariable(info.name, sem, "COLOR");
+    v.scopes = /on-frame-active$|(^text\/)|-fg$|ink/.test(info.name) ? ["TEXT_FILL"] : ["FRAME_FILL", "SHAPE_FILL"];
+    v.description = info.desc;
+    v.setVariableCodeSyntax("WEB", "var(" + info.css + ")");
+    v.setValueForMode(sm, { type: "VARIABLE_ALIAS", id: P[info.light].id });
+    V[info.name] = v; vars.push(v);
+    log.push("+ biến " + info.name);
+  }
+  // Tầng 3 · Component: bộ biến riêng, mỗi biến trỏ về một alias (sáng/tối theo mode của bộ Alias).
+  // Tên có thể trùng alias (vd. sidebar/divider) nên giữ trong COMP_VARS, không ghi vào V.
+  let comp = findCol(cols, "component", true);
+  if (!comp) { comp = figma.variables.createVariableCollection(COL.component.name); comp.renameMode(comp.modes[0].modeId, "Value"); log.push("+ bộ Component"); }
+  const cm = comp.modes[0].modeId;
+  for (const v of vars) if (v.variableCollectionId === comp.id) COMP_VARS[v.name] = v;
+  let made = 0;
+  for (const info of TOKEN_DATA.component || []) {
+    const target = V[info.alias];
+    if (!target) continue;
+    let v = COMP_VARS[info.name];
+    if (!v) { v = figma.variables.createVariable(info.name, comp, "COLOR"); COMP_VARS[info.name] = v; vars.push(v); made++; }
+    const part = info.name.split("/")[1];
+    v.scopes = /(^|-)bg(-|$)|tile$|scrim|fade|dot|indicator/.test(part) ? ["FRAME_FILL", "SHAPE_FILL"]
+      : /(border|divider|ring)/.test(part) ? ["STROKE_COLOR"]
+      : ["TEXT_FILL", "SHAPE_FILL"];
+    v.description = info.desc + " · trỏ về " + info.alias;
+    v.setVariableCodeSyntax("WEB", "var(" + info.css + ")");
+    v.setValueForMode(cm, { type: "VARIABLE_ALIAS", id: target.id });
+  }
+  if (made) log.push("+ " + made + " biến Component");
+}
+const COMP_VARS = {};
+
+async function tiers(root, V, vars, paint, T) {
+  const cols = await figma.variables.getLocalVariableCollectionsAsync();
+  const sem = findCol(cols, "alias", true);
+  const prim = findCol(cols, "global", true); // đã tạo trong prepareTokens
+  const pm = prim.modes[0].modeId;
+  const P = {};
+  for (const v of vars) if (v.variableCollectionId === prim.id) P[v.name] = v; // đã tạo/cập nhật trong prepareTokens
   // Semantic → alias. Kiểm tra trước: giá trị cũ phải trùng mã màu primitive, để màu trên màn hình không đổi.
   const sm = sem.modes[0].modeId;
   const mismatch = [];
   for (const [sName, pName] of Object.entries(SEMANTIC_TO_PRIMITIVE)) {
     const s = V[sName], p = P[pName];
     if (!s) { mismatch.push(sName + " (không có)"); continue; }
-    const cur = Object.values(s.valuesByMode)[0];
+    const cur = s.valuesByMode[sm];
     if (cur && cur.type !== "VARIABLE_ALIAS") {
       const target = Object.values(p.valuesByMode)[0];
       const d = Math.max(Math.abs(cur.r - target.r), Math.abs(cur.g - target.g), Math.abs(cur.b - target.b), Math.abs((cur.a == null ? 1 : cur.a) - (target.a == null ? 1 : target.a)));
@@ -895,6 +976,15 @@ async function tiers(root, V, vars, paint, T) {
   }
   if (mismatch.length) throw new Error("Không đổi sang alias vì lệch màu: " + mismatch.join("; "));
   log.push("~ " + Object.keys(SEMANTIC_TO_PRIMITIVE).length + " biến semantic → alias của " + PRIMITIVES.length + " primitive");
+  // Bản tối: mỗi biến vai trò trỏ về màu gốc của giao diện tối
+  if (DARK_STATUS.modeId) {
+    let n = 0;
+    for (const [sName, pName] of Object.entries(SEMANTIC_DARK)) {
+      const s = V[sName], p = P[pName];
+      if (s && p) { s.setValueForMode(DARK_STATUS.modeId, { type: "VARIABLE_ALIAS", id: p.id }); n++; }
+    }
+    log.push("~ mode Dark: " + n + " biến");
+  }
 
   // Bảng primitive trên trang (mục 01, đầu tiên): mỗi ô ghi biến semantic nào đang dùng nó
   const colorSec = root.findChild((n) => n.name === "01 Color");
@@ -905,8 +995,8 @@ async function tiers(root, V, vars, paint, T) {
   const AL = (dir, o) => { const f = figma.createFrame(); f.layoutMode = dir; f.primaryAxisSizingMode = "AUTO"; f.counterAxisSizingMode = "AUTO"; f.fills = []; for (const k of Object.keys(o || {})) f[k] = o[k]; return f; };
   const grp = AL("VERTICAL", { name: "Group primitives", itemSpacing: 16 });
   colorSec.insertChild(1, grp); grp.layoutSizingHorizontal = "FILL";
-  grp.appendChild(T("Tầng 1 · Primitive (mã màu gốc)", 16, 24, "Semi Bold"));
-  const note = T("Chỉ tầng này chứa mã màu. Các biến bên dưới (tầng 2 · Semantic) là alias trỏ về đây, và component chỉ gắn vào tầng 2. Làm dự án khác: nhân bản file, sửa mã màu ở tầng 1 (ví dụ red/700 là màu thương hiệu), mọi màn hình tự đổi theo. Primitive bị ẩn khỏi bộ chọn màu để không gắn nhầm.", 14, 22, "Regular", "text/ink-2");
+  grp.appendChild(T("Tầng 1 · Global (mã màu gốc)", 16, 24, "Semi Bold"));
+  const note = T("Chỉ tầng này chứa mã màu. Tầng 2 · Alias trỏ về đây và có bản Light/Dark; tầng 3 · Component (bộ biến GeoAgent / Component) trỏ về Alias, và code component dùng tầng 3. Làm dự án khác: nhân bản file, sửa mã màu ở tầng 1 (ví dụ red/700 là màu thương hiệu), mọi màn hình tự đổi theo. Global bị ẩn khỏi bộ chọn màu để không gắn nhầm.", 14, 22, "Regular", "text/ink-2");
   grp.appendChild(note); note.textAutoResize = "HEIGHT"; note.resize(880, note.height);
   const families = [];
   for (const [name] of PRIMITIVES) { const f = name.split("/")[0]; if (families.indexOf(f) < 0) families.push(f); }
@@ -929,7 +1019,7 @@ async function tiers(root, V, vars, paint, T) {
       meta.appendChild(u); u.layoutSizingHorizontal = "FILL"; u.textAutoResize = "HEIGHT";
     }
   }
-  const t2 = T("Tầng 2 · Semantic (vai trò, component gắn vào đây)", 16, 24, "Semi Bold"); t2.name = "Tier 2 label";
+  const t2 = T("Tầng 2 · Alias (vai trò, có Light/Dark)", 16, 24, "Semi Bold"); t2.name = "Tier 2 label";
   const oldT2 = colorSec.findChild((n) => n.name === "Tier 2 label"); if (oldT2) oldT2.remove();
   colorSec.insertChild(2, t2);
 }
@@ -946,9 +1036,14 @@ async function qa(page, root, vars) {
   // 1. Đủ thành phần
   const cols = await figma.variables.getLocalVariableCollectionsAsync();
   const colN = (n) => { const c = cols.find((x) => x.name === n); return c ? c.variableIds.length : 0; };
-  const semCol = cols.find((x) => x.name === "GeoAgent / Semantic"), primCol = cols.find((x) => x.name === "GeoAgent / Primitives");
-  (colN("GeoAgent / Primitives") === PRIMITIVES.length ? pass : fail)("Token", "Tầng 1 Primitive: " + colN("GeoAgent / Primitives") + " màu (cần " + PRIMITIVES.length + ")");
-  (colN("GeoAgent / Semantic") === Object.keys(SEMANTIC_TO_PRIMITIVE).length ? pass : fail)("Token", "Tầng 2 Semantic: " + colN("GeoAgent / Semantic") + " biến (cần " + Object.keys(SEMANTIC_TO_PRIMITIVE).length + ")");
+  const semCol = findCol(cols, "alias"), primCol = findCol(cols, "global"), compCol = findCol(cols, "component");
+  (colN(COL.global.name) === PRIMITIVES.length ? pass : fail)("Token", "Tầng 1 Global: " + colN(COL.global.name) + " màu (cần " + PRIMITIVES.length + ")");
+  (colN(COL.alias.name) === Object.keys(SEMANTIC_TO_PRIMITIVE).length ? pass : fail)("Token", "Tầng 2 Alias: " + colN(COL.alias.name) + " biến (cần " + Object.keys(SEMANTIC_TO_PRIMITIVE).length + ")");
+  const compNeed = (TOKEN_DATA.component || []).length;
+  (colN(COL.component.name) === compNeed ? pass : fail)("Token", "Tầng 3 Component: " + colN(COL.component.name) + " biến (cần " + compNeed + ")");
+  const aliasIds = new Set(semCol ? semCol.variableIds : []);
+  const compBad = vars.filter((v) => compCol && v.variableCollectionId === compCol.id).filter((v) => { const x = Object.values(v.valuesByMode)[0]; return !(x && x.type === "VARIABLE_ALIAS" && aliasIds.has(x.id)); });
+  (compBad.length ? fail : pass)("Token", compBad.length ? "Component chưa trỏ về alias: " + compBad.map((v) => v.name).slice(0, 6).join(", ") : "Mọi biến Component đều trỏ về Alias");
   (colN("GeoAgent / Size") === 13 ? pass : fail)("Token", "Bo góc + khoảng cách: " + colN("GeoAgent / Size") + " biến (cần 13)");
   const primIds = new Set(primCol ? primCol.variableIds : []);
   const notAlias = vars.filter((v) => semCol && v.variableCollectionId === semCol.id && v.resolvedType === "COLOR").filter((v) => { const x = Object.values(v.valuesByMode)[0]; return !(x && x.type === "VARIABLE_ALIAS" && primIds.has(x.id)); });
@@ -965,6 +1060,16 @@ async function qa(page, root, vars) {
     }
   }
   if (!direct) pass("Token", "Không node nào gắn thẳng vào primitive (chỉ qua semantic)");
+  // Mode Dark
+  if (DARK_STATUS.modeId) {
+    const sem2 = findCol(cols, "alias");
+    const darkId = DARK_STATUS.modeId;
+    const missing = vars.filter((v) => sem2 && v.variableCollectionId === sem2.id && v.resolvedType === "COLOR").filter((v) => { const x = v.valuesByMode[darkId]; return !(x && x.type === "VARIABLE_ALIAS" && primIds.has(x.id)); });
+    (missing.length ? fail : pass)("Token", missing.length ? "Mode Dark còn biến chưa trỏ về màu gốc: " + missing.map((v) => v.name).slice(0, 6).join(", ") : "Mode Dark: mọi biến vai trò trỏ về màu gốc của giao diện tối");
+  } else {
+    out.push("• [Token] Chưa có mode Dark trong Figma" + (DARK_STATUS.error ? " (" + DARK_STATUS.error + ")" : "") + ". Bản tối vẫn có trong code và trong tokens.json xuất từ plugin.");
+  }
+  if (DARK_STATUS.error && DARK_STATUS.modeId) out.push("• [Token] " + DARK_STATUS.error);
   const fb = vars.find((v) => v.name === "avatar/frame-bg"); const fbv = fb && (await resolveColor(fb));
   (fbv && Math.abs(fbv.a - 0.16) < 0.01 ? pass : fail)("Nền tảng", "avatar/frame-bg giữ độ trong suốt 16%" + (fbv ? " (a=" + fbv.a.toFixed(2) + ")" : ""));
   const nTs = (await figma.getLocalTextStylesAsync()).length; (nTs >= 14 ? pass : fail)("Nền tảng", nTs + " kiểu chữ (cần 14)");

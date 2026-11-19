@@ -2,7 +2,8 @@ import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ClipIcon, MicIcon, SendIcon } from "../icons.jsx";
 
-export default function Composer({ onSend, placeholder = "Nhắn tin" }) {
+// compact: cột chat hẹp (máy tính khi khung web đang mở bên phải) dùng lề như điện thoại
+export default function Composer({ onSend, placeholder = "Nhắn tin", compact = false }) {
   const [text, setText] = useState("");
   const formRef = useRef(null);
   const hasText = text.trim() !== "";
@@ -28,17 +29,17 @@ export default function Composer({ onSend, placeholder = "Nhắn tin" }) {
       {/* Như Gemini: chữ cạnh và dưới ô soạn tin nhạt dần vào màu nền, không làm mờ (blur), không có dải che */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b/srgb from-canvas/0 via-canvas/60 via-45% to-canvas/85"
+        className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b/srgb from-composer-fade/0 via-composer-fade/60 via-45% to-composer-fade/85"
       />
       {/* Cùng khung với cột tin nhắn (ChatPane): mép ô soạn trùng mép nội dung */}
-      <div className="mx-auto w-full max-w-[1040px] px-8 md:px-[72px]">
+      <div className={`mx-auto w-full max-w-[1040px] ${compact ? "px-4" : "px-8 md:px-[72px]"}`}>
         {/* Dải che phía sau là kính mờ (thấy lờ mờ nội dung bên dưới); ô soạn tin trắng đặc để chữ luôn dễ đọc */}
-        <div className="flex items-end gap-1 rounded-composer border border-line-strong bg-surface p-2 shadow-composer">
+        <div className="flex items-end gap-1 rounded-composer border border-composer-border bg-composer-bg p-2 shadow-composer">
           <button
             type="button"
             aria-label="Đính kèm tệp"
             title="Đính kèm tệp"
-            className="grid size-10 shrink-0 place-items-center rounded-full text-ink-2 hover:bg-panel hover:text-ink focus-visible:outline-2 focus-visible:outline-focus"
+            className="grid size-10 shrink-0 place-items-center rounded-full text-composer-icon hover:bg-composer-icon-bg-hover hover:text-composer-icon-hover focus-visible:outline-2 focus-visible:outline-focus-ring"
           >
             <ClipIcon />
           </button>
@@ -51,7 +52,7 @@ export default function Composer({ onSend, placeholder = "Nhắn tin" }) {
             onKeyDown={onKeyDown}
             placeholder={placeholder}
             enterKeyHint="send"
-            className="field-sizing-content max-h-[8lh] min-h-[1lh] w-full min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-input outline-none placeholder:text-ink-2"
+            className="field-sizing-content max-h-[8lh] min-h-[1lh] w-full min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-input outline-none placeholder:text-composer-placeholder"
           />
           {/* Góc phải: micro luôn có; khi có chữ, micro trượt sang trái nhường chỗ cho nút gửi */}
           <motion.button
@@ -60,7 +61,7 @@ export default function Composer({ onSend, placeholder = "Nhắn tin" }) {
             aria-label="Nhập bằng giọng nói"
             title="Nhập bằng giọng nói"
             transition={{ type: "spring", bounce: 0, visualDuration: 0.2 }}
-            className="grid size-10 shrink-0 place-items-center rounded-full text-ink-2 hover:bg-panel hover:text-ink focus-visible:outline-2 focus-visible:outline-focus"
+            className="grid size-10 shrink-0 place-items-center rounded-full text-composer-icon hover:bg-composer-icon-bg-hover hover:text-composer-icon-hover focus-visible:outline-2 focus-visible:outline-focus-ring"
           >
             <MicIcon />
           </motion.button>
@@ -75,7 +76,7 @@ export default function Composer({ onSend, placeholder = "Nhắn tin" }) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.6 }}
                 transition={{ type: "spring", bounce: 0, visualDuration: 0.2 }}
-                className="grid size-10 shrink-0 place-items-center rounded-full bg-brand text-white hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                className="grid size-10 shrink-0 place-items-center rounded-full bg-composer-send-bg text-composer-send-icon hover:bg-composer-send-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               >
                 <SendIcon />
               </motion.button>

@@ -4,15 +4,19 @@ import App from "./App.jsx";
 import Welcome, { EMBLEM_SRC } from "./components/Welcome.jsx";
 import { LOGIN_ASSETS } from "./assets.js";
 
-// welcome → auth (logo ở giữa, chờ xác thực) → fly (logo bay về góc trái) → reveal (mở app hình tròn) → app
+// Máy tính: welcome → auth (logo ở giữa, chờ xác thực) → fly (logo bay vào sidebar) → reveal (mở app hình tròn) → app
+// Điện thoại (header không có quốc huy, không có chỗ để logo hạ cánh):
+//   welcome → auth → reveal kiểu "rèm": cả màn đăng nhập đỏ cùng quốc huy trượt lên, app nằm sẵn bên dưới hiện rõ dần → app
 const AUTH_MS = 1300;
 const REVEAL_AFTER_FLY_MS = 420;
 const flight = { type: "spring", bounce: 0, visualDuration: 0.55 };
 const revealEase = [0.65, 0, 0.35, 1];
+const lift = { type: "spring", bounce: 0, visualDuration: 0.6 };
 
 export default function Root() {
   const [phase, setPhase] = useState("welcome");
   const [target, setTarget] = useState(null);
+  const [curtain, setCurtain] = useState(false); // điện thoại: chuyển cảnh kiểu rèm
   const logoRef = useRef(null);
   const reduce = useReducedMotion();
 
@@ -25,9 +29,16 @@ export default function Root() {
   useEffect(() => {
     if (phase !== "auth") return;
     const t = setTimeout(() => {
-      const r = logoRef.current.getBoundingClientRect();
-      setTarget({ x: r.left, y: r.top, w: r.width, h: r.height });
-      setPhase(reduce ? "reveal" : "fly");
+      // Máy tính: quốc huy bay vào sidebar. Điện thoại: không có chỗ hạ cánh nên dùng chuyển cảnh kiểu rèm.
+      const el = logoRef.current;
+      if (el) {
+        const r = el.getBoundingClientRect();
+        setTarget({ x: r.left, y: r.top, w: r.width, h: r.height });
+        setPhase(reduce ? "reveal" : "fly");
+      } else {
+        setCurtain(!reduce);
+        setPhase("reveal");
+      }
     }, reduce ? 500 : AUTH_MS);
     return () => clearTimeout(t);
   }, [phase, reduce]);
@@ -39,9 +50,9 @@ export default function Root() {
     return () => clearTimeout(t);
   }, [phase]);
 
-  // Mở app theo hình tròn từ tâm logo
+  // Mở app theo hình tròn từ tâm logo (máy tính)
   useEffect(() => {
-    if (phase !== "reveal" || reduce || !target) return;
+    if (phase !== "reveal" || reduce || curtain || !target) return;
     const x = target.x + target.w / 2;
     const y = target.y + target.h / 2;
     cx.set(x);
@@ -50,7 +61,7 @@ export default function Root() {
     const controls = animate(radius, r, { duration: 0.8, ease: revealEase });
     controls.then(() => setPhase("app"));
     return () => controls.stop();
-  }, [phase, reduce, target, cx, cy, radius]);
+  }, [phase, reduce, curtain, target, cx, cy, radius]);
 
   useEffect(() => {
     if (phase === "app") document.getElementById("chat-title")?.focus({ preventScroll: true });
@@ -58,21 +69,29 @@ export default function Root() {
 
   const appMounted = phase !== "welcome";
   const appVisible = phase === "reveal" || phase === "app";
+  const lifting = curtain && phase === "reveal"; // rèm đang kéo lên
 
   return (
     <>
       {phase !== "app" && (
-        <div className="fixed inset-0 grid grid-cols-[minmax(0,1fr)] place-items-center overflow-y-auto bg-frame py-10">
-          <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: `url("${LOGIN_ASSETS.background}")` }} />
+        // Điện thoại: màn đăng nhập nằm trên app và trượt lên khỏi màn hình (rèm). Máy tính: nằm dưới app.
+        <motion.div
+          className={`fixed inset-0 grid grid-cols-[minmax(0,1fr)] place-items-center overflow-y-auto bg-frame py-10 ${curtain ? "z-[25]" : ""}`}
+          initial={false}
+          animate={{ y: lifting ? "-100%" : 0 }}
+          transition={lift}
+          onAnimationComplete={() => lifting && setPhase("app")}
+        >
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: `url("${LOGIN_ASSETS.background}")` }} />
           <motion.div
             aria-hidden="true"
-            className="pointer-events-none fixed inset-0 bg-black"
+            className="pointer-events-none absolute inset-0 bg-black"
             initial={false}
             animate={{ opacity: phase === "welcome" ? 0 : 0.18 }}
             transition={{ duration: 0.4 }}
           />
           <Welcome active={phase === "welcome"} onLogin={() => setPhase("auth")} />
-        </div>
+        </motion.div>
       )}
 
       {appMounted && (
@@ -80,23 +99,25 @@ export default function Root() {
           className="fixed inset-0 z-20 bg-surface"
           inert={phase !== "app"}
           aria-hidden={phase !== "app"}
-          style={reduce || phase === "app" ? undefined : { clipPath, willChange: "clip-path" }}
-          initial={reduce ? { opacity: 0 } : false}
-          animate={reduce ? { opacity: appVisible ? 1 : 0 } : undefined}
-          transition={{ duration: 0.4 }}
+          // Kiểu rèm: ghi rõ clipPath "none" — bỏ style khỏi props không xóa vòng tròn bán kính 0 Motion đã ghi lên phần tử
+          style={curtain ? { clipPath: "none" } : reduce || phase === "app" ? undefined : { clipPath, willChange: "clip-path" }}
+          initial={reduce ? { opacity: 0 } : curtain ? { opacity: 0.6, scale: 0.96 } : false}
+          animate={reduce ? { opacity: appVisible ? 1 : 0 } : curtain ? (appVisible ? { opacity: 1, scale: 1 } : { opacity: 0.6, scale: 0.96 }) : undefined}
+          transition={curtain ? lift : { duration: 0.4 }}
           onAnimationComplete={() => reduce && phase === "reveal" && setPhase("app")}
         >
           <App logoRef={logoRef} logoHidden={phase !== "app"} />
         </motion.div>
       )}
 
-      {/* Lớp logo bay: nằm trên app để vòng tròn mở không cắt mất logo */}
+      {/* Lớp logo: nằm trên app để vòng tròn mở không cắt mất logo. Điện thoại: đi lên cùng rèm. */}
       <div className="pointer-events-none fixed inset-0 z-30">
-        {(phase === "auth" || (reduce && phase === "reveal")) && (
+        {(phase === "auth" || (reduce && phase === "reveal") || lifting) && (
             <motion.div
               className="absolute inset-0 grid place-items-center"
-              animate={{ opacity: phase === "auth" ? 1 : 0 }}
-              transition={{ duration: 0.3 }}
+              initial={false}
+              animate={lifting ? { y: "-100%" } : { opacity: phase === "auth" ? 1 : 0 }}
+              transition={lifting ? lift : { duration: 0.3 }}
             >
               <div className="relative grid size-[160px] place-items-center">
                 <motion.svg

@@ -7,9 +7,12 @@
 - CSS của bản chính viết dưới `:root[data-variant="improved"]` trong `src/index.css`
   (`Shell.jsx` luôn gắn `data-variant="improved"`).
 - Token (màu, kiểu chữ, bo góc, đổ bóng) nằm ở `tokens/geoagent.tokens.json`, khớp Figma;
-  `npm run tokens` sinh `src/tokens.css` (không sửa tay). Component dùng class token
-  (`bg-brand`, `text-message`, `rounded-bubble`, `shadow-composer`…), không gõ giá trị cứng.
+  `npm run tokens` sinh `src/tokens.css` (không sửa tay). Màu có 3 tầng Global → Alias → Component;
+  component dùng class tầng Component (`bg-button-primary-bg`, `text-composer-icon`…) cùng `text-message`,
+  `rounded-bubble`, `shadow-composer`…, không gõ giá trị cứng. Bộ phận mới: thêm token Component trỏ về alias.
   Xem `tokens/README.md`.
+- Có giao diện tối (theo máy, chọn được trong Cài đặt). Màu mới phải là màu vai trò có cả bản sáng
+  và bản tối trong token; không dùng `dark:` hay mã màu cứng trong component.
 - Thanh cuộn: không hiện trên điện thoại; trên máy tính chỉ hiện khi người dùng
   đang cuộn và ẩn sau khi dừng (`src/improved/scrollbars.js` + CSS trong `index.css`).
   Vùng cuộn mới không tự đặt lại kiểu thanh cuộn.

@@ -52,6 +52,16 @@
 
 /* ===== Bản cải thiện: chỉ áp dụng khi <html data-variant="improved"> ===== */
 :root[data-variant="improved"] {
+  /* Sáng/tối: mặc định theo máy. Lựa chọn trong Cài đặt đổi <meta name="color-scheme"> (src/improved/theme.js);
+     hai dòng :has() đưa lựa chọn đó vào color-scheme, để light-dark() trong src/tokens.css đổi màu theo. */
+  color-scheme: light dark;
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+
   /* Cỡ chuẩn của Tailwind (bản gốc đang thu 80%) */
   --spacing: 0.25rem;
   --text-xs: 0.75rem;
@@ -134,6 +144,74 @@
   user-select: none;
 }
 
+/* Ảnh đơn sắc màu đen (logo gotix): đảo sang trắng khi giao diện tối.
+   Tối khi: người dùng chọn Tối, hoặc máy đang tối và người dùng không chọn Sáng. */
+:root[data-variant="improved"]:has(> head > meta[name="color-scheme"][content="dark"]) .invert-on-dark {
+  filter: invert(1);
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-variant="improved"]:not(:has(> head > meta[name="color-scheme"][content="light"])) .invert-on-dark {
+    filter: invert(1);
+  }
+}
+
+/* Mobile: web và chat cùng thao tác được, khung web không làm trơ phần chat. */
+:root[data-variant="improved"] .mobile-web-pane {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  block-size: var(--web-portion);
+  max-block-size: calc(100% - 180px);
+  min-block-size: 124px;
+  min-inline-size: 0;
+}
+:root[data-variant="improved"] .mobile-web-pane[data-collapsed="true"] {
+  block-size: 48px;
+  min-block-size: 48px;
+  max-block-size: 48px;
+}
+:root[data-variant="improved"] .mobile-web-body:not([hidden]) {
+  display: flex;
+  flex: 1;
+  min-block-size: 0;
+  flex-direction: column;
+}
+:root[data-variant="improved"] .mobile-web-frame {
+  display: block;
+  flex: 1;
+  inline-size: 100%;
+  min-block-size: 0;
+  border: 0;
+  background: var(--surface);
+  color-scheme: light;
+}
+:root[data-variant="improved"] .mobile-web-resizer {
+  display: grid;
+  flex: 0 0 24px;
+  place-items: center;
+  cursor: row-resize;
+  touch-action: none;
+  background: var(--surface-2);
+}
+:root[data-variant="improved"] .mobile-web-resizer > span {
+  inline-size: 40px;
+  block-size: 3px;
+  border-radius: 2px;
+  background: var(--ink-2);
+}
+:root[data-variant="improved"] .mobile-web-resizer:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+:root[data-variant="improved"].web-pane-resizing,
+:root[data-variant="improved"].web-pane-resizing * {
+  cursor: row-resize !important;
+  user-select: none;
+}
+:root[data-variant="improved"] .mobile-web-pane[data-resizing="true"] iframe {
+  pointer-events: none;
+}
+
 /* Thanh cuộn (bản cải thiện)
    Máy tính: mảnh, trong suốt khi đứng yên; chỉ hiện khi đang cuộn (data-scrolling do improved/scrollbars.js gắn).
    Rãnh vẫn giữ chỗ nên nội dung không xô lệch khi thanh hiện ra.
@@ -143,10 +221,10 @@
   scrollbar-color: transparent transparent;
 }
 :root[data-variant="improved"] [data-scrolling] {
-  scrollbar-color: rgb(29 20 22 / 0.35) transparent;
+  scrollbar-color: var(--scrollbar) transparent;
 }
 :root[data-variant="improved"] aside [data-scrolling] {
-  scrollbar-color: rgb(255 247 240 / 0.5) transparent;
+  scrollbar-color: var(--scrollbar-frame) transparent;
 }
 @media (pointer: coarse), (max-width: 767px) {
   :root[data-variant="improved"] * {
