@@ -38,6 +38,7 @@ export const ICONS = {
   "chevron-up": item("Thu gọn", "navigation", "ChevronUp"),
   more: item("Tùy chọn", "navigation", "Ellipsis", { ios: "Ellipsis", android: "EllipsisVertical" }),
   phone: item("Xem trên điện thoại", "navigation", "Smartphone"),
+  filter: item("Lọc", "navigation", "ListFilter"),
   settings: item("Cài đặt", "navigation", "SlidersHorizontal"),
   "sign-in": item("Đăng nhập", "navigation", "LogIn"),
   search: item("Tìm kiếm", "conversation", "Search"),
@@ -46,6 +47,9 @@ export const ICONS = {
   edit: item("Soạn mới", "conversation", "SquarePen"),
   group: item("Phòng hội thoại", "conversation", "Users"),
   "group-add": item("Thêm thành viên", "conversation", "UserPlus"),
+  unread: item("Chưa đọc", "conversation", "MessageSquareDot"),
+  rename: item("Đổi tên", "conversation", "Pencil"),
+  delete: item("Xóa", "conversation", "Trash2"),
   favorite: item("Yêu thích", "conversation", "Star"),
   assistant: custom(
     "Trợ lý GeoAgent",

@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { LINK_PREVIEWS } from "../data.js";
-import { CloseIcon, DocumentIcon, ExternalLinkIcon } from "../icons.jsx";
+import { CloseIcon, ExternalLinkIcon } from "../icons.jsx";
 
 const hostOf = (url) => {
   try {
@@ -41,11 +41,8 @@ export default function DesktopWebPane({ link, onClose, className = "" }) {
       className={`flex min-h-0 flex-col bg-web-pane-bg text-web-pane-text ${className}`}
     >
       {/* Thanh trên: nguồn, tiêu đề, mở tab mới, đóng */}
-      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-web-pane-border px-4 pt-[var(--safe-top)]">
-        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-web-pane-icon-tile text-web-pane-text-muted [&_svg]:size-[18px]">
-          <DocumentIcon />
-        </span>
-        <div className="min-w-0 flex-1">
+      <div className="flex h-16 shrink-0 items-center gap-1 border-b border-web-pane-border pr-3 pl-5 pt-[var(--safe-top)]">
+        <div className="mr-2 min-w-0 flex-1">
           {/* text-nowrap!: quy tắc chung :root[data-variant] :is(h1,h2,h3) { text-wrap: balance } ưu tiên cao hơn class thường, đè mất nowrap của truncate */}
           <h2 ref={heading} id={`${id}-title`} tabIndex={-1} className="m-0 truncate text-nowrap! text-title outline-none" title={title}>{title}</h2>
           <p className="m-0 truncate text-xs text-web-pane-text-muted">{host} · {preview ? preview.kind : "Liên kết ngoài"}</p>
@@ -54,9 +51,10 @@ export default function DesktopWebPane({ link, onClose, className = "" }) {
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border border-button-secondary-border px-3 text-sm font-medium text-button-secondary-text hover:bg-button-secondary-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring [&_svg]:size-4"
+          aria-label="Mở trang trong tab mới"
+          title="Mở trong tab mới"
+          className="grid size-9 shrink-0 place-items-center rounded-full text-icon-button-icon hover:bg-icon-button-bg-hover hover:text-icon-button-icon-hover focus-visible:outline-2 focus-visible:outline-focus-ring [&_svg]:size-5"
         >
-          Mở tab mới
           <ExternalLinkIcon />
         </a>
         <button
@@ -76,7 +74,7 @@ export default function DesktopWebPane({ link, onClose, className = "" }) {
           <div className="h-full overflow-y-auto p-8">
             <div className="mx-auto max-w-lg">
               <p className="m-0 text-title text-pretty">{host} không cho xem trang bên trong ứng dụng khác</p>
-              <p className="mt-2 mb-0 text-small text-web-pane-text-muted text-pretty">Trang này chặn hiển thị trong khung nhúng. Mở tab mới để đọc toàn văn.</p>
+              <p className="mt-2 mb-0 text-small text-web-pane-text-muted text-pretty">Trang này chặn hiển thị trong khung nhúng. <a href={link.url} target="_blank" rel="noopener noreferrer" className="font-medium text-content-link underline underline-offset-2">Mở trong tab mới</a> để đọc toàn văn.</p>
               {preview && (
                 <div className="mt-6 rounded-2xl border border-web-pane-card-border bg-web-pane-card-bg p-5">
                   <p className="m-0 text-xs font-medium text-web-pane-text-muted">Tóm tắt · bản xem trước giả lập</p>
@@ -112,7 +110,8 @@ export default function DesktopWebPane({ link, onClose, className = "" }) {
             />
             {embed === undefined && (
               <p className="absolute inset-x-0 bottom-0 m-0 border-t border-web-pane-border bg-web-pane-bg px-4 py-2 text-xs text-web-pane-text-muted">
-                Khung trống? Một số trang chặn xem nhúng. Dùng “Mở tab mới”.
+                Khung trống? Một số trang chặn xem nhúng.{" "}
+                <a href={link.url} target="_blank" rel="noopener noreferrer" className="font-medium text-content-link underline underline-offset-2">Mở trong tab mới</a>
               </p>
             )}
           </>

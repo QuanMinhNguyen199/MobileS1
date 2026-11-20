@@ -296,22 +296,22 @@
   --sidebar-bg: var(--frame); /* Nền sidebar */
   --sidebar-text: var(--on-frame); /* Chữ chính trên sidebar */
   --sidebar-text-muted: var(--on-frame-muted); /* Chữ phụ trên sidebar */
-  --sidebar-text-muted-hover: var(--on-frame-muted-strong); /* Chữ phụ khi rê chuột / đang mở */
   --sidebar-icon: var(--on-frame-muted); /* Icon trên sidebar */
   --sidebar-item-bg-hover: var(--frame-hover); /* Nền mục khi rê chuột */
   --sidebar-item-bg-selected: var(--frame-active); /* Nền mục đang chọn */
+  --sidebar-item-text: var(--on-frame); /* Chữ tên phiên chat (đã đọc); sáng hơn nhãn bộ lọc */
   --sidebar-item-text-selected: var(--on-frame-active); /* Chữ mục đang chọn */
   --sidebar-divider: var(--divider); /* Đường kẻ trên sidebar */
   --sidebar-focus-ring: var(--on-frame); /* Viền focus trên sidebar */
   --sidebar-unread-dot: var(--gold); /* Chấm chưa đọc */
+  --sidebar-item-action-icon: var(--on-frame-muted); /* Icon nút tùy chọn (⋮) của phiên chat */
+  --sidebar-item-action-icon-selected: var(--on-frame-active-muted); /* Icon nút tùy chọn trên phiên đang chọn */
+  --sidebar-item-action-bg-hover-selected: var(--avatar-selected-bg); /* Nền nút tùy chọn khi rê chuột, trên phiên đang chọn */
   --search-bg: var(--frame-sunken); /* Nền ô tìm kiếm */
   --search-border: var(--frame-edge); /* Viền ô tìm kiếm */
   --search-border-focus: var(--on-frame); /* Viền khi đang gõ */
   --search-text: var(--on-frame); /* Chữ đang gõ */
   --search-placeholder: var(--on-frame-muted); /* Chữ gợi ý */
-  --tab-text: var(--on-frame-muted); /* Tab lọc */
-  --tab-text-selected: var(--on-frame); /* Tab đang chọn */
-  --tab-indicator: var(--gold); /* Gạch chân tab đang chọn */
   --chat-bg: var(--canvas); /* Nền vùng hội thoại và header kính mờ */
   --chat-header-border: var(--rule); /* Đường kẻ dưới header khi đã cuộn */
   --chat-typing-dot: var(--ink-2); /* Chấm “đang trả lời” */
@@ -376,7 +376,6 @@
   --web-pane-text-muted: var(--ink-2); /* Chữ phụ */
   --web-pane-card-bg: var(--surface); /* Thẻ tóm tắt */
   --web-pane-card-border: var(--line); /* Viền thẻ tóm tắt */
-  --web-pane-icon-tile: var(--panel); /* Ô icon trang */
   --overlay-scrim: var(--scrim); /* Lớp phủ sau ngăn kéo */
 }
 
@@ -433,22 +432,22 @@
   --color-sidebar-bg: var(--sidebar-bg);
   --color-sidebar-text: var(--sidebar-text);
   --color-sidebar-text-muted: var(--sidebar-text-muted);
-  --color-sidebar-text-muted-hover: var(--sidebar-text-muted-hover);
   --color-sidebar-icon: var(--sidebar-icon);
   --color-sidebar-item-bg-hover: var(--sidebar-item-bg-hover);
   --color-sidebar-item-bg-selected: var(--sidebar-item-bg-selected);
+  --color-sidebar-item-text: var(--sidebar-item-text);
   --color-sidebar-item-text-selected: var(--sidebar-item-text-selected);
   --color-sidebar-divider: var(--sidebar-divider);
   --color-sidebar-focus-ring: var(--sidebar-focus-ring);
   --color-sidebar-unread-dot: var(--sidebar-unread-dot);
+  --color-sidebar-item-action-icon: var(--sidebar-item-action-icon);
+  --color-sidebar-item-action-icon-selected: var(--sidebar-item-action-icon-selected);
+  --color-sidebar-item-action-bg-hover-selected: var(--sidebar-item-action-bg-hover-selected);
   --color-search-bg: var(--search-bg);
   --color-search-border: var(--search-border);
   --color-search-border-focus: var(--search-border-focus);
   --color-search-text: var(--search-text);
   --color-search-placeholder: var(--search-placeholder);
-  --color-tab-text: var(--tab-text);
-  --color-tab-text-selected: var(--tab-text-selected);
-  --color-tab-indicator: var(--tab-indicator);
   --color-chat-bg: var(--chat-bg);
   --color-chat-header-border: var(--chat-header-border);
   --color-chat-typing-dot: var(--chat-typing-dot);
@@ -513,7 +512,6 @@
   --color-web-pane-text-muted: var(--web-pane-text-muted);
   --color-web-pane-card-bg: var(--web-pane-card-bg);
   --color-web-pane-card-border: var(--web-pane-card-border);
-  --color-web-pane-icon-tile: var(--web-pane-icon-tile);
   --color-overlay-scrim: var(--overlay-scrim);
 }
 

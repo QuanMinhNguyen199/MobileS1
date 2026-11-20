@@ -83,6 +83,13 @@
       "file": "phone.svg"
     },
     {
+      "name": "filter",
+      "label": "Lọc",
+      "group": "navigation",
+      "source": "lucide:ListFilter",
+      "file": "filter.svg"
+    },
+    {
       "name": "settings",
       "label": "Cài đặt",
       "group": "navigation",
@@ -137,6 +144,27 @@
       "group": "conversation",
       "source": "lucide:UserPlus",
       "file": "group-add.svg"
+    },
+    {
+      "name": "unread",
+      "label": "Chưa đọc",
+      "group": "conversation",
+      "source": "lucide:MessageSquareDot",
+      "file": "unread.svg"
+    },
+    {
+      "name": "rename",
+      "label": "Đổi tên",
+      "group": "conversation",
+      "source": "lucide:Pencil",
+      "file": "rename.svg"
+    },
+    {
+      "name": "delete",
+      "label": "Xóa",
+      "group": "conversation",
+      "source": "lucide:Trash2",
+      "file": "delete.svg"
     },
     {
       "name": "favorite",

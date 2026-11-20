@@ -64,6 +64,19 @@ export default function App({ logoRef, logoHidden }) {
     if (drawer) closeDrawer();
   };
 
+  // Xóa phiên; xóa đúng phiên đang mở thì chuyển sang phiên đầu còn lại
+  const remove = (id) => {
+    const rest = conversations.filter((c) => c.id !== id);
+    if (!rest.length) return;
+    if (id === activeId) {
+      clearTimeout(timer.current);
+      setTyping(false);
+      setActiveId(rest[0].id);
+      rest[0] = { ...rest[0], unread: false };
+    }
+    setConversations(rest); // ngăn kéo (điện thoại) vẫn mở để xóa tiếp
+  };
+
   const send = (text) => {
     const id = activeId;
     update(id, (c) => ({
@@ -95,6 +108,8 @@ export default function App({ logoRef, logoHidden }) {
     activeId,
     showActive: true,
     onOpen: open,
+    onUpdate: update,
+    onDelete: remove,
     query,
     onQuery: setQuery,
     logoHidden,

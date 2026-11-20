@@ -87,8 +87,6 @@ export const CONVERSATIONS = [
 
 export const FILTERS = [
   { key: "unread", label: "Chưa đọc" },
-  { key: "contact", label: "Liên hệ" },
-  { key: "room", label: "Phòng" },
   { key: "favorite", label: "Yêu thích" },
 ];
 

@@ -2,16 +2,16 @@ import { createElement } from "react";
 // Import từng icon theo tên để bundler chỉ đóng gói icon đang dùng
 import {
   ArrowLeft, ArrowUp, BookOpenText, Check, ChevronDown as LChevronDown, ChevronUp as LChevronUp, CircleCheck, CircleX, Copy, Download,
-  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Info, Link, LogIn, Menu, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Plus, RotateCw,
-  Search, ShieldCheck, SlidersHorizontal, Smartphone, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, TriangleAlert, UserPlus,
+  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Info, Link, ListFilter, LogIn, Menu, MessageSquareDot, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Pencil, Plus, RotateCw,
+  Search, ShieldCheck, SlidersHorizontal, Smartphone, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, Trash2, TriangleAlert, UserPlus,
   Users, X,
 } from "lucide-react";
 import { ICONS, STROKE, lucideFor } from "./icon-data.js";
 
 const LUCIDE = {
   ArrowLeft, ArrowUp, BookOpenText, Check, ChevronDown: LChevronDown, ChevronUp: LChevronUp, CircleCheck, CircleX, Copy, Download,
-  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Info, Link, LogIn, Menu, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Plus, RotateCw,
-  Search, ShieldCheck, SlidersHorizontal, Smartphone, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, TriangleAlert, UserPlus,
+  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Info, Link, ListFilter, LogIn, Menu, MessageSquareDot, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Pencil, Plus, RotateCw,
+  Search, ShieldCheck, SlidersHorizontal, Smartphone, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, Trash2, TriangleAlert, UserPlus,
   Users, X,
 };
 
@@ -79,3 +79,9 @@ export const ShareIcon = icon("share");
 export const SettingsIcon = icon("settings");
 export const ExternalLinkIcon = icon("external-link");
 export const DocumentIcon = icon("document");
+export const FilterIcon = icon("filter");
+export const UnreadIcon = icon("unread");
+export const FavoriteIcon = icon("favorite");
+export const CheckIcon = icon("check");
+export const RenameIcon = icon("rename");
+export const DeleteIcon = icon("delete");

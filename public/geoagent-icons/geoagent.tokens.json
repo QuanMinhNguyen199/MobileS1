@@ -1554,6 +1554,39 @@
             "figma": "sidebar/unread-dot"
           }
         }
+      },
+      "item-action-icon": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame-muted}",
+        "$description": "Icon nút tùy chọn (⋮) của phiên chat",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-item-action-icon",
+            "figma": "sidebar/item-action-icon"
+          }
+        }
+      },
+      "item-action-icon-selected": {
+        "$type": "color",
+        "$value": "{alias.sidebar.on-frame-active-muted}",
+        "$description": "Icon nút tùy chọn trên phiên đang chọn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-item-action-icon-selected",
+            "figma": "sidebar/item-action-icon-selected"
+          }
+        }
+      },
+      "item-action-bg-hover-selected": {
+        "$type": "color",
+        "$value": "{alias.avatar.selected-bg}",
+        "$description": "Nền nút tùy chọn khi rê chuột, trên phiên đang chọn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--sidebar-item-action-bg-hover-selected",
+            "figma": "sidebar/item-action-bg-hover-selected"
+          }
+        }
       }
     },
     "search": {
@@ -1609,41 +1642,6 @@
           "geoagent": {
             "css": "--search-placeholder",
             "figma": "search/placeholder"
-          }
-        }
-      }
-    },
-    "tab": {
-      "text": {
-        "$type": "color",
-        "$value": "{alias.sidebar.on-frame-muted}",
-        "$description": "Tab lọc",
-        "$extensions": {
-          "geoagent": {
-            "css": "--tab-text",
-            "figma": "tab/text"
-          }
-        }
-      },
-      "text-selected": {
-        "$type": "color",
-        "$value": "{alias.sidebar.on-frame}",
-        "$description": "Tab đang chọn",
-        "$extensions": {
-          "geoagent": {
-            "css": "--tab-text-selected",
-            "figma": "tab/text-selected"
-          }
-        }
-      },
-      "indicator": {
-        "$type": "color",
-        "$value": "{alias.brand.gold}",
-        "$description": "Gạch chân tab đang chọn",
-        "$extensions": {
-          "geoagent": {
-            "css": "--tab-indicator",
-            "figma": "tab/indicator"
           }
         }
       }
@@ -2380,17 +2378,6 @@
           "geoagent": {
             "css": "--web-pane-card-border",
             "figma": "web-pane/card-border"
-          }
-        }
-      },
-      "icon-tile": {
-        "$type": "color",
-        "$value": "{alias.surface.panel}",
-        "$description": "Ô icon trang",
-        "$extensions": {
-          "geoagent": {
-            "css": "--web-pane-icon-tile",
-            "figma": "web-pane/icon-tile"
           }
         }
       }

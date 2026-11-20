@@ -3,8 +3,8 @@ import Sidebar from "./Sidebar.jsx";
 import { MenuIcon } from "../icons.jsx";
 
 const RAIL = 40;
-const MIN = 280;
-const DEFAULT = 300;
+const MIN = 240;
+const DEFAULT = 264;
 const MAX = 480;
 const SNAP = (RAIL + MIN) / 2;
 const maxWidth = () => Math.max(MIN, Math.min(MAX, window.innerWidth - 400));

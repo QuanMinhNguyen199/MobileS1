@@ -1,5 +1,4 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronUp } from "../icons.jsx";
 import { useColorScheme } from "../theme.js";
 import { Avatar } from "./ui.jsx";
 
@@ -54,15 +53,14 @@ export default function Settings({ name }) {
         aria-expanded={open}
         aria-controls={`${id}-panel`}
         onClick={() => setOpen((v) => !v)}
-        className="group flex w-full items-center gap-3 rounded-2xl px-2 py-1.5 text-left text-sidebar-text transition-colors hover:bg-sidebar-item-bg-hover focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sidebar-focus-ring aria-expanded:bg-sidebar-item-bg-hover"
+        className="flex w-full items-center gap-3 rounded-2xl px-2 py-1.5 text-left text-sidebar-text transition-colors hover:bg-sidebar-item-bg-hover focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sidebar-focus-ring aria-expanded:bg-sidebar-item-bg-hover"
       >
-        <Avatar name={name} size={32} tone="frame" />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium">{name}</span>
-          {/* Trên nền rê chuột/đang mở dùng chữ phụ sáng hơn: on-frame-muted chỉ đạt 4,46:1 ở đó */}
-          <span className="block text-xs text-sidebar-text-muted group-hover:text-sidebar-text-muted-hover group-aria-expanded:text-sidebar-text-muted-hover">Tài khoản và cài đặt</span>
+        <Avatar name={name} size={28} tone="frame" />
+        <span className="min-w-0 flex-1 truncate text-small font-medium">
+          {name}
+          {/* Chỉ hiện tên; trình đọc màn hình vẫn biết đây là nút mở tài khoản và cài đặt */}
+          <span className="sr-only">, tài khoản và cài đặt</span>
         </span>
-        <ChevronUp size={18} className={`shrink-0 text-sidebar-text-muted transition-transform group-hover:text-sidebar-text-muted-hover group-aria-expanded:text-sidebar-text-muted-hover motion-reduce:transition-none ${open ? "" : "rotate-180"}`} />
       </button>
 
       {open && (
