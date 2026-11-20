@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CONVERSATIONS } from "./data.js";
 import Sidebar from "./components/Sidebar.jsx";
+import { DeleteDialog, RenameDialog } from "./components/ConversationDialogs.jsx";
+import { conversationActions, topicOf } from "./conversationActions.js";
 import DesktopSidebar from "./components/DesktopSidebar.jsx";
 import ChatPane from "./components/ChatPane.jsx";
 import DesktopWebPane from "./components/DesktopWebPane.jsx";
@@ -21,7 +23,23 @@ function useIsMobile() {
   return mobile;
 }
 
-export default function App({ logoRef, logoHidden }) {
+// Trạng thái mạng của trình duyệt (sự kiện online/offline)
+function useOnline() {
+  const [online, setOnline] = useState(() => navigator.onLine);
+  useEffect(() => {
+    const on = () => setOnline(true);
+    const off = () => setOnline(false);
+    window.addEventListener("online", on);
+    window.addEventListener("offline", off);
+    return () => {
+      window.removeEventListener("online", on);
+      window.removeEventListener("offline", off);
+    };
+  }, []);
+  return online;
+}
+
+export default function App({ logoRef, logoHidden, onLogout }) {
   const [conversations, setConversations] = useState(CONVERSATIONS);
   const [activeId, setActiveId] = useState(CONVERSATIONS[0].id);
   const [drawer, setDrawer] = useState(false); // điện thoại: danh sách hội thoại dạng ngăn kéo (kiểu Gemini)
@@ -29,6 +47,7 @@ export default function App({ logoRef, logoHidden }) {
   const [query, setQuery] = useState("");
   const timer = useRef(null);
   const isMobile = useIsMobile();
+  const online = useOnline();
   // Máy tính: link đang mở trong khung web bên phải khung chat (không phải modal)
   const [web, setWeb] = useState(null);
   const webOrigin = useRef(null);
@@ -77,15 +96,10 @@ export default function App({ logoRef, logoHidden }) {
     setConversations(rest); // ngăn kéo (điện thoại) vẫn mở để xóa tiếp
   };
 
-  const send = (text) => {
-    const id = activeId;
-    update(id, (c) => ({
-      ...c,
-      preview: `Bạn: ${text}`,
-      messages: [...c.messages, { id: Date.now(), from: "user", time: now(), text }],
-    }));
-    // Phản hồi giả lập: thay bằng lời gọi API GeoAgent thật
+  // Phản hồi giả lập: thay bằng lời gọi API GeoAgent thật. Lỗi mạng thì đánh dấu tin chưa gửi để người dùng thử lại.
+  const reply = (id) => {
     setTyping(true);
+    clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       setTyping(false);
       update(id, (c) => ({
@@ -103,13 +117,74 @@ export default function App({ logoRef, logoHidden }) {
     }, 900);
   };
 
+  const send = (text) => {
+    const id = activeId;
+    const failed = !navigator.onLine;
+    update(id, (c) => ({
+      ...c,
+      // Phiên mới: lấy câu hỏi đầu tiên làm chủ đề (khi nối API, thay bằng tóm tắt do máy chủ trả về)
+      topic: c.topic ?? (text.length > 60 ? `${text.slice(0, 57).trimEnd()}…` : text),
+      preview: `Bạn: ${text}`,
+      messages: [...c.messages, { id: Date.now(), from: "user", time: now(), text, ...(failed ? { status: "failed" } : {}) }],
+    }));
+    if (!failed) reply(id);
+  };
+
+  const retry = (messageId) => {
+    if (!navigator.onLine) return;
+    const id = activeId;
+    update(id, (c) => ({ ...c, messages: c.messages.map((m) => (m.id === messageId ? { ...m, status: undefined, time: now() } : m)) }));
+    reply(id);
+  };
+
+  // Cuộc trò chuyện mới: phiên rỗng ở đầu danh sách. Đang ở một phiên rỗng thì dùng lại, không tạo thêm.
+  const newChat = () => {
+    clearTimeout(timer.current);
+    setTyping(false);
+    if (drawer) closeDrawer();
+    if (active && active.messages.length === 0) {
+      requestAnimationFrame(() => document.getElementById("msg")?.focus());
+      return;
+    }
+    const id = `new-${Date.now()}`;
+    setConversations((list) => [{ id, name: "Cuộc trò chuyện mới", bot: true, tags: [], unread: false, preview: "", messages: [] }, ...list]);
+    setActiveId(id);
+    requestAnimationFrame(() => document.getElementById("msg")?.focus());
+  };
+
+  // Hộp xóa / đổi tên dùng chung cho menu ⋮ ở danh sách và ở header khung chat
+  const [pendingDelete, setPendingDelete] = useState(null); // { id, topic, from }
+  const [renaming, setRenaming] = useState(null); // { id, topic }
+  const confirmDelete = (id) => {
+    // Xóa từ danh sách: dòng đó biến mất nên focus sang dòng kế tiếp (hoặc dòng trước).
+    // Xóa từ header: hộp thoại tự trả focus về nút ⋮ ở header.
+    let next = null;
+    if (pendingDelete?.from === "sidebar") {
+      const row = [...document.querySelectorAll(`aside button[data-id="${id}"]`)].find((b) => b.offsetParent)?.closest("li");
+      next = (row?.nextElementSibling ?? row?.previousElementSibling)?.querySelector("button[data-id]");
+    }
+    remove(id);
+    if (next) requestAnimationFrame(() => next.focus());
+  };
+  const headerActions = active
+    ? conversationActions(active, {
+        selected: true,
+        canDelete: conversations.length > 1,
+        onUpdate: update,
+        onRename: () => setRenaming({ id: active.id, topic: topicOf(active) }),
+        onDelete: () => setPendingDelete({ id: active.id, topic: topicOf(active), from: "header" }),
+      })
+    : [];
+
   const sidebarProps = {
     conversations,
     activeId,
     showActive: true,
     onOpen: open,
     onUpdate: update,
-    onDelete: remove,
+    onRequestDelete: setPendingDelete,
+    onNewChat: newChat,
+    onLogout,
     query,
     onQuery: setQuery,
     logoHidden,
@@ -123,6 +198,10 @@ export default function App({ logoRef, logoHidden }) {
         conversation={active}
         typing={typing}
         onSend={send}
+        onRetry={retry}
+        actions={headerActions}
+        onNewChat={newChat}
+        online={online}
         onMenu={() => setDrawer(true)}
         onOpenWeb={isMobile ? undefined : openWeb}
         compact={!isMobile && Boolean(web)}
@@ -164,6 +243,8 @@ export default function App({ logoRef, logoHidden }) {
         )}
       </AnimatePresence>
 
+      <DeleteDialog target={pendingDelete} onConfirm={confirmDelete} onDone={() => setPendingDelete(null)} />
+      <RenameDialog target={renaming} onSave={(id, topic) => update(id, (c) => ({ ...c, topic }))} onDone={() => setRenaming(null)} />
     </div>
   );
 }

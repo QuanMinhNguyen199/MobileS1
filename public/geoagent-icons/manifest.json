@@ -104,6 +104,13 @@
       "file": "sign-in.svg"
     },
     {
+      "name": "sign-out",
+      "label": "Đăng xuất",
+      "group": "navigation",
+      "source": "lucide:LogOut",
+      "file": "sign-out.svg"
+    },
+    {
       "name": "search",
       "label": "Tìm kiếm",
       "group": "conversation",

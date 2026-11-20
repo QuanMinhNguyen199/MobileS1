@@ -76,3 +76,19 @@
 @media (pointer: coarse) { .copy { min-block-size: 44px; } }
 @media (forced-colors: active) { .tk-swatch { border-color: CanvasText; } }
 @media (prefers-reduced-motion: no-preference) { .copy { transition: border-color .15s, background-color .15s; } }
+
+/* Công tắc Sáng / Tối: cột Màu của Alias và Component chỉ hiện bản của giao diện đang chọn */
+.tk-scheme { display: inline-flex; margin: 0; padding: 2px; border: 1px solid var(--line); border-radius: 999px; background: white; }
+.tk-scheme[hidden] { display: none; }
+.tk-scheme label { position: relative; display: inline-flex; align-items: center; min-block-size: 32px; padding-inline: 14px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; }
+.tk-scheme input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.tk-scheme label:has(input:checked) { background: var(--ink); color: white; }
+.tk-scheme label:has(input:focus-visible) { outline: 2px solid #1a5fd6; outline-offset: 2px; }
+#tk-content:not([data-scheme="dark"]) .tk-on-dark,
+#tk-content[data-scheme="dark"] .tk-on-light { display: none; }
+/* Bản tối: ô màu đặt trên nền tối để thấy đúng màu sẽ hiện trên màn hình */
+#tk-content[data-scheme="dark"] .tk-on-dark .tk-swatch { outline: 3px solid #17110f; outline-offset: 0; }
+.tk-table-alias { min-inline-size: 900px; }
+.tk-table-alias thead th:nth-child(2) { inline-size: 26%; }
+.tk-table-alias thead th:nth-child(3) { inline-size: 24%; }
+@media (pointer: coarse) { .tk-scheme label { min-block-size: 44px; } }

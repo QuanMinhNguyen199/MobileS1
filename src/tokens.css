@@ -108,6 +108,7 @@
   --ink-2: var(--warm-700); /* Chữ phụ, icon trung tính, giờ gửi */
   --link: var(--red-700); /* Chữ link trong tin nhắn (luôn kèm gạch chân) */
   --on-brand: var(--base-white); /* Chữ và icon trên nền thương hiệu (nút chính, nút gửi) */
+  --danger: var(--red-700); /* Chữ báo lỗi (gửi thất bại, đăng nhập thất bại, mất mạng) */
   --line: var(--warm-300); /* Viền nhạt: nút cuộn, đầu bảng */
   --rule: var(--warm-200); /* Đường kẻ: header, hàng bảng, phân cách */
   --line-strong: var(--warm-550); /* Viền điều khiển (ô soạn tin), 3,42:1 trên trắng */
@@ -151,6 +152,7 @@
     --ink: var(--night-50);
     --ink-2: var(--night-300);
     --link: var(--ember-350);
+    --danger: var(--ember-350);
     --line: var(--night-700);
     --rule: var(--night-800);
     --line-strong: var(--night-500);
@@ -192,6 +194,7 @@
     --ink: light-dark(var(--warm-950), var(--night-50));
     --ink-2: light-dark(var(--warm-700), var(--night-300));
     --link: light-dark(var(--red-700), var(--ember-350));
+    --danger: light-dark(var(--red-700), var(--ember-350));
     --line: light-dark(var(--warm-300), var(--night-700));
     --rule: light-dark(var(--warm-200), var(--night-800));
     --line-strong: light-dark(var(--warm-550), var(--night-500));
@@ -233,6 +236,7 @@
     --ink: var(--warm-950);
     --ink-2: var(--warm-700);
     --link: var(--red-700);
+    --danger: var(--red-700);
     --line: var(--warm-300);
     --rule: var(--warm-200);
     --line-strong: var(--warm-550);
@@ -273,6 +277,7 @@
     --ink: var(--night-50);
     --ink-2: var(--night-300);
     --link: var(--ember-350);
+    --danger: var(--ember-350);
     --line: var(--night-700);
     --rule: var(--night-800);
     --line-strong: var(--night-500);
@@ -313,10 +318,13 @@
   --search-text: var(--on-frame); /* Chữ đang gõ */
   --search-placeholder: var(--on-frame-muted); /* Chữ gợi ý */
   --chat-bg: var(--canvas); /* Nền vùng hội thoại và header kính mờ */
-  --chat-header-border: var(--rule); /* Đường kẻ dưới header khi đã cuộn */
   --chat-typing-dot: var(--ink-2); /* Chấm “đang trả lời” */
+  --chat-header-fade: var(--canvas); /* Dải mờ dần phía trên: tin nhắn cuộn lên nhạt dần rồi biến mất */
+  --chat-notice-text: var(--ink-2); /* Dòng báo mất kết nối phía trên ô soạn tin */
+  --chat-notice-icon: var(--danger); /* Icon cảnh báo của dòng báo mất kết nối */
   --message-user-bg: var(--brand-soft); /* Bong bóng tin người dùng */
   --message-user-meta: var(--ink-2); /* Giờ gửi */
+  --message-user-error: var(--danger); /* Tin chưa gửi được */
   --message-bot-bg: var(--surface); /* Thẻ tin của bot */
   --message-bot-border: var(--bubble-edge); /* Viền thẻ tin bot */
   --message-bot-sender: var(--ink); /* Tên người gửi */
@@ -333,9 +341,6 @@
   --composer-bg: var(--surface); /* Nền ô soạn tin */
   --composer-border: var(--line-strong); /* Viền ô soạn tin */
   --composer-placeholder: var(--ink-2); /* Chữ gợi ý */
-  --composer-icon: var(--ink-2); /* Icon đính kèm, micro */
-  --composer-icon-hover: var(--ink); /* Icon khi rê chuột */
-  --composer-icon-bg-hover: var(--panel); /* Nền nút tròn khi rê chuột */
   --composer-fade: var(--canvas); /* Dải mờ phía sau ô soạn tin */
   --composer-send-bg: var(--brand); /* Nút gửi */
   --composer-send-bg-hover: var(--brand-hover); /* Nút gửi khi rê chuột */
@@ -364,7 +369,7 @@
   --login-card-text: var(--ink); /* Chữ */
   --login-card-text-muted: var(--ink-2); /* Chữ phụ */
   --login-card-divider: var(--rule); /* Đường kẻ chân thẻ */
-  --select-bg-hover: var(--surface-2); /* Ô chọn ngôn ngữ khi rê chuột */
+  --login-card-error: var(--danger); /* Thông báo đăng nhập thất bại */
   --avatar-status: var(--status-offline); /* Chấm trạng thái */
   --avatar-status-ring: var(--surface); /* Viền quanh chấm trạng thái */
   --bot-avatar-bg: var(--frame); /* Nền avatar trợ lý */
@@ -377,6 +382,8 @@
   --web-pane-card-bg: var(--surface); /* Thẻ tóm tắt */
   --web-pane-card-border: var(--line); /* Viền thẻ tóm tắt */
   --overlay-scrim: var(--scrim); /* Lớp phủ sau ngăn kéo */
+  --answer-meta: var(--ink-2); /* Chân câu trả lời: lưu ý kiểm tra, nhãn nguồn */
+  --answer-source-link: var(--link); /* Link nguồn ở chân câu trả lời */
 }
 
 @theme inline {
@@ -410,6 +417,7 @@
   --color-ink-2: var(--ink-2);
   --color-link: var(--link);
   --color-on-brand: var(--on-brand);
+  --color-danger: var(--danger);
   --color-line: var(--line);
   --color-rule: var(--rule);
   --color-line-strong: var(--line-strong);
@@ -449,10 +457,13 @@
   --color-search-text: var(--search-text);
   --color-search-placeholder: var(--search-placeholder);
   --color-chat-bg: var(--chat-bg);
-  --color-chat-header-border: var(--chat-header-border);
   --color-chat-typing-dot: var(--chat-typing-dot);
+  --color-chat-header-fade: var(--chat-header-fade);
+  --color-chat-notice-text: var(--chat-notice-text);
+  --color-chat-notice-icon: var(--chat-notice-icon);
   --color-message-user-bg: var(--message-user-bg);
   --color-message-user-meta: var(--message-user-meta);
+  --color-message-user-error: var(--message-user-error);
   --color-message-bot-bg: var(--message-bot-bg);
   --color-message-bot-border: var(--message-bot-border);
   --color-message-bot-sender: var(--message-bot-sender);
@@ -469,9 +480,6 @@
   --color-composer-bg: var(--composer-bg);
   --color-composer-border: var(--composer-border);
   --color-composer-placeholder: var(--composer-placeholder);
-  --color-composer-icon: var(--composer-icon);
-  --color-composer-icon-hover: var(--composer-icon-hover);
-  --color-composer-icon-bg-hover: var(--composer-icon-bg-hover);
   --color-composer-fade: var(--composer-fade);
   --color-composer-send-bg: var(--composer-send-bg);
   --color-composer-send-bg-hover: var(--composer-send-bg-hover);
@@ -500,7 +508,7 @@
   --color-login-card-text: var(--login-card-text);
   --color-login-card-text-muted: var(--login-card-text-muted);
   --color-login-card-divider: var(--login-card-divider);
-  --color-select-bg-hover: var(--select-bg-hover);
+  --color-login-card-error: var(--login-card-error);
   --color-avatar-status: var(--avatar-status);
   --color-avatar-status-ring: var(--avatar-status-ring);
   --color-bot-avatar-bg: var(--bot-avatar-bg);
@@ -513,6 +521,8 @@
   --color-web-pane-card-bg: var(--web-pane-card-bg);
   --color-web-pane-card-border: var(--web-pane-card-border);
   --color-overlay-scrim: var(--overlay-scrim);
+  --color-answer-meta: var(--answer-meta);
+  --color-answer-source-link: var(--answer-source-link);
 }
 
 @theme {

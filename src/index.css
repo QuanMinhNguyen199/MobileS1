@@ -155,61 +155,120 @@
   }
 }
 
-/* Mobile: web và chat cùng thao tác được, khung web không làm trơ phần chat. */
+/* Mobile browser: the website fills the workspace; chat opens above the bottom bar. */
+:root[data-variant="improved"] main[data-web-active="true"] > header { display: none; }
+:root[data-variant="improved"] .chat-workspace[data-web-active="true"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) var(--chat-sheet-gap, 0px) minmax(0, var(--chat-sheet-size, 0px)) var(--chat-bar-size, 0px);
+  min-block-size: 0;
+}
+/* Web giữ nguyên kích thước từ hàng 1 đến hết hàng khung chat; khung chat nổi đè lên phần dưới, không co iframe lại.
+   Iframe bị đổi cỡ khi mở chat thì iOS/Android có lúc không cuộn được trang nữa. Khe và góc bo phía trên
+   khung chat cũng thấy web phía sau thay vì một dải nền chat lòi ra. */
 :root[data-variant="improved"] .mobile-web-pane {
+  grid-row: 1 / 4;
+  grid-column: 1; /* chồng lên cùng cột với khung chat, không bị đẩy sang cột phụ */
   display: flex;
-  flex: 0 0 auto;
   flex-direction: column;
-  block-size: var(--web-portion);
-  max-block-size: calc(100% - 180px);
-  min-block-size: 124px;
   min-inline-size: 0;
+  min-block-size: 0;
 }
-:root[data-variant="improved"] .mobile-web-pane[data-collapsed="true"] {
-  block-size: 48px;
-  min-block-size: 48px;
-  max-block-size: 48px;
-}
-:root[data-variant="improved"] .mobile-web-body:not([hidden]) {
+:root[data-variant="improved"] .mobile-web-body {
+  position: relative;
   display: flex;
   flex: 1;
   min-block-size: 0;
   flex-direction: column;
+  overflow: hidden;
 }
+/* Trang ngoài đang nhúng: không cho cả trang app nảy theo cử chỉ (iOS giữ cử chỉ ở trang app, web không cuộn được) */
+:root[data-variant="improved"]:has(.chat-workspace[data-web-active="true"]),
+:root[data-variant="improved"]:has(.chat-workspace[data-web-active="true"]) body {
+  overscroll-behavior: none;
+}
+/* Ẩn thanh cuộn của trang nhúng (không chỉnh được CSS của trang khác): iframe rộng thêm đúng bề rộng thanh cuộn
+   của trình duyệt (--frame-scrollbar, đo trong MobileWebPane; thanh cuộn nổi trên điện thoại = 0), phần thừa bị cắt */
 :root[data-variant="improved"] .mobile-web-frame {
   display: block;
-  flex: 1;
-  inline-size: 100%;
+  flex: 1 1 0;
+  inline-size: calc(100% + var(--frame-scrollbar, 0px));
+  max-inline-size: none;
+  block-size: 100%;
   min-block-size: 0;
   border: 0;
+  pointer-events: auto;
+  touch-action: auto;
   background: var(--web-pane-frame-bg);
   color-scheme: light;
 }
-:root[data-variant="improved"] .mobile-web-resizer {
+:root[data-variant="improved"] .chat-workspace[data-web-active="true"] .mobile-web-chat {
+  grid-row: 3;
+  grid-column: 1;
+  position: relative;
+  z-index: 1;
   display: grid;
-  flex: 0 0 44px;
-  place-items: center;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 48px minmax(0, 1fr);
+  min-block-size: 0;
+  border: 1px solid var(--composer-border);
+  border-block-end: 0;
+  border-start-start-radius: var(--radius-bubble);
+  border-start-end-radius: var(--radius-bubble);
+}
+.mobile-web-chat-heading {
+  display: flex;
+  flex: 0 0 48px;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  padding-inline: 44px 0;
+  /* Cùng nền với thân khung chat: đầu và thân là một tấm */
+  background: var(--chat-bg);
+  color: var(--web-pane-text);
+}
+:root[data-variant="improved"] .chat-workspace[data-web-active="true"] .mobile-web-chat-body {
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: clip;
+  contain: paint;
+  isolation: isolate;
+}
+.mobile-web-chat-handle {
+  display: flex;
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: 44px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   cursor: row-resize;
   touch-action: none;
-  background: var(--web-pane-bg);
-}
-:root[data-variant="improved"] .mobile-web-resizer > span {
-  inline-size: 40px;
-  block-size: 3px;
-  border-radius: 2px;
-  background: var(--web-pane-text-muted);
-}
-:root[data-variant="improved"] .mobile-web-resizer:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: -2px;
-}
-:root[data-variant="improved"].web-pane-resizing,
-:root[data-variant="improved"].web-pane-resizing * {
-  cursor: row-resize !important;
   user-select: none;
+  color: var(--web-pane-text-muted);
 }
-:root[data-variant="improved"] .mobile-web-pane[data-resizing="true"] iframe {
-  pointer-events: none;
+.mobile-web-chat-handle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+.mobile-web-chat-grip { inline-size: 32px; block-size: 4px; border-radius: 2px; background: var(--web-pane-text-muted); }
+:root[data-variant="improved"] .chat-workspace[data-web-active="true"] .mobile-web-chat [aria-label="Tin nhắn"] {
+  /* Cuộn chat tới cuối không kéo theo trang app phía sau */
+  overscroll-behavior: contain;
+  touch-action: pan-y pinch-zoom;
+}
+:root[data-variant="improved"] .mobile-web-chat[hidden] { display: none; }
+:root[data-variant="improved"] .mobile-web-chat-toggle {
+  grid-row: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-block-size: calc(48px + var(--safe-bottom));
+  padding: 8px 16px calc(8px + var(--safe-bottom));
+  border-block-start: 1px solid var(--button-primary-bg);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-label);
 }
 
 /* Thanh cuộn (bản cải thiện)

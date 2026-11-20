@@ -8,7 +8,7 @@
   (`Shell.jsx` luôn gắn `data-variant="improved"`).
 - Token (màu, kiểu chữ, bo góc, đổ bóng) nằm ở `tokens/geoagent.tokens.json`, khớp Figma;
   `npm run tokens` sinh `src/tokens.css` (không sửa tay). Màu có 3 tầng Global → Alias → Component;
-  component dùng class tầng Component (`bg-button-primary-bg`, `text-composer-icon`…) cùng `text-message`,
+  component dùng class tầng Component (`bg-button-primary-bg`, `text-composer-send-icon`…) cùng `text-message`,
   `rounded-bubble`, `shadow-composer`…, không gõ giá trị cứng. Bộ phận mới: thêm token Component trỏ về alias.
   Xem `tokens/README.md`.
 - Có giao diện tối (theo máy, chọn được trong Cài đặt). Màu mới phải là màu vai trò có cả bản sáng

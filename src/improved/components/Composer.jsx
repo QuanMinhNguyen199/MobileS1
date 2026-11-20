@@ -1,9 +1,11 @@
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ClipIcon, MicIcon, SendIcon } from "../icons.jsx";
+import { SendIcon, WarningIcon } from "../icons.jsx";
 
-// compact: cột chat hẹp (máy tính khi khung web đang mở bên phải) dùng lề như điện thoại
-export default function Composer({ onSend, placeholder = "Nhắn tin", compact = false }) {
+// compact: cột chat hẹp (máy tính khi khung web đang mở bên phải) dùng lề như điện thoại.
+// offline: hiện dòng báo mất kết nối phía trên ô; vẫn cho gõ và gửi (tin gửi lúc mất mạng hiện "Chưa gửi được" kèm nút Thử lại).
+// Chưa có đính kèm / giọng nói: không đặt nút giả, thêm lại khi có chức năng thật.
+export default function Composer({ onSend, placeholder = "Nhắn tin", compact = false, offline = false }) {
   const [text, setText] = useState("");
   const formRef = useRef(null);
   const hasText = text.trim() !== "";
@@ -34,15 +36,15 @@ export default function Composer({ onSend, placeholder = "Nhắn tin", compact =
       {/* Cùng khung với cột tin nhắn (ChatPane): mép ô soạn trùng mép nội dung */}
       <div className={`mx-auto w-full max-w-[1040px] ${compact ? "px-4" : "px-8 md:px-[72px]"}`}>
         {/* Dải che phía sau là kính mờ (thấy lờ mờ nội dung bên dưới); ô soạn tin trắng đặc để chữ luôn dễ đọc */}
-        <div className="flex items-end gap-1 rounded-composer border border-composer-border bg-composer-bg p-2 shadow-composer">
-          <button
-            type="button"
-            aria-label="Đính kèm tệp"
-            title="Đính kèm tệp"
-            className="grid size-10 shrink-0 place-items-center rounded-full text-composer-icon hover:bg-composer-icon-bg-hover hover:text-composer-icon-hover focus-visible:outline-2 focus-visible:outline-focus-ring"
-          >
-            <ClipIcon />
-          </button>
+        <p role="status" className="m-0 empty:hidden">
+          {offline && (
+            <span className="mb-2 flex items-center gap-2 px-2 text-small text-chat-notice-text">
+              <WarningIcon size={16} className="shrink-0 text-chat-notice-icon" />
+              Mất kết nối mạng. Tin nhắn chưa gửi được cho đến khi có mạng lại.
+            </span>
+          )}
+        </p>
+        <div className="flex min-h-14 items-end gap-1 rounded-composer border border-composer-border bg-composer-bg p-2 pl-4 shadow-composer">
           <label htmlFor="msg" className="sr-only">Nội dung tin nhắn</label>
           <textarea
             id="msg"
@@ -54,17 +56,7 @@ export default function Composer({ onSend, placeholder = "Nhắn tin", compact =
             enterKeyHint="send"
             className="field-sizing-content max-h-[8lh] min-h-[1lh] w-full min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-input outline-none placeholder:text-composer-placeholder"
           />
-          {/* Góc phải: micro luôn có; khi có chữ, micro trượt sang trái nhường chỗ cho nút gửi */}
-          <motion.button
-            layout
-            type="button"
-            aria-label="Nhập bằng giọng nói"
-            title="Nhập bằng giọng nói"
-            transition={{ type: "spring", bounce: 0, visualDuration: 0.2 }}
-            className="grid size-10 shrink-0 place-items-center rounded-full text-composer-icon hover:bg-composer-icon-bg-hover hover:text-composer-icon-hover focus-visible:outline-2 focus-visible:outline-focus-ring"
-          >
-            <MicIcon />
-          </motion.button>
+          {/* Nút gửi hiện khi đã có chữ */}
           <AnimatePresence initial={false} mode="popLayout">
             {hasText && (
               <motion.button

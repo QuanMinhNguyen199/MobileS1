@@ -41,6 +41,7 @@ export const ICONS = {
   filter: item("Lọc", "navigation", "ListFilter"),
   settings: item("Cài đặt", "navigation", "SlidersHorizontal"),
   "sign-in": item("Đăng nhập", "navigation", "LogIn"),
+  "sign-out": item("Đăng xuất", "navigation", "LogOut"),
   search: item("Tìm kiếm", "conversation", "Search"),
   chat: item("Hội thoại", "conversation", "MessageSquareText"),
   "new-chat": item("Hội thoại mới", "conversation", "MessageSquarePlus"),

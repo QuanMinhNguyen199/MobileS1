@@ -17,6 +17,7 @@ export default function Root() {
   const [phase, setPhase] = useState("welcome");
   const [target, setTarget] = useState(null);
   const [curtain, setCurtain] = useState(false); // điện thoại: chuyển cảnh kiểu rèm
+  const [loginError, setLoginError] = useState("");
   const logoRef = useRef(null);
   const reduce = useReducedMotion();
 
@@ -29,6 +30,12 @@ export default function Root() {
   useEffect(() => {
     if (phase !== "auth") return;
     const t = setTimeout(() => {
+      // Giả lập lỗi: mất mạng thì quay lại màn đăng nhập kèm thông báo (khi nối API: lỗi từ máy chủ)
+      if (!navigator.onLine) {
+        setLoginError("Không kết nối được máy chủ. Kiểm tra mạng rồi đăng nhập lại.");
+        setPhase("welcome");
+        return;
+      }
       // Máy tính: quốc huy bay vào sidebar. Điện thoại: không có chỗ hạ cánh nên dùng chuyển cảnh kiểu rèm.
       const el = logoRef.current;
       if (el) {
@@ -67,6 +74,20 @@ export default function Root() {
     if (phase === "app") document.getElementById("chat-title")?.focus({ preventScroll: true });
   }, [phase]);
 
+  const login = () => {
+    setLoginError("");
+    setPhase("auth");
+  };
+
+  // Đăng xuất: về màn đăng nhập, đặt lại chuyển cảnh, focus vào nút Đăng nhập
+  const logout = () => {
+    setTarget(null);
+    setCurtain(false);
+    radius.set(0);
+    setPhase("welcome");
+    requestAnimationFrame(() => document.querySelector("[data-login-button]")?.focus());
+  };
+
   const appMounted = phase !== "welcome";
   const appVisible = phase === "reveal" || phase === "app";
   const lifting = curtain && phase === "reveal"; // rèm đang kéo lên
@@ -90,7 +111,7 @@ export default function Root() {
             animate={{ opacity: phase === "welcome" ? 0 : 0.18 }}
             transition={{ duration: 0.4 }}
           />
-          <Welcome active={phase === "welcome"} onLogin={() => setPhase("auth")} />
+          <Welcome active={phase === "welcome"} onLogin={login} error={loginError} />
         </motion.div>
       )}
 
@@ -106,7 +127,7 @@ export default function Root() {
           transition={curtain ? lift : { duration: 0.4 }}
           onAnimationComplete={() => reduce && phase === "reveal" && setPhase("app")}
         >
-          <App logoRef={logoRef} logoHidden={phase !== "app"} />
+          <App logoRef={logoRef} logoHidden={phase !== "app"} onLogout={logout} />
         </motion.div>
       )}
 

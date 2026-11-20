@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useColorScheme } from "../theme.js";
+import { SignOutIcon } from "../icons.jsx";
 import { Avatar } from "./ui.jsx";
 
 const SCHEMES = [
@@ -11,7 +12,7 @@ const SCHEMES = [
 // Avatar + tên người dùng ở cuối sidebar là nút mở bảng tài khoản và cài đặt (kiểu ChatGPT/Gemini).
 // Bảng mở lên phía trên, chứa lựa chọn giao diện; đổi là áp ngay, không cần nút Lưu.
 // Đóng: bấm ra ngoài, Esc (trả focus về nút), hoặc Tab ra khỏi bảng.
-export default function Settings({ name }) {
+export default function Settings({ name, onLogout }) {
   const [open, setOpen] = useState(false);
   const [pref, choose, systemDark] = useColorScheme();
   const id = useId();
@@ -90,6 +91,19 @@ export default function Settings({ name }) {
               </label>
             ))}
           </fieldset>
+          {onLogout && (
+            <>
+              <hr className="mx-2 my-1.5 border-0 border-t border-menu-border" />
+              <button
+                type="button"
+                onClick={() => { setOpen(false); onLogout(); }}
+                className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-menu-item-bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring [&_svg]:size-4"
+              >
+                <SignOutIcon className="shrink-0 text-menu-text-muted" />
+                Đăng xuất
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

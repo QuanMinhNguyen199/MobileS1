@@ -35,7 +35,7 @@ giữ nguyên cấu trúc nguồn. CSS của bảng nằm ở `scripts/token-pag
 | **Alias** | `brand/brand` → `--brand: var(--red-700)` (tối: `--ember-600`) | Global, có Light/Dark | Component |
 | **Component** | `button-primary/bg` → `--button-primary-bg: var(--brand)` | Alias | code component |
 
-- Code component dùng **class Component**: `bg-button-primary-bg`, `text-composer-icon`, `border-search-border`…
+- Code component dùng **class Component**: `bg-button-primary-bg`, `text-composer-send-icon`, `border-search-border`…
   Không dùng thẳng Alias (`bg-brand`) hay Global trong component; class Alias vẫn còn ở vài file chưa chuyển
   (`MobileWebPane.jsx`, `DesktopSidebar.jsx`, `Root.jsx`).
 - Đổi màu cho dự án khác: sửa Global (ví dụ `red/700` là màu thương hiệu).
@@ -64,7 +64,7 @@ Class không đổi: `bg-brand` tự là đỏ sáng hơn khi tối. Component k
 
 | Figma | Code |
 |---|---|
-| Biến Component `button-primary/bg`, `composer/icon`… | `bg-button-primary-bg`, `text-composer-icon` (thay `/` bằng `-`) |
+| Biến Component `button-primary/bg`, `composer/send-icon`… | `bg-button-primary-bg`, `text-composer-send-icon` (thay `/` bằng `-`) |
 | Biến Alias `brand/brand`, `text/ink-2`… (khi chưa có token Component) | `bg-brand`, `text-ink-2` (tên sau dấu `/`) |
 | Kiểu chữ `Body/Message`, `Body/Bubble`, `Body/Input` | `text-message`, `text-bubble`, `text-input` |
 | `Display/Welcome title`, `Heading/Chat title`, `Heading/Message heading` | `text-display`, `text-title`, `text-message-heading` |

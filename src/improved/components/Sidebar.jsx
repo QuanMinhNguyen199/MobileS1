@@ -1,7 +1,8 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { LOGIN_ASSETS } from "../assets.js";
 import { FILTERS } from "../data.js";
-import { ChatIcon, CloseIcon, EditIcon, DeleteIcon, FavoriteIcon, MoreIcon, RenameIcon, UnreadIcon } from "../icons.jsx";
+import { ChatIcon, CloseIcon, EditIcon, FavoriteIcon, MoreIcon, UnreadIcon } from "../icons.jsx";
+import { conversationActions } from "../conversationActions.js";
 import FilterMenu from "./FilterMenu.jsx";
 import PopupMenu from "./PopupMenu.jsx";
 import Settings from "./Settings.jsx";
@@ -11,35 +12,10 @@ const FILTER_OPTIONS = [{ key: null, label: "Tất cả", Icon: ChatIcon }, ...F
 const ME = "Nguyễn Minh Quân";
 
 // Sidebar đỏ thương hiệu. Kiểu chữ: Plus Jakarta Sans cho tên sản phẩm, Inter cho phần còn lại.
-export default function Sidebar({ conversations, activeId, showActive, onOpen, onUpdate, onDelete, query, onQuery, logoRef, logoHidden, onClose, className = "" }) {
+export default function Sidebar({ conversations, activeId, showActive, onOpen, onUpdate, onRequestDelete, onNewChat, onLogout, query, onQuery, logoRef, logoHidden, onClose, className = "" }) {
   const [filter, setFilter] = useState(null);
   const [editing, setEditing] = useState(null); // id phiên đang đổi tên
-  const [toDelete, setToDelete] = useState(null); // phiên đang chờ xác nhận xóa
-  const confirm = useRef(null);
   const list = useRef(null);
-  const uid = useId();
-
-  // Hộp xác nhận xóa: dialog modal (trình duyệt lo khóa trang, giữ focus, Esc, trả focus về nút ⋮).
-  // Focus mặc định vào "Hủy" vì đây là thao tác không hoàn tác được.
-  useEffect(() => {
-    if (!toDelete) return;
-    const d = confirm.current;
-    d.returnValue = "";
-    d.showModal();
-    d.querySelector("button[value=cancel]").focus();
-  }, [toDelete]);
-
-  const onConfirmClose = () => {
-    const d = confirm.current;
-    if (d.returnValue === "delete" && toDelete) {
-      // Focus sang dòng kế tiếp (hoặc dòng trước) vì dòng vừa xóa biến mất
-      const li = list.current?.querySelector(`button[data-id="${toDelete.id}"]`)?.closest("li");
-      const next = li?.nextElementSibling ?? li?.previousElementSibling;
-      onDelete(toDelete.id);
-      requestAnimationFrame(() => next?.querySelector("button[data-id]")?.focus());
-    }
-    setToDelete(null);
-  };
 
   const q = query.trim().toLocaleLowerCase("vi");
   const items = conversations.filter((c) => {
@@ -77,6 +53,7 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, o
       <div className="px-2">
         <button
           type="button"
+          onClick={onNewChat}
           className="flex h-9 items-center gap-3 rounded-full pr-4 pl-3 text-small font-medium pointer-coarse:h-10 text-sidebar-text transition-colors hover:bg-sidebar-item-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-focus-ring [&_svg]:size-[18px]"
         >
           <EditIcon />
@@ -126,16 +103,15 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, o
             const topic = c.topic ?? c.name; // phiên chưa có chủ đề tóm tắt thì tạm dùng tên
             // Kiểu ChatGPT/Gemini: mỗi phiên một dòng chủ đề, chữ sáng hơn nhãn bộ lọc phía trên. Chưa đọc: chữ đậm và chấm vàng.
             const fav = c.tags.includes("favorite");
-            const actions = [
-              { key: "favorite", label: fav ? "Bỏ khỏi Yêu thích" : "Thêm vào Yêu thích", Icon: FavoriteIcon,
-                onSelect: () => onUpdate(c.id, (x) => ({ ...x, tags: fav ? x.tags.filter((t) => t !== "favorite") : [...x.tags, "favorite"] })) },
-              { key: "rename", label: "Đổi tên", Icon: RenameIcon, movesFocus: true, onSelect: () => setEditing(c.id) },
-              // Phiên đang mở luôn là đã đọc, nên chỉ phiên khác mới có lựa chọn này
-              ...(selected ? [] : [{ key: "unread", label: c.unread ? "Đánh dấu đã đọc" : "Đánh dấu chưa đọc", Icon: UnreadIcon,
-                onSelect: () => onUpdate(c.id, (x) => ({ ...x, unread: !x.unread })) }]),
-              // Luôn giữ lại ít nhất một phiên (khung chat cần một phiên để hiển thị)
-              ...(conversations.length > 1 ? [{ key: "delete", label: "Xóa", Icon: DeleteIcon, onSelect: () => setToDelete({ id: c.id, topic }) }] : []),
-            ];
+            // Đổi tên ở danh sách: ô nhập tại chỗ. Xóa: App mở hộp xác nhận chung (dùng cả cho menu ở header).
+            const actions = conversationActions(c, {
+              selected,
+              canDelete: conversations.length > 1,
+              onUpdate,
+              onRename: () => setEditing(c.id),
+              renameMovesFocus: true,
+              onDelete: () => onRequestDelete({ id: c.id, topic, from: "sidebar" }),
+            });
             // Đổi tên: Enter / rời ô thì lưu, Esc thì hủy; xong trả focus về dòng của phiên
             const finishRename = (input, save) => {
               const li = input.closest("li");
@@ -212,38 +188,9 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, o
         </ul>
       )}
 
-      {/* Xác nhận xóa phiên. closedby="any": bấm ra ngoài cũng hủy (trình duyệt chưa hỗ trợ thì dùng onClick bên dưới) */}
-      <dialog
-        ref={confirm}
-        closedby="any"
-        aria-labelledby={`${uid}-delete-title`}
-        aria-describedby={`${uid}-delete-desc`}
-        onClose={onConfirmClose}
-        onKeyDown={(e) => { if (e.key === "Escape") e.stopPropagation(); /* không đóng luôn ngăn kéo */ }}
-        onClick={(e) => {
-          if ("closedBy" in HTMLDialogElement.prototype || e.target !== e.currentTarget) return;
-          const r = e.currentTarget.getBoundingClientRect();
-          if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) e.currentTarget.close("cancel");
-        }}
-        className="m-auto w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-menu-border bg-menu-bg p-5 text-menu-text shadow-card backdrop:bg-overlay-scrim"
-      >
-        <h2 id={`${uid}-delete-title`} className="m-0 text-title">Xóa phiên chat?</h2>
-        <p id={`${uid}-delete-desc`} className="mt-2 mb-0 text-sm text-menu-text-muted text-pretty">
-          “{toDelete?.topic}” và toàn bộ tin nhắn trong phiên sẽ bị xóa. Không thể hoàn tác.
-        </p>
-        <form method="dialog" className="mt-5 flex justify-end gap-2">
-          <button value="cancel" className="h-10 rounded-full border border-button-secondary-border px-4 text-sm font-medium text-button-secondary-text hover:bg-button-secondary-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-            Hủy
-          </button>
-          <button value="delete" className="h-10 rounded-full bg-button-primary-bg px-4 text-sm font-medium text-button-primary-label hover:bg-button-primary-bg-hover active:bg-button-primary-bg-pressed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-            Xóa
-          </button>
-        </form>
-      </dialog>
-
       {/* Người dùng */}
       <div className="border-t border-sidebar-divider px-2 py-2">
-        <Settings name={ME} />
+        <Settings name={ME} onLogout={onLogout} />
       </div>
     </aside>
   );

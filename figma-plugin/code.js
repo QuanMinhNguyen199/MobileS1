@@ -178,7 +178,8 @@ async function main() {
   }
   // Dựng lại toàn bộ phần do plugin này tạo (tên cố định), để mỗi lần chạy ra cùng một kết quả chuẩn.
   // Phần dựng bằng MCP trước đó (biến, kiểu chữ, mục 01–04, sáu component đầu) được giữ nguyên.
-  const OWN_BLOCKS = ["Conversation Item", "Search Field", "Filter Tab", "Language Select", "Chat Header", "Message", "Data Table", "Composer"];
+  // Gồm cả tên block cũ đã bỏ (Filter Tab, Language Select) để lần chạy này dọn chúng đi.
+  const OWN_BLOCKS = ["Conversation Item", "Search Field", "Filter Tab", "Language Select", "Popup Menu", "Filter Bar", "Chat Header", "Message", "Answer Footer", "Data Table", "Composer", "Status Message", "Dialog", "Empty State"];
   for (const t of OWN_BLOCKS) { const old = compSec.findChild((n) => n.name === "Block " + t); if (old) old.remove(); }
   { const pat = root.findChild((n) => n.name === "06 Pattern"); if (pat) pat.remove(); }
 
@@ -201,6 +202,22 @@ async function main() {
 
   // ---------- Token: màu gốc, màu vai trò mới, mode Dark (tạo sớm để component gắn vào được ngay) ----------
   await prepareTokens(V, vars);
+
+  // ---------- Icon mới trong bộ icon (lọc, chưa đọc, đổi tên, xóa, đăng xuất): tạo component nếu chưa có ----------
+  {
+    const home = iconComp("close").parent;
+    for (const [name, svg] of Object.entries(ICON_SVG)) {
+      if (root.findOne((n) => n.type === "COMPONENT" && n.name === "Icon/" + name)) continue;
+      const src = figma.createNodeFromSvg(svg);
+      const c = figma.createComponent(); c.name = "Icon/" + name; c.resize(24, 24); c.fills = []; c.clipsContent = false;
+      for (const ch of [...src.children]) c.appendChild(ch);
+      src.remove();
+      for (const n of c.findAll((x) => "strokes" in x && x.strokes.length)) n.strokes = [paint("text/ink")];
+      c.description = "GeoAgent Icons (Lucide), nét 1.75px. React: icons.jsx";
+      home.appendChild(c);
+      log.push("+ Icon/" + name);
+    }
+  }
 
   // ---------- Nối Figma với code: tên class Tailwind trên kiểu chữ, đổ bóng, bo góc ----------
   {
@@ -287,57 +304,71 @@ async function main() {
     log.push("~ Icon Button, Avatar: nền tách trắng/đỏ");
   }
 
+  // Nút icon trên nền trắng / đỏ với icon chỉ định (dùng component Icon Button có sẵn)
+  const iconButton = (iconName, tone = "Sheet", state = "Default") => {
+    const b = variant("Icon Button", `Tone=${tone}, State=${state}`);
+    const key = Object.keys(b.componentProperties).find((x) => x.split("#")[0] === "Icon");
+    if (key) b.setProperties({ [key]: iconComp(iconName).id });
+    return b;
+  };
+  const tryVariant = (setName, names) => { for (const n of names) { try { return variant(setName, n); } catch (e) { /* thử tên kế tiếp */ } } throw new Error("Thiếu biến thể " + setName + " / " + names.join(" | ")); };
+  const pill = (label, kind) => {
+    const b = AL("HORIZONTAL", { name: kind === "primary" ? "Button primary" : "Button secondary", primaryAxisAlignItems: "CENTER", counterAxisAlignItems: "CENTER" });
+    b.paddingLeft = b.paddingRight = 16; b.counterAxisSizingMode = "FIXED"; b.resize(b.width, 40); radius(b, "radius/full");
+    if (kind === "primary") b.fills = [paint("brand/brand")]; else stroke(b, "border/line-strong");
+    b.appendChild(T(label, 14, 20, "Medium", kind === "primary" ? "text/on-brand" : "text/ink"));
+    return b;
+  };
+  const fadeDown = (n) => {
+    // Dải mờ dần từ nền vùng chat (đặc ở trên) xuống trong suốt: chữ cuộn lên nhạt dần rồi biến mất
+    const c = { r: 252 / 255, g: 248 / 255, b: 247 / 255 };
+    n.fills = [{ type: "GRADIENT_LINEAR", gradientTransform: [[0, 1, 0], [-1, 0, 1]], gradientStops: [{ position: 0, color: Object.assign({ a: 1 }, c) }, { position: 0.4, color: Object.assign({ a: 1 }, c) }, { position: 1, color: Object.assign({ a: 0 }, c) }] }];
+  };
+
   // ---------- 1. Conversation Item ----------
   {
-    const stage = block("Conversation Item", "Một hội thoại trong sidebar: avatar 36, tên (đậm hơn khi chưa đọc), giờ, dòng xem trước và chấm vàng chưa đọc. Đang chọn: viên trắng ấm, chữ đỏ. Rộng 284 (sidebar 300, lề 8).", "Sidebar.jsx");
+    const stage = block("Conversation Item", "Một phiên chat trong sidebar: một dòng chủ đề (chữ 13), bo tròn, cao 36. Chưa đọc: chữ đậm và chấm vàng. Yêu thích: ngôi sao. Rê chuột / focus: hiện nút ⋮ (tùy chọn phiên). Đang chọn: viên trắng ấm, chữ đỏ. Rộng 248 (sidebar 264, lề 8).", "Sidebar.jsx");
     if (stage) {
       stage.fills = [paint("sidebar/frame")];
       const comps = [];
       for (const state of ["Default", "Hover", "Selected"]) for (const unread of ["No", "Yes"]) {
-        const sel = state === "Selected";
-        const c = comp(`State=${state}, Unread=${unread}`, "HORIZONTAL", { itemSpacing: 12, counterAxisAlignItems: "CENTER" });
-        c.paddingLeft = c.paddingRight = 10; c.paddingTop = c.paddingBottom = 8;
-        radius(c, "radius/2xl");
-        c.fills = sel ? [paint("sidebar/frame-active")] : state === "Hover" ? [paint("sidebar/frame-hover")] : [];
-        const muted = sel ? "sidebar/on-frame-active-muted" : state === "Hover" ? "sidebar/on-frame-muted-strong" : "sidebar/on-frame-muted";
-        const main = sel ? "sidebar/on-frame-active" : "sidebar/on-frame";
-        const av = avatar(sel ? "Selected" : "Frame", 36, "P"); av.name = "Avatar"; c.appendChild(av);
-        const col = AL("VERTICAL", { name: "Text", itemSpacing: 0 }); c.appendChild(col);
-        const r1 = AL("HORIZONTAL", { name: "Row 1", itemSpacing: 8, counterAxisAlignItems: "BASELINE" }); col.appendChild(r1);
-        const name = TX("Phòng Kế toán", unread === "Yes" ? "Label/List title unread" : "Label/List title", main); name.name = "Name"; r1.appendChild(name);
-        const time = TX("09:42", "Caption/Default", muted); time.name = "Time"; r1.appendChild(time);
-        const r2 = AL("HORIZONTAL", { name: "Row 2", itemSpacing: 8, counterAxisAlignItems: "CENTER" }); col.appendChild(r2);
-        const prev = TX("Bảng đối chiếu công nợ quý III đã sẵn sàng", "Body/Small", unread === "Yes" && !sel ? "sidebar/on-frame" : muted); prev.name = "Preview"; r2.appendChild(prev);
-        const dot = figma.createEllipse(); dot.name = "Unread dot"; dot.resize(8, 8); dot.fills = [paint("brand/gold")]; dot.visible = unread === "Yes"; r2.appendChild(dot);
-        fixedWidth(c, 284);
-        fill(col); fill(r1); fill(r2); oneLine(name); oneLine(prev);
+        const sel = state === "Selected", hover = state === "Hover";
+        const c = comp(`State=${state}, Unread=${unread}`, "HORIZONTAL", { itemSpacing: 8, counterAxisAlignItems: "CENTER" });
+        c.paddingLeft = 12; c.paddingRight = hover ? 4 : 12; c.paddingTop = c.paddingBottom = 0;
+        fixed(c, 248, 36); radius(c, "radius/full");
+        c.fills = sel ? [paint("sidebar/frame-active")] : hover ? [paint("sidebar/frame-hover")] : [];
+        const ink = sel ? "sidebar/on-frame-active" : "sidebar/on-frame";
+        const t = unread === "Yes" && !sel ? T("Kiểm tra số dư tài khoản 131", 13, 18, "Semi Bold", ink) : TX("Kiểm tra số dư tài khoản 131", "Body/Small", ink);
+        t.name = "Topic"; c.appendChild(t); oneLine(t);
+        const star = icon("favorite", 14, ink); star.name = "Favorite"; c.appendChild(star);
+        for (const n of star.findAll((x) => "fills" in x && x.type !== "INSTANCE")) n.fills = [paint(ink)];
+        const dot = figma.createEllipse(); dot.name = "Unread dot"; dot.resize(8, 8); dot.fills = [paint("brand/gold")]; dot.visible = unread === "Yes" && !sel; c.appendChild(dot);
+        if (hover) { const m = iconButton("more", "Frame", "Default"); m.name = "More"; m.resize(32, 32); c.appendChild(m); }
         comps.push(c);
       }
-      const s = makeSet(stage, "Conversation Item", comps, "Mục hội thoại trong Sidebar.jsx. Chưa đọc: tên font-[650], xem trước on-frame, chấm vàng.", { dir: "VERTICAL", gap: 12, bg: "sidebar/frame", align: "MIN" });
-      const pn = s.addComponentProperty("Name", "TEXT", "Phòng Kế toán");
-      const pp = s.addComponentProperty("Preview", "TEXT", "Bảng đối chiếu công nợ quý III đã sẵn sàng");
-      const pt = s.addComponentProperty("Time", "TEXT", "09:42");
+      const s = makeSet(stage, "Conversation Item", comps, "Phiên chat trong Sidebar.jsx (li > button + nút ⋮ PopupMenu).", { dir: "VERTICAL", gap: 12, bg: "sidebar/frame", align: "MIN" });
+      const tp = s.addComponentProperty("Topic", "TEXT", "Kiểm tra số dư tài khoản 131");
+      const fp = s.addComponentProperty("Favorite", "BOOLEAN", false);
       for (const c of s.children) {
-        c.findOne((n) => n.name === "Name").componentPropertyReferences = { characters: pn };
-        c.findOne((n) => n.name === "Preview").componentPropertyReferences = { characters: pp };
-        c.findOne((n) => n.name === "Time").componentPropertyReferences = { characters: pt };
+        c.findOne((n) => n.name === "Topic").componentPropertyReferences = { characters: tp };
+        c.findOne((n) => n.name === "Favorite").componentPropertyReferences = { visible: fp };
       }
     }
   }
 
   // ---------- 2. Search Field ----------
   {
-    const stage = block("Search Field", "Ô tìm hội thoại trên nền đỏ: cao 40, bo tròn, nền đỏ tối, viền frame-edge. Nút xóa (28, icon close 16) chỉ hiện khi đã gõ. Focus: viền và vòng on-frame.", "Sidebar.jsx");
+    const stage = block("Search Field", "Ô tìm hội thoại trên nền đỏ: cao 36 (cảm ứng 40), bo tròn, nền đỏ tối, viền frame-edge, chữ 13. Nút xóa (28, icon close 16) chỉ hiện khi đã gõ. Focus: viền và vòng on-frame.", "Sidebar.jsx");
     if (stage) {
       stage.fills = [paint("sidebar/frame")];
       const comps = [];
       for (const state of ["Empty", "Filled", "Focus"]) {
         const c = comp(`State=${state}`, "HORIZONTAL", { itemSpacing: 8, counterAxisAlignItems: "CENTER" });
         c.paddingLeft = 16; c.paddingRight = state === "Filled" ? 8 : 16;
-        fixed(c, 276, 40); radius(c, "radius/full");
+        fixed(c, 240, 36); radius(c, "radius/full");
         c.fills = [paint("sidebar/frame-sunken")];
         stroke(c, state === "Focus" ? "sidebar/on-frame" : "sidebar/frame-edge", state === "Focus" ? 2 : 1);
-        const t = TX(state === "Filled" ? "kế toán" : "Tìm hội thoại", "Body/Default", state === "Filled" ? "sidebar/on-frame" : "sidebar/on-frame-muted"); t.name = "Text";
+        const t = TX(state === "Filled" ? "thuế" : "Tìm hội thoại", "Body/Small", state === "Filled" ? "sidebar/on-frame" : "sidebar/on-frame-muted"); t.name = "Text";
         c.appendChild(t); oneLine(t);
         if (state === "Filled") {
           const x = AL("HORIZONTAL", { name: "Clear", primaryAxisAlignItems: "CENTER", counterAxisAlignItems: "CENTER" });
@@ -350,125 +381,134 @@ async function main() {
     }
   }
 
-  // ---------- 3. Filter Tab ----------
+  // ---------- 3. Menu (bộ lọc, tùy chọn phiên, tài khoản) ----------
   {
-    const stage = block("Filter Tab", "Tab lọc dưới ô tìm kiếm: chữ 13, đang chọn đậm với gạch chân vàng 2px. Các tab chia đều trong lề 16px.", "Sidebar.jsx");
+    const stage = block("Popup Menu", "Menu bật lên từ một nút (popover, phím mũi tên): mở xuống, mép trái thẳng nút, chạm mép màn hình thì lật. Mục cao 36 (cảm ứng 44), icon 16, chữ 14 Medium; dấu tích cho lựa chọn đang áp dụng. Bộ lọc dùng chọn một (menuitemradio) và đóng sau 100ms; lệnh thường đóng ngay.", "PopupMenu.jsx, FilterMenu.jsx, Settings.jsx");
     if (stage) {
-      stage.fills = [paint("sidebar/frame")];
+      stage.counterAxisAlignItems = "MIN";
       const comps = [];
-      for (const sel of ["Yes", "No"]) {
-        const c = comp(`Selected=${sel}`, "HORIZONTAL", { counterAxisAlignItems: "CENTER" });
-        c.paddingTop = 4; c.paddingBottom = 8;
-        c.strokes = sel === "Yes" ? [paint("brand/gold")] : [];
-        c.strokeTopWeight = 0; c.strokeLeftWeight = 0; c.strokeRightWeight = 0; c.strokeBottomWeight = 2; c.strokeAlign = "INSIDE";
-        const t = T("Tất cả", 13, 18, sel === "Yes" ? "Semi Bold" : "Regular", sel === "Yes" ? "sidebar/on-frame" : "sidebar/on-frame-muted"); t.name = "Label";
-        c.appendChild(t);
+      for (const state of ["Default", "Hover"]) for (const checked of ["No", "Yes"]) {
+        const c = comp(`State=${state}, Checked=${checked}`, "HORIZONTAL", { itemSpacing: 10, counterAxisAlignItems: "CENTER" });
+        c.paddingLeft = c.paddingRight = 10; fixed(c, 200, 36); radius(c, "radius/lg");
+        c.fills = state === "Hover" ? [paint("surface/surface-2")] : [];
+        const ic = icon("chat", 16, "text/ink-2"); ic.name = "Icon"; c.appendChild(ic);
+        const t = T("Tất cả", 14, 20, "Medium"); t.name = "Label"; c.appendChild(t); oneLine(t);
+        const ck = icon("check", 16, "text/ink"); ck.name = "Check"; ck.visible = checked === "Yes"; c.appendChild(ck);
         comps.push(c);
       }
-      const s = makeSet(stage, "Filter Tab", comps, "Tab lọc (aria-pressed). Nhãn: Tất cả, Chưa đọc, Liên hệ, Phòng, Yêu thích.", { gap: 24, bg: "sidebar/frame" });
+      const s = makeSet(stage, "Menu Item", comps, "Một mục menu (PopupMenu.jsx). Checked=Yes: mục đang chọn của nhóm chọn một.", { gap: 16 });
       const lp = s.addComponentProperty("Label", "TEXT", "Tất cả");
-      for (const c of s.children) c.findOne((n) => n.name === "Label").componentPropertyReferences = { characters: lp };
+      const ip = s.addComponentProperty("Icon", "INSTANCE_SWAP", iconComp("chat").id);
+      for (const c of s.children) {
+        c.findOne((n) => n.name === "Label").componentPropertyReferences = { characters: lp };
+        c.findOne((n) => n.name === "Icon").componentPropertyReferences = { mainComponent: ip };
+      }
+      const item = (label, iconName, st = "Default", checked = "No") => {
+        const i = variant("Menu Item", `State=${st}, Checked=${checked}`);
+        setProp(i, "Label", label);
+        const key = Object.keys(i.componentProperties).find((x) => x.split("#")[0] === "Icon");
+        if (key) i.setProperties({ [key]: iconComp(iconName).id });
+        return i;
+      };
+      const menu = (name, width, rows, desc, extra) => {
+        const m = comp(name, "VERTICAL", { itemSpacing: 0 });
+        pad(m, 4, 4); m.fills = [paint("surface/surface")]; stroke(m, "border/line"); radius(m, "radius/xl"); shadow(m, "Shadow/Floating button");
+        fixedWidth(m, width); // cố định bề rộng trước, rồi các mục mới FILL được
+        if (extra) extra(m);
+        for (const r of rows) { m.appendChild(r); r.layoutSizingHorizontal = "FILL"; }
+        m.description = desc; stage.appendChild(m);
+        return m;
+      };
+      menu("Menu / Filter", 184, [item("Tất cả", "chat", "Default", "Yes"), item("Chưa đọc", "unread", "Hover"), item("Yêu thích", "favorite")],
+        "Menu của nút lọc (FilterMenu.jsx): chọn một, nhãn bộ lọc đang áp dụng hiện ở đầu danh sách.");
+      menu("Menu / Conversation", 208, [item("Thêm vào Yêu thích", "favorite"), item("Đổi tên", "rename", "Hover"), item("Đánh dấu chưa đọc", "unread"), item("Xóa", "delete")],
+        "Tùy chọn một phiên (conversationActions.js), dùng cho nút ⋮ ở danh sách và ở header. Phiên đang mở không có \"Đánh dấu chưa đọc\"; phiên cuối cùng không có \"Xóa\".");
+      menu("Menu / Account", 248, [], "Bảng Tài khoản và cài đặt (Settings.jsx): chọn giao diện, Đăng xuất.", (m) => {
+        const lg = T("Giao diện", 12, 16, "Medium", "text/ink-2"); const lw = AL("HORIZONTAL", { name: "Legend" }); lw.paddingLeft = 8; lw.paddingTop = 4; lw.paddingBottom = 8; lw.appendChild(lg); m.appendChild(lw);
+        for (const [label, on, sub] of [["Theo hệ thống", true, "Máy đang ở chế độ sáng"], ["Sáng", false], ["Tối", false]]) {
+          const r = AL("HORIZONTAL", { name: "Option", itemSpacing: 12, counterAxisAlignItems: "CENTER" }); r.paddingLeft = r.paddingRight = 8; r.paddingTop = r.paddingBottom = 6;
+          r.counterAxisSizingMode = "AUTO"; m.appendChild(r);
+          const dot = figma.createEllipse(); dot.name = "Radio"; dot.resize(16, 16); dot.fills = [paint("surface/surface")]; stroke(dot, on ? "brand/brand" : "border/line-strong", on ? 5 : 1.5); r.appendChild(dot);
+          const col = AL("VERTICAL", { name: "Text" }); r.appendChild(col);
+          col.appendChild(T(label, 14, 20, "Regular"));
+          if (sub) col.appendChild(T(sub, 12, 16, "Regular", "text/ink-2"));
+        }
+        const hr = figma.createRectangle(); hr.name = "Divider"; hr.resize(200, 1); hr.fills = [paint("border/line")]; m.appendChild(hr);
+        m.appendChild(item("Đăng xuất", "sign-out"));
+        hr.layoutSizingHorizontal = "FILL";
+      });
     }
   }
 
-  // ---------- 4. Language Select ----------
+  // ---------- 4. Filter Bar ----------
   {
-    const stage = block("Language Select", "Chọn ngôn ngữ ở chân thẻ đăng nhập: cao 32, bo 8, chữ 13 Medium, mũi tên 16. Dùng select gốc của trình duyệt.", "Welcome.jsx");
+    const stage = block("Filter Bar", "Đầu danh sách: tên bộ lọc đang áp dụng (chữ 13 Medium, on-frame-muted) và nút lọc mở Menu / Filter. Tên phiên bên dưới sáng hơn nhãn này (sidebar/item-text).", "Sidebar.jsx, FilterMenu.jsx");
     if (stage) {
-      const comps = [];
-      for (const state of ["Default", "Hover", "Focus"]) {
-        const c = comp(`State=${state}`, "HORIZONTAL", { itemSpacing: 4, counterAxisAlignItems: "CENTER" });
-        c.paddingLeft = 8; c.paddingRight = 6; fixed(c, 112, 32); c.primaryAxisSizingMode = "AUTO"; radius(c, "radius/lg");
-        c.fills = state === "Hover" ? [paint("surface/surface-2")] : [];
-        if (state === "Focus") stroke(c, "state/focus", 2, "OUTSIDE");
-        const t = TX("Tiếng Việt", "Label/Small"); t.name = "Label"; c.appendChild(t);
-        c.appendChild(icon("chevron-down", 16, "text/ink-2"));
-        comps.push(c);
-      }
-      makeSet(stage, "Language Select", comps, "Select ngôn ngữ trong Welcome.jsx.", { gap: 24 });
+      stage.fills = [paint("sidebar/frame")];
+      const c = comp("Filter Bar", "HORIZONTAL", { counterAxisAlignItems: "CENTER", primaryAxisAlignItems: "SPACE_BETWEEN" });
+      c.paddingLeft = 12; c.paddingRight = 0; fixed(c, 248, 36);
+      const t = T("Tất cả", 13, 18, "Medium", "sidebar/on-frame-muted"); t.name = "Label"; c.appendChild(t);
+      c.appendChild(iconButton("filter", "Frame"));
+      c.description = "Nhãn bộ lọc + nút lọc (aria-haspopup=menu).";
+      stage.appendChild(c);
+      const lp = c.addComponentProperty("Label", "TEXT", "Tất cả"); t.componentPropertyReferences = { characters: lp };
     }
   }
 
   // ---------- 5. Chat Header ----------
   {
-    const stage = block("Chat Header", "Đầu khung chat, cao 64, đường kẻ rule bên dưới. Máy tính: tên + loại hội thoại + nút thông tin. Điện thoại: nút menu, quốc huy, nút soạn mới và avatar người dùng.", "ChatPane.jsx");
+    const stage = block("Chat Header", "Không có thanh nền: tin nhắn cuộn lên nhạt dần rồi biến mất ở mép trên (dải mờ từ nền vùng chat). Máy tính: nút ⋮ (tùy chọn phiên đang mở). Điện thoại: nút menu, nút cuộc trò chuyện mới và ⋮. Tên phiên chỉ có cho trình đọc màn hình (h1 ẩn).", "ChatPane.jsx");
     if (stage) {
       const comps = [];
       for (const device of ["Desktop", "Mobile"]) {
         const mobile = device === "Mobile";
-        const c = comp(`Device=${device}`, "HORIZONTAL", { itemSpacing: 12, counterAxisAlignItems: "CENTER" });
+        const c = comp(`Device=${device}`, "HORIZONTAL", { itemSpacing: 4, counterAxisAlignItems: "CENTER" });
         c.paddingLeft = c.paddingRight = mobile ? 12 : 24;
-        fixed(c, mobile ? 375 : 760, 64);
-        c.fills = [paint("surface/surface")]; bottomRule(c, "border/rule");
-        if (mobile) {
-          const m = variant("Icon Button", "Tone=Sheet, State=Default"); c.appendChild(m);
-          c.appendChild(emblem(28));
-        }
-        const col = AL("VERTICAL", { name: "Title", itemSpacing: 0 }); c.appendChild(col); fill(col);
-        const h = TX("Trợ lý GeoAgent", "Heading/Chat title"); h.name = "Name"; col.appendChild(h); oneLine(h);
-        const k = TX("Trợ lý GeoAgent trong phòng", "Caption/Default", "text/ink-2"); k.name = "Kind"; col.appendChild(k); oneLine(k);
-        if (mobile) {
-          const e = variant("Icon Button", "Tone=Sheet, State=Default");
-          const key = Object.keys(e.componentProperties).find((x) => x.split("#")[0] === "Icon");
-          if (key) e.setProperties({ [key]: iconComp("edit").id });
-          c.appendChild(e);
-          c.appendChild(avatar("Teal", 28, "N")); // người dùng "Nguyễn Minh Quân": sắc theo chữ N trong code là Teal
-        } else {
-          const i = variant("Icon Button", "Tone=Sheet, State=Default");
-          const key = Object.keys(i.componentProperties).find((x) => x.split("#")[0] === "Icon");
-          if (key) i.setProperties({ [key]: iconComp("info").id });
-          c.appendChild(i);
-        }
+        fixed(c, mobile ? 375 : 760, 64); fadeDown(c);
+        if (mobile) c.appendChild(iconButton("menu"));
+        const sp = AL("HORIZONTAL", { name: "Spacer" }); c.appendChild(sp); sp.layoutGrow = 1;
+        if (mobile) c.appendChild(iconButton("edit"));
+        c.appendChild(iconButton("more"));
         comps.push(c);
       }
-      const s = makeSet(stage, "Chat Header", comps, "Header của ChatPane.jsx. Trên iPhone có thêm lề an toàn phía trên (safe-area).", { dir: "VERTICAL", gap: 24, align: "MIN" });
-      const np = s.addComponentProperty("Name", "TEXT", "Trợ lý GeoAgent");
-      const kp = s.addComponentProperty("Kind", "TEXT", "Trợ lý GeoAgent trong phòng");
-      for (const c of s.children) {
-        c.findOne((n) => n.name === "Name").componentPropertyReferences = { characters: np };
-        c.findOne((n) => n.name === "Kind").componentPropertyReferences = { characters: kp };
-      }
+      makeSet(stage, "Chat Header", comps, "Header của ChatPane.jsx. Trên iPhone có thêm lề an toàn phía trên (safe-area).", { dir: "VERTICAL", gap: 24, align: "MIN" });
     }
   }
 
   // ---------- 6. Message ----------
   {
-    const stage = block("Message", "Tin của người dùng: bong bóng hồng thương hiệu, góc dưới phải nhọn 6px, giờ và avatar nằm dưới. Tin của bot: dòng tên + giờ, thẻ trắng viền bubble-edge, góc trên trái nhọn, có tiêu đề, đoạn văn, danh sách chấm đỏ và bảng.", "ChatPane.jsx, MessageContent.jsx");
+    const stage = block("Message", "Tin của người dùng: bong bóng hồng thương hiệu, góc dưới phải nhọn 6px, giờ và avatar nằm dưới. Tin của bot: dòng tên + giờ, thẻ trắng viền bubble-edge, góc trên trái nhọn, có tiêu đề, đoạn văn, danh sách chấm đỏ và bảng; bên dưới là Answer Footer.", "ChatPane.jsx, MessageContent.jsx");
     if (stage) {
       stage.counterAxisAlignItems = "MIN";
-      // User
-      // Bề rộng component = bề rộng tối đa của tin (75% cột trên máy tính, 85% trên điện thoại).
-      // Bóng tin và chữ giãn theo component, nên đổi bề rộng instance là đủ (không phải sửa lớp bên trong).
       const u = comp("Message / User", "VERTICAL", { itemSpacing: 6, counterAxisAlignItems: "MAX" });
       fixedWidth(u, 392);
       const b = AL("HORIZONTAL", { name: "Bubble" }); b.paddingLeft = b.paddingRight = 16; b.paddingTop = b.paddingBottom = 10;
-      b.fills = [paint("brand/brand-soft")]; radii(b, "radius/bubble", "radius/bubble", "radius/sm", "radius/bubble");
+      b.fills = [paint("brand/brand-soft")]; radii(b, "radius/bubble", "radius/bubble", "radius/bubble-tip", "radius/bubble");
       u.appendChild(b); b.layoutSizingHorizontal = "FILL";
-      const ut = TX("Ước tính giúp tôi chi phí đo đạc địa chính cho 3 thửa đất ở Hà Đông.", "Body/Bubble"); ut.name = "Text";
+      const ut = TX("Phân tích nghĩa vụ thuế năm 2025 và so sánh với 2024.", "Body/Bubble"); ut.name = "Text";
       b.appendChild(ut); wrapText(ut);
       const meta = AL("HORIZONTAL", { name: "Meta", itemSpacing: 8, counterAxisAlignItems: "CENTER" }); u.appendChild(meta);
-      const tm = TX("09:40", "Caption/Default", "text/ink-2"); tm.name = "Time"; meta.appendChild(tm);
+      const tm = TX("09:12", "Caption/Default", "text/ink-2"); tm.name = "Time"; meta.appendChild(tm);
       meta.appendChild(avatar("Teal", 22, "N"));
       stage.appendChild(u);
-      u.description = "Tin của người dùng (tối đa 75% bề rộng cột trên máy tính, 85% trên điện thoại).";
+      u.description = "Tin của người dùng (tối đa 75% bề rộng cột trên máy tính, 85% trên điện thoại). Gửi lỗi: thay dòng giờ bằng Status Message / Send failed.";
       const tp = u.addComponentProperty("Text", "TEXT", ut.characters);
-      const tt = u.addComponentProperty("Time", "TEXT", "09:40");
+      const tt = u.addComponentProperty("Time", "TEXT", "09:12");
       ut.componentPropertyReferences = { characters: tp }; tm.componentPropertyReferences = { characters: tt };
 
-      // Bot
       const m = comp("Message / Bot", "VERTICAL", { itemSpacing: 8 });
       const hr = AL("HORIZONTAL", { name: "Sender", itemSpacing: 8, counterAxisAlignItems: "CENTER" }); m.appendChild(hr);
       hr.appendChild(variant("Bot Avatar", "Size=28"));
       const sn = TX("GeoAgent", "Label/Small"); sn.name = "Sender name"; hr.appendChild(sn);
-      const bt = TX("09:41", "Caption/Default", "text/ink-2"); bt.name = "Time"; hr.appendChild(bt);
+      const bt = TX("09:12", "Caption/Default", "text/ink-2"); bt.name = "Time"; hr.appendChild(bt);
       const card = AL("VERTICAL", { name: "Bubble", itemSpacing: 12 }); card.paddingLeft = card.paddingRight = 20; card.paddingTop = card.paddingBottom = 16;
-      card.fills = [paint("surface/surface")]; stroke(card, "border/bubble-edge"); radii(card, "radius/sm", "radius/bubble", "radius/bubble", "radius/bubble");
+      card.fills = [paint("surface/surface")]; stroke(card, "border/bubble-edge"); radii(card, "radius/bubble-tip", "radius/bubble", "radius/bubble", "radius/bubble");
       shadow(card, "Shadow/Bot bubble");
       m.appendChild(card); fixedWidth(m, 640); fill(card);
-      const h3 = TX("Chi phí ước tính", "Heading/Message heading"); card.appendChild(h3); wrapText(h3);
-      const p = TX("Với 3 thửa đất tại Hà Đông, tổng chi phí đo đạc khoảng 9,6 triệu đồng, chưa gồm phí thẩm định.", "Body/Message"); card.appendChild(p); wrapText(p);
+      const h3 = TX("Nhận xét", "Heading/Message heading"); card.appendChild(h3); wrapText(h3);
+      const p = TX("Tổng thuế phải nộp giảm 36% so với năm trước, trong khi:", "Body/Message"); card.appendChild(p); wrapText(p);
       const list = AL("VERTICAL", { name: "List", itemSpacing: 4 }); card.appendChild(list); fill(list);
-      for (const it of ["Đo vẽ hiện trạng: 2,4 triệu đồng mỗi thửa", "Trích lục bản đồ: 0,8 triệu đồng mỗi thửa"]) {
+      for (const it of ["Doanh thu tăng 525%", "Lợi nhuận kế toán tăng 11,6%"]) {
         const li = AL("HORIZONTAL", { name: "Item", itemSpacing: 10, counterAxisAlignItems: "MIN" }); list.appendChild(li); fill(li);
         const d = figma.createFrame(); d.name = "Marker"; d.resize(6, 24); d.fills = [];
         const dot = figma.createEllipse(); dot.resize(5, 5); dot.x = 0; dot.y = 10; dot.fills = [paint("brand/brand")]; d.appendChild(dot);
@@ -476,11 +516,10 @@ async function main() {
         const lt = TX(it, "Body/Message"); li.appendChild(lt); wrapText(lt);
       }
       stage.appendChild(m);
-      m.description = "Câu trả lời của bot (MessageContent.jsx): tiêu đề, đoạn văn, danh sách, bảng. Chỉ hỗ trợ chữ đậm trong đoạn văn.";
-      const bp = m.addComponentProperty("Time", "TEXT", "09:41");
+      m.description = "Câu trả lời của bot (MessageContent.jsx): tiêu đề, đoạn văn, danh sách, bảng, link nguồn. Chữ đậm và link [nhãn](https://…) trong đoạn văn.";
+      const bp = m.addComponentProperty("Time", "TEXT", "09:12");
       bt.componentPropertyReferences = { characters: bp };
 
-      // Typing
       const ty = comp("Typing Indicator", "HORIZONTAL", { itemSpacing: 12, counterAxisAlignItems: "CENTER" });
       ty.appendChild(variant("Bot Avatar", "Size=28"));
       const dots = AL("HORIZONTAL", { name: "Dots", itemSpacing: 6, counterAxisAlignItems: "CENTER" }); ty.appendChild(dots);
@@ -490,13 +529,32 @@ async function main() {
     }
   }
 
-  // ---------- 7. Data Table ----------
+  // ---------- 7. Answer Footer ----------
+  {
+    const stage = block("Answer Footer", "Dưới mỗi câu trả lời. Có bảng hoặc dẫn nguồn: dòng Nguồn (số lượng + link, mở ở khung web cạnh chat) và lưu ý kiểm tra. Luôn có nút Sao chép (bảng sao chép dạng Tab, dán vào Excel thành ô); có bảng thì thêm Tải bảng (CSV). Nút chỉ có icon 20 trong ô 36 (cảm ứng 44), tên ở tooltip; xong thì icon đổi thành dấu tích 2 giây.", "AnswerFooter.jsx");
+    if (stage) {
+      const c = comp("Answer Footer", "VERTICAL", { itemSpacing: 6 });
+      c.paddingLeft = 4; fixedWidth(c, 640);
+      const src = AL("HORIZONTAL", { name: "Sources", itemSpacing: 8, counterAxisSpacing: 4, layoutWrap: "WRAP", counterAxisAlignItems: "BASELINE" }); c.appendChild(src); fill(src);
+      src.appendChild(T("Nguồn (2):", 12, 16, "Regular", "text/ink-2"));
+      for (const l of ["Thuế giá trị gia tăng", "Thông tư 80/2021/TT-BTC"]) { const a = T(l, 12, 16, "Medium", "text/link"); a.textDecoration = "UNDERLINE"; src.appendChild(a); }
+      const note = AL("HORIZONTAL", { name: "Note", itemSpacing: 6, counterAxisAlignItems: "MIN" }); c.appendChild(note); fill(note);
+      note.appendChild(icon("info", 14, "text/ink-2"));
+      const nt = T("GeoAgent có thể sai. Kiểm tra lại với văn bản gốc trước khi kê khai.", 12, 16, "Regular", "text/ink-2"); note.appendChild(nt); wrapText(nt);
+      const act = AL("HORIZONTAL", { name: "Actions", itemSpacing: 2 }); c.appendChild(act);
+      act.appendChild(iconButton("copy")); act.appendChild(iconButton("download"));
+      c.description = "AnswerFooter.jsx: <AnswerFooter blocks={m.blocks} title={…} onOpenLink={…} />. Câu trả lời không có bảng/nguồn chỉ còn nút Sao chép.";
+      stage.appendChild(c);
+    }
+  }
+
+  // ---------- 8. Data Table ----------
   {
     const stage = block("Data Table", "Bảng trong câu trả lời: chỉ đường kẻ ngang, cột đầu căn trái, cột số căn phải với chữ số đều nhau. Bảng rộng thì cuộn ngang trong khung, không làm vỡ trang.", "MessageContent.jsx › DataTable");
     if (stage) {
       const c = comp("Data Table", "VERTICAL");
-      const rows = [["Hạng mục", "Đơn giá", "Số lượng", "Thành tiền"], ["Đo vẽ hiện trạng", "2.400.000", "3", "7.200.000"], ["Trích lục bản đồ", "800.000", "3", "2.400.000"], ["Tổng cộng", "", "", "9.600.000"]];
-      const widths = [200, 120, 96, 128];
+      const rows = [["Loại thuế", "2024", "2025", "Biến động"], ["GTGT phải nộp", "0", "0", "—"], ["TNDN phải nộp", "5,70 tỷ", "3,66 tỷ", "-36%"], ["Tổng thuế", "5,70 tỷ", "3,66 tỷ", "-36%"]];
+      const widths = [160, 96, 96, 104];
       rows.forEach((r, i) => {
         const row = AL("HORIZONTAL", { name: i === 0 ? "Head" : "Row " + i }); c.appendChild(row);
         bottomRule(row, i === 0 ? "border/line" : "border/rule");
@@ -505,8 +563,7 @@ async function main() {
           cf.paddingLeft = j === 0 ? 0 : 12; cf.paddingRight = j === r.length - 1 ? 0 : (j === 0 ? 24 : 12);
           cf.paddingTop = i === 0 ? 2 : 8; cf.paddingBottom = i === 0 ? 6 : 8;
           row.appendChild(cf); cf.primaryAxisSizingMode = "FIXED"; cf.resize(widths[j], cf.height);
-          const t = i === 0 ? TX(cell, "Caption/Table head", "text/ink-2") : i === rows.length - 1 && cell ? T(cell, 14, 20, "Semi Bold") : TX(cell || " ", "Body/Default");
-          cf.appendChild(t);
+          cf.appendChild(i === 0 ? TX(cell, "Caption/Table head", "text/ink-2") : TX(cell, "Body/Default"));
         });
       });
       c.description = "Bảng dữ liệu (role=region, focus được để cuộn ngang bằng bàn phím).";
@@ -514,33 +571,107 @@ async function main() {
     }
   }
 
-  // ---------- 8. Composer ----------
+  // ---------- 9. Composer ----------
   {
-    const stage = block("Composer", "Ô soạn tin dính đáy khung chat: bo 28, viền line-strong, bóng Composer. Trái: đính kèm. Phải: micro; khi đã gõ, nút gửi đỏ xuất hiện và micro dịch sang trái. Enter gửi, Shift+Enter xuống dòng. Khung không đổi khi focus (code tắt viền focus của ô nhập).", "Composer.jsx");
+    const stage = block("Composer", "Ô soạn tin dính đáy khung chat: bo 28, viền line-strong, bóng Composer, cao tối thiểu 56. Chưa có đính kèm / giọng nói nên không đặt nút. Khi đã gõ: nút gửi đỏ xuất hiện. Mất mạng: dòng báo phía trên ô, vẫn gõ được; tin gửi lúc đó hiện Chưa gửi được + Thử lại. Enter gửi, Shift+Enter xuống dòng.", "Composer.jsx");
     if (stage) {
       const comps = [];
-      for (const state of ["Empty", "Typing"]) {
-        const c = comp(`State=${state}`, "HORIZONTAL", { itemSpacing: 4, counterAxisAlignItems: "MAX" });
-        pad(c, 8, 8); fixedWidth(c, 640); radius(c, "radius/composer");
-        c.fills = [paint("surface/surface")]; shadow(c, "Shadow/Composer");
-        stroke(c, "border/line-strong", 1);
-        c.appendChild(variant("Round Button", "Type=Ghost, State=Default"));
+      for (const state of ["Empty", "Typing", "Offline"]) {
+        const c = comp(`State=${state}`, "VERTICAL", { itemSpacing: 8 });
+        fixedWidth(c, 640);
+        if (state === "Offline") {
+          const n = AL("HORIZONTAL", { name: "Notice", itemSpacing: 8, counterAxisAlignItems: "CENTER" }); n.paddingLeft = 8; c.appendChild(n);
+          n.appendChild(icon("warning", 16, "text/danger"));
+          const nt = TX("Mất kết nối mạng. Tin nhắn chưa gửi được cho đến khi có mạng lại.", "Body/Small", "text/ink-2"); n.appendChild(nt); fill(n); wrapText(nt);
+        }
+        const box = AL("HORIZONTAL", { name: "Box", itemSpacing: 4, counterAxisAlignItems: "MAX" });
+        box.paddingLeft = 16; box.paddingRight = 8; box.paddingTop = box.paddingBottom = 8;
+        radius(box, "radius/composer"); box.fills = [paint("surface/surface")]; shadow(box, "Shadow/Composer"); stroke(box, "border/line-strong", 1);
+        c.appendChild(box); box.layoutSizingHorizontal = "FILL";
         const field = AL("HORIZONTAL", { name: "Field", counterAxisAlignItems: "CENTER" }); field.paddingLeft = field.paddingRight = 4; field.paddingTop = field.paddingBottom = 8;
-        c.appendChild(field); field.layoutGrow = 1; field.layoutSizingHorizontal = "FILL"; field.layoutSizingVertical = "HUG";
-        const t = TX(state === "Typing" ? "Chi phí đo đạc 3 thửa đất ở Hà Đông là bao nhiêu?" : "Hỏi GeoAgent", "Body/Input", state === "Typing" ? "text/ink" : "text/ink-2"); t.name = "Text";
+        box.appendChild(field); field.layoutGrow = 1; field.layoutSizingHorizontal = "FILL"; field.layoutSizingVertical = "HUG";
+        const t = TX(state === "Typing" ? "Hạn nộp hồ sơ quyết toán thuế TNDN là khi nào?" : "Hỏi GeoAgent", "Body/Input", state === "Typing" ? "text/ink" : "text/ink-2"); t.name = "Text";
         field.appendChild(t); wrapText(t);
-        const mic = variant("Round Button", "Type=Ghost, State=Default");
-        const key = Object.keys(mic.componentProperties).find((x) => x.split("#")[0] === "Icon");
-        if (key) mic.setProperties({ [key]: iconComp("microphone").id });
-        c.appendChild(mic);
-        if (state === "Typing") c.appendChild(variant("Round Button", "Type=Send, State=Default"));
+        if (state === "Typing") box.appendChild(variant("Round Button", "Type=Send, State=Default"));
         comps.push(c);
       }
       makeSet(stage, "Composer", comps, "Composer.jsx. Ô nhập tự giãn tối đa 8 dòng.", { dir: "VERTICAL", gap: 24, align: "MIN" });
     }
   }
 
-  // ---------- 9. Mẫu ghép ----------
+  // ---------- 10. Status Message ----------
+  {
+    const stage = block("Status Message", "Thông báo lỗi ngay tại chỗ, icon cảnh báo + chữ text/danger (đỏ trên nền sáng, đỏ nhạt trên nền tối, đều đạt 4.5:1). Send failed: dưới tin của người dùng, có nút Thử lại (tắt khi chưa có mạng). Login error: trên nút Đăng nhập (role=alert).", "ChatPane.jsx, Welcome.jsx");
+    if (stage) {
+      const comps = [];
+      for (const type of ["Send failed", "Login error"]) {
+        const c = comp(`Type=${type}`, "HORIZONTAL", { itemSpacing: 8, counterAxisAlignItems: "CENTER" });
+        if (type === "Send failed") {
+          c.appendChild(icon("warning", 14, "text/danger"));
+          c.appendChild(T("Chưa gửi được: mất kết nối mạng.", 12, 16, "Regular", "text/danger"));
+          const r = AL("HORIZONTAL", { name: "Retry", itemSpacing: 4, counterAxisAlignItems: "CENTER" }); r.paddingLeft = r.paddingRight = 8; r.counterAxisSizingMode = "FIXED"; r.resize(r.width, 32); c.appendChild(r);
+          r.appendChild(icon("retry", 14, "text/danger")); r.appendChild(T("Thử lại", 12, 16, "Medium", "text/danger"));
+        } else {
+          c.counterAxisAlignItems = "MIN"; fixedWidth(c, 340);
+          c.appendChild(icon("warning", 16, "text/danger"));
+          const t = T("Không kết nối được máy chủ. Kiểm tra mạng rồi đăng nhập lại.", 14, 20, "Regular", "text/danger"); c.appendChild(t); wrapText(t);
+        }
+        comps.push(c);
+      }
+      makeSet(stage, "Status Message", comps, "Thông báo lỗi (gửi tin, đăng nhập). Dòng mất mạng nằm trong Composer / Offline.", { dir: "VERTICAL", gap: 16, align: "MIN" });
+    }
+  }
+
+  // ---------- 11. Dialog ----------
+  {
+    const stage = block("Dialog", "Hộp thoại modal gốc (dialog showModal): khóa trang, giữ focus, Esc hoặc bấm ra ngoài để hủy, đóng xong trả focus về nút đã mở. Xóa: focus mặc định ở Hủy. Đổi tên (từ header): ô nhập chọn sẵn tên cũ, Enter để lưu.", "ConversationDialogs.jsx");
+    if (stage) {
+      const comps = [];
+      for (const type of ["Delete", "Rename"]) {
+        const c = comp(`Type=${type}`, "VERTICAL", { itemSpacing: 0 });
+        pad(c, 20, 20); fixedWidth(c, 384); c.fills = [paint("surface/surface")]; stroke(c, "border/line"); radius(c, "radius/2xl"); shadow(c, "Shadow/Login card");
+        const h = TX(type === "Delete" ? "Xóa phiên chat?" : "Đổi tên phiên chat", "Heading/Chat title"); c.appendChild(h); wrapText(h);
+        const gap = (px) => { const g = figma.createFrame(); g.name = "Gap"; g.resize(1, px); g.fills = []; return g; };
+        if (type === "Delete") {
+          c.appendChild(gap(8));
+          const d = TX("“Kiểm tra số dư tài khoản 131” và toàn bộ tin nhắn trong phiên sẽ bị xóa. Không thể hoàn tác.", "Body/Default", "text/ink-2"); c.appendChild(d); wrapText(d);
+        } else {
+          c.appendChild(gap(16));
+          const inp = AL("HORIZONTAL", { name: "Input", counterAxisAlignItems: "CENTER" }); inp.paddingLeft = inp.paddingRight = 12;
+          inp.counterAxisSizingMode = "FIXED"; inp.resize(inp.width, 44); radius(inp, "radius/xl"); stroke(inp, "state/focus", 2);
+          c.appendChild(inp); inp.layoutSizingHorizontal = "FILL";
+          const v = TX("Phân tích nghĩa vụ thuế 2025 so với 2024", "Body/Default"); inp.appendChild(v); oneLine(v);
+        }
+        c.appendChild(gap(20));
+        const row = AL("HORIZONTAL", { name: "Actions", itemSpacing: 8, primaryAxisAlignItems: "MAX" }); c.appendChild(row); row.layoutSizingHorizontal = "FILL";
+        row.appendChild(pill("Hủy", "secondary")); row.appendChild(pill(type === "Delete" ? "Xóa" : "Lưu", "primary"));
+        comps.push(c);
+      }
+      makeSet(stage, "Dialog", comps, "Hộp thoại xóa / đổi tên phiên chat (DeleteDialog, RenameDialog).", { gap: 32, align: "MIN" });
+    }
+  }
+
+  // ---------- 12. Empty State ----------
+  {
+    const stage = block("Empty State", "Phiên mới (bấm Cuộc trò chuyện mới): lời mời và 3 câu hỏi gợi ý về thuế/kế toán, bấm là gửi luôn. Câu hỏi đầu tiên thành tên phiên trong danh sách.", "ChatPane.jsx");
+    if (stage) {
+      const c = comp("Empty State", "VERTICAL", { itemSpacing: 20 });
+      fixedWidth(c, 576);
+      const head = AL("HORIZONTAL", { name: "Heading", itemSpacing: 12, counterAxisAlignItems: "CENTER" }); c.appendChild(head);
+      head.appendChild(tryVariant("Bot Avatar", ["Size=36", "Size=28"]));
+      head.appendChild(TX("Bạn cần GeoAgent hỗ trợ việc gì?", "Display/Welcome title"));
+      for (const q of ["So sánh nghĩa vụ thuế TNDN năm 2025 với 2024", "Hạn nộp hồ sơ quyết toán thuế TNDN là khi nào?", "Giải thích cách tính thuế GTGT phải nộp theo phương pháp khấu trừ"]) {
+        const s = AL("HORIZONTAL", { name: "Suggestion", counterAxisAlignItems: "CENTER" }); s.paddingLeft = s.paddingRight = 16; s.paddingTop = s.paddingBottom = 12;
+        s.fills = [paint("surface/surface")]; stroke(s, "border/bubble-edge"); radius(s, "radius/2xl");
+        c.appendChild(s); s.layoutSizingHorizontal = "FILL";
+        const t = TX(q, "Body/Default"); s.appendChild(t); wrapText(t);
+      }
+      c.description = "Trạng thái rỗng của ChatPane (SUGGESTIONS).";
+      stage.appendChild(c);
+    }
+  }
+
+  // ---------- 13. Mẫu ghép ----------
   let patSec = root.findChild((n) => n.name === "06 Pattern");
   if (!patSec) {
     patSec = AL("VERTICAL", { name: "06 Pattern", itemSpacing: 48 }); patSec.paddingLeft = patSec.paddingRight = 96;
@@ -567,11 +698,11 @@ async function main() {
     cardL.appendChild(gap(20));
     const wt = TX("Chào mừng tới GeoAgent", "Display/Welcome title"); wt.textAlignHorizontal = "CENTER"; cardL.appendChild(wt);
     cardL.appendChild(gap(8));
-    const ws = TX("Dịch vụ nhắn tin và liên lạc được mã hóa, phi tập trung.", "Body/Default", "text/ink-2"); ws.textAlignHorizontal = "CENTER"; cardL.appendChild(ws); wrapText(ws);
+    const ws = TX("Trợ lý AI cho nghiệp vụ thuế và kế toán.", "Body/Default", "text/ink-2"); ws.textAlignHorizontal = "CENTER"; cardL.appendChild(ws); wrapText(ws);
     cardL.appendChild(gap(28));
     const btn = variant("Button / Primary", "State=Default"); cardL.appendChild(btn); btn.layoutSizingHorizontal = "FILL";
     cardL.appendChild(gap(20));
-    const foot = AL("HORIZONTAL", { name: "Footer", primaryAxisAlignItems: "SPACE_BETWEEN", counterAxisAlignItems: "CENTER" }); foot.paddingTop = 16;
+    const foot = AL("HORIZONTAL", { name: "Footer", primaryAxisAlignItems: "CENTER", counterAxisAlignItems: "CENTER" }); foot.paddingTop = 16;
     foot.strokes = [paint("border/rule")]; foot.strokeTopWeight = 1; foot.strokeBottomWeight = 0; foot.strokeLeftWeight = 0; foot.strokeRightWeight = 0;
     cardL.appendChild(foot); fill(foot);
     const run = AL("HORIZONTAL", { name: "Powered by", itemSpacing: 6, counterAxisAlignItems: "CENTER" }); foot.appendChild(run);
@@ -582,37 +713,34 @@ async function main() {
     const gw = T("gotix", 15.5, 24, "Black"); gw.letterSpacing = { unit: "PIXELS", value: -0.4 }; gotix.appendChild(gw);
     gw.x = Math.round((56 - gw.width) / 2); gw.y = 0;
     run.appendChild(gotix);
-    foot.appendChild(variant("Language Select", "State=Default"));
     label(login, "Đăng nhập");
 
     // Sidebar
     const side = AL("VERTICAL", { name: "Sidebar", itemSpacing: 0 }); side.fills = [paint("sidebar/frame")]; side.cornerRadius = 16; side.clipsContent = true;
-    side.primaryAxisSizingMode = "FIXED"; side.counterAxisSizingMode = "FIXED"; side.resize(300, 760);
+    side.primaryAxisSizingMode = "FIXED"; side.counterAxisSizingMode = "FIXED"; side.resize(264, 760);
     const brand = AL("HORIZONTAL", { name: "Brand", itemSpacing: 12, counterAxisAlignItems: "CENTER" }); brand.paddingLeft = brand.paddingRight = 16;
-    side.appendChild(brand); fill(brand); brand.counterAxisSizingMode = "FIXED"; brand.resize(300, 64);
+    side.appendChild(brand); fill(brand); brand.counterAxisSizingMode = "FIXED"; brand.resize(264, 64);
     brand.appendChild(emblem(32));
     const bcol = AL("VERTICAL", { name: "Name" }); brand.appendChild(bcol);
     bcol.appendChild(TX("GeoAgent", "Heading/Brand", "sidebar/on-frame"));
     bcol.appendChild(TX("Trợ lý AI thông minh", "Caption/Default", "sidebar/on-frame-muted"));
     const nb = AL("HORIZONTAL", { name: "New chat", itemSpacing: 12, counterAxisAlignItems: "CENTER" }); nb.paddingLeft = 20; nb.paddingRight = 16;
-    side.appendChild(nb); nb.counterAxisSizingMode = "FIXED"; nb.resize(nb.width, 40);
+    side.appendChild(nb); nb.counterAxisSizingMode = "FIXED"; nb.resize(nb.width, 36);
     nb.appendChild(icon("edit", 18, "sidebar/on-frame"));
-    nb.appendChild(T("Cuộc trò chuyện mới", 14, 20, "Medium", "sidebar/on-frame"));
+    nb.appendChild(T("Cuộc trò chuyện mới", 13, 18, "Medium", "sidebar/on-frame"));
     const sw = AL("HORIZONTAL", { name: "Search" }); sw.paddingLeft = sw.paddingRight = 12; sw.paddingTop = 8; side.appendChild(sw); fill(sw);
     const sf = variant("Search Field", "State=Empty"); sw.appendChild(sf); sf.layoutSizingHorizontal = "FILL";
-    const tabs = AL("HORIZONTAL", { name: "Filters", primaryAxisAlignItems: "SPACE_BETWEEN" }); tabs.paddingLeft = tabs.paddingRight = 16; tabs.paddingTop = 12;
-    side.appendChild(tabs); fill(tabs);
-    ["Tất cả", "Chưa đọc", "Liên hệ", "Phòng", "Yêu thích"].forEach((l, i) => { const t = variant("Filter Tab", i === 0 ? "Selected=Yes" : "Selected=No"); setProp(t, "Label", l); tabs.appendChild(t); });
+    const fw = AL("HORIZONTAL", { name: "Filter" }); fw.paddingLeft = 8; fw.paddingRight = 8; fw.paddingTop = 12; side.appendChild(fw); fill(fw);
+    const fbar = compSec.findOne((n) => n.type === "COMPONENT" && n.name === "Filter Bar").createInstance(); fw.appendChild(fbar); fbar.layoutSizingHorizontal = "FILL";
     const list = AL("VERTICAL", { name: "List", itemSpacing: 2 }); list.paddingLeft = list.paddingRight = 8; list.paddingTop = list.paddingBottom = 8;
     side.appendChild(list); fill(list); list.layoutGrow = 1;
-    const convs = [["Trợ lý GeoAgent", "Chi phí ước tính cho 3 thửa đất…", "09:41", "Selected", "No"], ["Phòng Kế toán", "Bảng đối chiếu công nợ quý III đã sẵn sàng", "09:12", "Default", "Yes"], ["Hỗ trợ kỹ thuật", "Bản cập nhật sẽ được triển khai chiều nay", "Hôm qua", "Default", "Yes"], ["Tét Multi", "Trợ lý GeoAgent: | Ưu tiên | Hành động", "T2", "Default", "No"], ["Nguyễn Thu Hà", "Em gửi lại hồ sơ thửa 128 nhé", "T2", "Default", "No"]];
-    for (const [n, p, t, st, un] of convs) { const it = variant("Conversation Item", `State=${st}, Unread=${un}`); setProp(it, "Name", n); setProp(it, "Preview", p); setProp(it, "Time", t); list.appendChild(it); it.layoutSizingHorizontal = "FILL";
-      const av = it.findOne((x) => x.type === "INSTANCE" && x.name === "Avatar"); if (av) setProp(av, "Initial", n.charAt(0).toUpperCase()); }
-    const me = AL("HORIZONTAL", { name: "User", itemSpacing: 12, counterAxisAlignItems: "CENTER" }); me.paddingLeft = me.paddingRight = 16; me.paddingTop = me.paddingBottom = 12;
+    const convs = [["Phân tích nghĩa vụ thuế 2025 so với 2024", "Selected", "No", true], ["Kiểm tra số dư tài khoản 131", "Default", "Yes", false], ["Kiểm thử bản cập nhật mới", "Default", "No", true], ["Hạn nộp hồ sơ quyết toán thuế TNDN", "Hover", "No", false]];
+    for (const [topic, st, un, fav] of convs) { const it = variant("Conversation Item", `State=${st}, Unread=${un}`); setProp(it, "Topic", topic); setProp(it, "Favorite", fav); list.appendChild(it); it.layoutSizingHorizontal = "FILL"; }
+    const me = AL("HORIZONTAL", { name: "User (mở Menu / Account)", itemSpacing: 12, counterAxisAlignItems: "CENTER" }); me.paddingLeft = me.paddingRight = 16; me.paddingTop = me.paddingBottom = 12;
     me.strokes = [paint("sidebar/divider")]; me.strokeTopWeight = 1; me.strokeBottomWeight = 0; me.strokeLeftWeight = 0; me.strokeRightWeight = 0;
     side.appendChild(me); fill(me);
-    me.appendChild(avatar("Frame", 32, "N"));
-    me.appendChild(T("Nguyễn Minh Quân", 14, 20, "Medium", "sidebar/on-frame"));
+    me.appendChild(avatar("Frame", 28, "N"));
+    me.appendChild(T("Nguyễn Minh Quân", 13, 18, "Medium", "sidebar/on-frame"));
     label(side, "Sidebar");
 
     // Màn chat máy tính
@@ -628,6 +756,7 @@ async function main() {
     msgs.appendChild(um); um.layoutAlign = "MAX";
     const bm = (compSec.findOne((n) => n.type === "COMPONENT" && n.name === "Message / Bot")).createInstance();
     msgs.appendChild(bm); bm.layoutSizingHorizontal = "FILL";
+    const af = compSec.findOne((n) => n.type === "COMPONENT" && n.name === "Answer Footer").createInstance(); msgs.appendChild(af); af.layoutSizingHorizontal = "FILL";
     const ti = (compSec.findOne((n) => n.type === "COMPONENT" && n.name === "Typing Indicator")).createInstance(); msgs.appendChild(ti);
     const cw = AL("HORIZONTAL", { name: "Composer area" }); cw.paddingLeft = cw.paddingRight = 72; cw.paddingTop = 8; cw.paddingBottom = 20;
     pane.appendChild(cw); cw.layoutSizingHorizontal = "FILL";
@@ -671,7 +800,7 @@ async function main() {
     const mRow = AL("HORIZONTAL", { name: "Mobile screens", itemSpacing: 48, counterAxisAlignItems: "MIN", layoutWrap: "WRAP", counterAxisSpacing: 48 });
     const mWrap = AL("VERTICAL", { name: "Điện thoại", itemSpacing: 12 }); patSec.appendChild(mWrap); fill(mWrap);
     mWrap.appendChild(T("Điện thoại (375 × 812)", 20, 28, "Semi Bold"));
-    const mNote = T("Dưới 768 px: sidebar thành ngăn kéo mở từ nút menu, quốc huy nằm trên header. Lề an toàn trên 47 px và dưới 34 px (iPhone có tai thỏ). Trên iPhone thật chữ hiển thị bằng SF Pro (code dùng -apple-system); bản vẽ dùng Inter.", 14, 22, "Regular", "text/ink-2");
+    const mNote = T("Dưới 768 px: sidebar thành ngăn kéo mở từ nút menu; header chỉ có nút menu, cuộc trò chuyện mới và ⋮ nổi trên dải mờ. Lề an toàn trên 47 px và dưới 34 px (iPhone có tai thỏ). Trên iPhone thật chữ hiển thị bằng SF Pro (code dùng -apple-system); bản vẽ dùng Inter.", 14, 22, "Regular", "text/ink-2");
     mWrap.appendChild(mNote); mNote.textAutoResize = "HEIGHT"; mNote.resize(880, mNote.height);
     mWrap.appendChild(mRow); fill(mRow);
     const mLabel = (frame, text) => { const w = AL("VERTICAL", { name: text, itemSpacing: 12 }); w.appendChild(T(text, 16, 24, "Semi Bold")); w.appendChild(frame); mRow.appendChild(w); };
@@ -698,6 +827,7 @@ async function main() {
       u.resize(Math.round((W - 32) * 0.85), u.height); // tối đa 85% cột (max-w-[85%])
       const b = compSec.findOne((n) => n.type === "COMPONENT" && n.name === "Message / Bot").createInstance();
       ms.appendChild(b); b.layoutSizingHorizontal = "FILL";
+      const af2 = compSec.findOne((n) => n.type === "COMPONENT" && n.name === "Answer Footer").createInstance(); ms.appendChild(af2); af2.layoutSizingHorizontal = "FILL";
       const bub = b.findOne((n) => n.name === "Bubble"); if (bub) { bub.paddingLeft = bub.paddingRight = 16; bub.paddingTop = bub.paddingBottom = 14; }
       const cw2 = AL("HORIZONTAL", { name: "Composer area" }); cw2.paddingLeft = cw2.paddingRight = 32; cw2.paddingTop = 12; cw2.paddingBottom = 12;
       f.appendChild(cw2); cw2.layoutSizingHorizontal = "FILL";
@@ -751,6 +881,15 @@ async function main() {
   return { report: await qa(page, root, await figma.variables.getLocalVariablesAsync()), tokens: await exportTokens() };
 }
 
+// Icon thêm vào bộ icon sau lần dựng đầu (lấy từ public/geoagent-icons/*.svg). Plugin tạo component nếu file Figma chưa có.
+const ICON_SVG = {
+  "filter": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#000000\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 5h20\"></path><path d=\"M6 12h12\"></path><path d=\"M9 19h6\"></path></svg>",
+  "unread": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#000000\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12.7 3H4a2 2 0 0 0-2 2v16.286a.71.71 0 0 0 1.212.502l2.202-2.202A2 2 0 0 1 6.828 19H20a2 2 0 0 0 2-2v-4.7\"></path><circle cx=\"19\" cy=\"6\" r=\"3\"></circle></svg>",
+  "rename": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#000000\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"></path><path d=\"m15 5 4 4\"></path></svg>",
+  "delete": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#000000\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 11v6\"></path><path d=\"M14 11v6\"></path><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"></path><path d=\"M3 6h18\"></path><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"></path></svg>",
+  "sign-out": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#000000\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m16 17 5-5-5-5\"></path><path d=\"M21 12H9\"></path><path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"></path></svg>"
+};
+
 // ---------- Figma ↔ code ----------
 // Kiểu chữ Figma → class Tailwind. Chỉ các mục có key trong TEXT_KEY được xuất thành token typography.
 const TEXT_KEY = {
@@ -767,21 +906,28 @@ const RADIUS_DESC = { lg: "rounded-lg: nút icon, chọn ngôn ngữ", xl: "roun
 
 const REACT_DOC = {
   "Icon Button": "React: <IconButton label=\"Mở danh sách hội thoại\" tone=\"sheet\"><MenuIcon /></IconButton> (src/improved/components/ui.jsx).\nTone=Sheet → tone=\"sheet\" (mặc định, trên nền trắng) · Tone=Frame → tone=\"frame\" (trên sidebar đỏ).\nState chỉ là trạng thái CSS (hover, focus-visible), không phải prop. Icon: đổi bằng component icon tương ứng trong icons.jsx.",
-  "Button / Primary": "Chưa tách thành component React; markup trong Welcome.jsx:\n<button className=\"flex h-11 w-full items-center justify-center gap-2.5 rounded-xl bg-brand text-button text-white hover:bg-brand-hover active:bg-brand-pressed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus\"><SignInIcon size={18} />Đăng nhập</button>",
-  "Round Button": "Trong Composer.jsx. Ghost: size-10 rounded-full text-ink-2 hover:bg-panel hover:text-ink. Send: size-10 rounded-full bg-brand text-white hover:bg-brand-hover. Focus: focus-visible:outline-2 focus-visible:outline-focus.",
-  "Scroll Button": "ChatPane.jsx › <ScrollButton label=\"Lên đầu hội thoại\" onClick={fn} disabled={atTop}><ChevronUp /></ScrollButton>. Class: size-9 rounded-full border border-line bg-surface shadow-float; ẩn (opacity 0) khi disabled.",
-  "Avatar": "React: <Avatar name=\"Nguyễn Minh Quân\" size={36} /> (ui.jsx).\nTone=Red/Amber/Teal/Violet: KHÔNG truyền tone, code tự chọn theo chữ cái đầu tên (token avatar/*-bg, avatar/*-fg).\nTone=Frame → tone=\"frame\" (trên sidebar đỏ) · Tone=Selected → tone=\"selected\" · Size → size={…} · status → chấm trạng thái.",
-  "Bot Avatar": "React: <BotAvatar size={28} /> (ui.jsx). Nền bg-frame, icon AssistantIcon màu text-gold, cỡ icon = 68% avatar.",
-  "Conversation Item": "Trong Sidebar.jsx (li > button). Selected → aria-current; nền bg-frame-active, chữ text-brand. Hover: hover:bg-frame-hover. Unread: tên font-unread, xem trước text-on-frame, chấm size-2 bg-gold. Tên text-sm, giờ text-xs, xem trước text-small.",
-  "Search Field": "Trong Sidebar.jsx (label > input type=search). h-10 rounded-full border border-frame-edge bg-frame-sunken px-4; focus-within:border-on-frame focus-within:ring-1 focus-within:ring-on-frame. Nút xóa chỉ hiện khi có chữ; Esc xóa.",
-  "Filter Tab": "Trong Sidebar.jsx (button aria-pressed). text-small; Selected=Yes → border-gold text-on-frame font-semibold; No → border-transparent text-on-frame-muted. Nhóm tab: border-b border-divider.",
-  "Language Select": "Trong Welcome.jsx: <select> gốc của trình duyệt. h-8 rounded-lg pr-7 pl-2 text-small font-medium hover:bg-surface-2; mũi tên ChevronDown 16.",
-  "Chat Header": "Trong ChatPane.jsx (header). h-16 border-b border-rule; tên h1 text-title, loại hội thoại text-xs text-ink-2. Device=Mobile là dưới 768px (md:hidden): nút menu, quốc huy, nút soạn mới, avatar người dùng; có pt-[var(--safe-top)].",
-  "Composer": "React: <Composer onSend={(text) => …} placeholder=\"Hỏi GeoAgent\" /> (Composer.jsx). Khung rounded-composer border border-line-strong bg-surface shadow-composer; ô nhập text-input, tự giãn tối đa 8 dòng. State=Typing: nút gửi xuất hiện khi có chữ.",
-  "Message / User": "Trong ChatPane.jsx. Bóng: rounded-bubble rounded-br-bubble-tip bg-brand-soft px-4 py-2.5 text-bubble; tối đa max-w-[75%] (máy tính), max-w-[85%] (điện thoại). Dưới bóng: giờ text-xs text-ink-2 + <Avatar size={22} />.",
-  "Message / Bot": "Trong ChatPane.jsx + <MessageContent blocks={[{ type: \"h\" | \"p\" | \"ul\" | \"table\" | \"hr\", … }]} />. Thẻ: rounded-bubble rounded-tl-bubble-tip border border-bubble-edge bg-surface shadow-bubble px-4 py-3.5 md:px-5 md:py-4; chữ text-message, tiêu đề text-message-heading. Dòng tên: text-small + <BotAvatar size={28} />.",
-  "Typing Indicator": "Trong ChatPane.jsx (prop typing). 3 chấm size-1.5 bg-ink-2 animate-blink lệch 200ms; role=status; motion-reduce:animate-none.",
-  "Data Table": "MessageContent block: { type: \"table\", head: [\"Chỉ tiêu\", …], rows: [[…]] }. Đầu cột text-xs font-medium text-ink-2 border-b border-line; hàng text-sm border-b border-rule; cột số căn phải tabular-nums.",
+  "Button / Primary": "Markup trong Welcome.jsx: <button data-login-button className=\"flex h-11 w-full items-center justify-center gap-2.5 rounded-xl bg-button-primary-bg text-button text-button-primary-label hover:bg-button-primary-bg-hover active:bg-button-primary-bg-pressed\"><SignInIcon size={18} />Đăng nhập</button>",
+  "Round Button": "Composer.jsx: chỉ còn nút gửi (Type=Send): size-10 rounded-full bg-composer-send-bg text-composer-send-icon hover:bg-composer-send-bg-hover. Type=Ghost hiện chưa dùng (đã bỏ đính kèm và micro).",
+  "Scroll Button": "ChatPane.jsx › <ScrollButton label=\"Lên đầu hội thoại\" onClick={fn} disabled={atTop}><ChevronUp /></ScrollButton>. size-9 rounded-full border-scroll-button-border bg-scroll-button-bg shadow-float; ẩn khi disabled. Chỉ trên máy tính.",
+  "Avatar": "React: <Avatar name=\"Nguyễn Minh Quân\" size={28} tone=\"frame\" /> (ui.jsx).\nTone=Red/Amber/Teal/Violet: KHÔNG truyền tone, code tự chọn theo chữ cái đầu tên.\nTone=Frame → tone=\"frame\" (trên sidebar đỏ) · Tone=Selected → tone=\"selected\" · Size → size={…}.",
+  "Bot Avatar": "React: <BotAvatar size={28} /> (ui.jsx). Nền bg-bot-avatar-bg, icon AssistantIcon màu text-bot-avatar-icon, cỡ icon = 68% avatar.",
+  "Conversation Item": "Sidebar.jsx (li.group/item > button[data-id] + PopupMenu ⋮). text-small; Default: text-sidebar-item-text hover:bg-sidebar-item-bg-hover; Selected (aria-current): bg-sidebar-item-bg-selected text-sidebar-item-text-selected; Unread: font-unread + chấm bg-sidebar-unread-dot; Favorite: <FavoriteIcon size={14} fill=\"currentColor\" />. Nút ⋮ hiện khi hover/focus-within (cảm ứng luôn hiện).",
+  "Search Field": "Sidebar.jsx (label > input type=search). h-9 pointer-coarse:h-10 rounded-full border-search-border bg-search-bg px-4 text-small; focus-within:border-search-border-focus focus-within:ring-1. Nút xóa chỉ hiện khi có chữ; Esc xóa.",
+  "Menu Item": "PopupMenu.jsx: items=[{ key, label, Icon, onSelect, role?, checked? }]. Mục min-h-9 pointer-coarse:min-h-11 rounded-lg px-2.5 text-sm font-medium focus:bg-menu-item-bg-hover; icon size-4 text-menu-text-muted; Checked → role=\"menuitemradio\" aria-checked + CheckIcon.",
+  "Menu / Filter": "<FilterMenu options={FILTER_OPTIONS} value={filter} onChange={setFilter} /> (FilterMenu.jsx, dựng trên PopupMenu). Popover .popup-menu: min-w-44 rounded-xl border-menu-border bg-menu-bg p-1 shadow-float.",
+  "Menu / Conversation": "<PopupMenu label=\"Tùy chọn cho phiên …\" icon={<MoreIcon />} items={conversationActions(c, { selected, canDelete, onUpdate, onRename, onDelete })} />, dùng ở Sidebar.jsx (từng phiên) và ChatPane.jsx (header).",
+  "Menu / Account": "Settings.jsx: nút avatar + tên mở bảng; fieldset Giao diện (radio accent-menu-accent) và nút Đăng xuất (onLogout → Root.jsx về màn đăng nhập).",
+  "Filter Bar": "Sidebar.jsx: <p aria-live=\"polite\" className=\"text-small font-medium text-sidebar-text-muted\">{nhãn}</p> + <FilterMenu … />.",
+  "Chat Header": "ChatPane.jsx (header absolute, pointer-events-none). Dải mờ: bg-linear-to-b from-chat-header-fade from-40% to-chat-header-fade/0. Nút: IconButton menu (điện thoại), IconButton Cuộc trò chuyện mới (điện thoại), PopupMenu ⋮ (actions của phiên đang mở). h1#chat-title là sr-only.",
+  "Composer": "React: <Composer onSend={(text) => …} placeholder=\"Hỏi GeoAgent\" offline={!online} /> (Composer.jsx). Khung min-h-14 rounded-composer border-composer-border bg-composer-bg pl-4 shadow-composer; ô nhập text-input tự giãn tối đa 8 dòng; nút gửi hiện khi có chữ. Offline: dòng role=status text-chat-notice-text + icon text-chat-notice-icon.",
+  "Message / User": "ChatPane.jsx. Bóng: rounded-bubble rounded-br-bubble-tip bg-message-user-bg px-4 py-2.5 text-bubble; tối đa 75% (máy tính), 85% (điện thoại). Dưới bóng: giờ text-message-user-meta + <Avatar size={22} />; m.status === \"failed\" thì thay bằng Status Message / Send failed.",
+  "Message / Bot": "ChatPane.jsx + <MessageContent blocks={[{ type: \"h\" | \"p\" | \"ul\" | \"table\" | \"hr\", … }]} onOpenLink={…} />. Thẻ: rounded-bubble rounded-tl-bubble-tip border-message-bot-border bg-message-bot-bg shadow-bubble; dưới thẻ là <AnswerFooter />.",
+  "Answer Footer": "AnswerFooter.jsx: <AnswerFooter blocks={m.blocks} title={topic} onOpenLink={openLink} />. Chữ text-answer-meta, link text-answer-source-link; nút icon size-9 (cảm ứng size-11), icon size-5, aria-label + title.",
+  "Status Message": "Send failed: ChatPane.jsx (text-message-user-error, nút Thử lại gọi onRetry). Login error: Welcome.jsx prop error (role=alert, text-login-card-error).",
+  "Dialog": "ConversationDialogs.jsx: <DeleteDialog target={{ id, topic }} onConfirm={…} onDone={…} /> · <RenameDialog target={…} onSave={…} onDone={…} />. <dialog closedby=\"any\"> showModal; w-[min(24rem,calc(100vw-2rem))] rounded-2xl border-menu-border bg-menu-bg p-5 shadow-card.",
+  "Empty State": "ChatPane.jsx khi conversation.messages.length === 0: h2 text-display + 3 nút gợi ý (SUGGESTIONS) gọi onSend(câu hỏi).",
+  "Typing Indicator": "ChatPane.jsx (prop typing). 3 chấm size-1.5 bg-chat-typing-dot animate-blink lệch 200ms; role=status; motion-reduce:animate-none.",
+  "Data Table": "MessageContent block: { type: \"table\", head: [\"Loại thuế\", …], rows: [[…]] }. Đầu cột text-xs font-medium text-table-head-text border-b border-table-head-border; hàng text-sm border-b border-table-row-border; cột số căn phải tabular-nums."
 };
 
 // Xuất token theo đúng cấu trúc tokens/geoagent.tokens.json (chuẩn W3C DTCG) để chạy npm run tokens
@@ -858,7 +1004,7 @@ async function exportTokens() {
 // Đổi màu cho dự án khác: chỉ sửa giá trị trong "GeoAgent / Global". Alias và Component tự theo.
 // Mã màu lấy đúng từ src/index.css và code component; không màu nào trên màn hình bị đổi.
 // <token-data> SINH TỰ ĐỘNG bởi npm run tokens từ tokens/geoagent.tokens.json. Không sửa tay.
-const TOKEN_DATA = {"primitives":[["base/white","#ffffff"],["red/50","#f8e3e1"],["red/100","#f8e2da"],["red/150","#f6dcd6"],["red/200","#f5d6d0"],["red/250","#f2cfc6"],["red/400","#e39a90"],["red/600","#ae2f33"],["red/700","#a3141a"],["red/750","#8a1c22"],["red/800","#8a1218"],["red/850","#85101a"],["red/900","#741015"],["ember/100","#f1e3dd"],["ember/150","#ecd6cf"],["ember/200","#f2bcb7"],["ember/250","#dcbdb5"],["ember/350","#ee8079"],["ember/450","#a2635a"],["ember/550","#d1353b"],["ember/600","#c62a31"],["ember/700","#a51d23"],["ember/750","#74463f"],["ember/850","#661d21"],["ember/880","#561217"],["ember/900","#4b2022"],["ember/920","#4a2224"],["ember/950","#400b10"],["rose/700","#7a4b47"],["warm/25","#fff7f0"],["warm/50","#fcf8f7"],["warm/100","#f6f1ee"],["warm/150","#f5f1ee"],["warm/200","#f0e9e6"],["warm/250","#eee6e2"],["warm/300","#e7dfdb"],["warm/350","#e7ddd8"],["warm/400","#d9cdc8"],["warm/500","#9a8f8c"],["warm/550","#958884"],["warm/700","#6b5f5c"],["warm/950","#1d1416"],["night/50","#f5ece7"],["night/300","#b9aba6"],["night/500","#8a7b76"],["night/650","#4a3c36"],["night/700","#403430"],["night/750","#362b28"],["night/800","#2e2421"],["night/900","#211916"],["night/950","#17110f"],["gold/100","#f6ecd6"],["gold/200","#f0d595"],["gold/400","#e9b84a"],["gold/800","#6e4a08"],["gold/900","#45361b"],["gold/950","#3d1205"],["blue/300","#79a6ff"],["blue/600","#1a5fd6"],["teal/50","#e3eef0"],["teal/200","#aadbe3"],["teal/800","#1f5560"],["teal/900","#1d3a40"],["violet/50","#ece6f3"],["violet/200","#d2c4ec"],["violet/800","#4e3a6e"],["violet/900","#362b49"],["alpha/warm-25-a15","#fff7f0",0.15],["alpha/warm-25-a16","#fff7f0",0.16],["alpha/warm-950-a40","#1d1416",0.4],["alpha/warm-950-a35","#1d1416",0.35],["alpha/warm-25-a35","#fff7f0",0.35],["alpha/warm-25-a50","#fff7f0",0.5],["alpha/black-a55","#000000",0.55]],"semantic":[{"name":"brand/brand","light":"red/700","dark":"ember/600","css":"--brand","desc":"Màu thương hiệu: nút chính, nút gửi, chấm danh sách"},{"name":"brand/brand-hover","light":"red/800","dark":"ember/550","css":"--brand-hover","desc":"Nút chính khi rê chuột"},{"name":"brand/brand-pressed","light":"red/900","dark":"ember/700","css":"--brand-pressed","desc":"Nút chính khi nhấn"},{"name":"brand/brand-soft","light":"red/200","dark":"ember/900","css":"--brand-soft","desc":"Bong bóng tin của người dùng"},{"name":"brand/gold","light":"gold/400","dark":"gold/400","css":"--gold","desc":"Vàng nhấn: tab đang chọn, chấm chưa đọc, icon trợ lý"},{"name":"brand/gold-ink","light":"gold/950","dark":"gold/950","css":"--gold-ink","desc":"Chữ trên nền vàng"},{"name":"sidebar/frame","light":"red/700","dark":"ember/880","css":"--frame","desc":"Nền sidebar và màn đăng nhập"},{"name":"sidebar/frame-hover","light":"red/600","dark":"ember/850","css":"--frame-hover","desc":"Mục sidebar khi rê chuột"},{"name":"sidebar/frame-active","light":"warm/25","dark":"ember/100","css":"--frame-active","desc":"Mục sidebar đang chọn (viên trắng ấm)"},{"name":"sidebar/frame-sunken","light":"red/850","dark":"ember/950","css":"--frame-sunken","desc":"Ô tìm kiếm trên nền đỏ"},{"name":"sidebar/frame-edge","light":"red/400","dark":"ember/450","css":"--frame-edge","desc":"Viền ô tìm kiếm, vạch kéo sidebar"},{"name":"sidebar/on-frame","light":"warm/25","dark":"night/50","css":"--on-frame","desc":"Chữ chính trên nền đỏ"},{"name":"sidebar/on-frame-muted","light":"red/250","dark":"ember/250","css":"--on-frame-muted","desc":"Chữ phụ trên nền đỏ"},{"name":"sidebar/on-frame-muted-strong","light":"red/100","dark":"ember/150","css":"--on-frame-muted-strong","desc":"Chữ phụ khi rê chuột"},{"name":"sidebar/on-frame-active-muted","light":"rose/700","dark":"ember/750","css":"--on-frame-active-muted","desc":"Chữ phụ trong mục đang chọn"},{"name":"sidebar/divider","light":"alpha/warm-25-a15","dark":"alpha/warm-25-a15","css":"--divider","desc":"Đường kẻ trên nền đỏ"},{"name":"sidebar/on-frame-active","light":"red/700","dark":"red/700","css":"--on-frame-active","desc":"Chữ trên viên sáng của mục đang chọn (tên, chữ cái avatar)"},{"name":"sidebar/scrollbar","light":"alpha/warm-25-a50","dark":"alpha/warm-25-a50","css":"--scrollbar-frame","desc":"Thanh cuộn trên sidebar đỏ"},{"name":"surface/surface","light":"base/white","dark":"night/900","css":"--surface","desc":"Nền trắng: header, thẻ, ô soạn tin, bóng bot"},{"name":"surface/surface-2","light":"warm/150","dark":"night/800","css":"--surface-2","desc":"Nền nút trung tính khi rê chuột"},{"name":"surface/canvas","light":"warm/50","dark":"night/950","css":"--canvas","desc":"Nền vùng hội thoại"},{"name":"surface/panel","light":"warm/100","dark":"night/800","css":"--panel","desc":"Nút tròn trong ô soạn tin khi rê chuột"},{"name":"surface/panel-hover","light":"warm/250","dark":"night/750","css":"--panel-hover","desc":"Panel khi rê chuột"},{"name":"surface/panel-active","light":"warm/350","dark":"night/700","css":"--panel-active","desc":"Panel khi nhấn"},{"name":"surface/scrim","light":"alpha/warm-950-a40","dark":"alpha/black-a55","css":"--scrim","desc":"Lớp phủ sau ngăn kéo trên điện thoại"},{"name":"surface/scrollbar","light":"alpha/warm-950-a35","dark":"alpha/warm-25-a35","css":"--scrollbar","desc":"Thanh cuộn trên nền sáng/tối"},{"name":"text/ink","light":"warm/950","dark":"night/50","css":"--ink","desc":"Chữ chính"},{"name":"text/ink-2","light":"warm/700","dark":"night/300","css":"--ink-2","desc":"Chữ phụ, icon trung tính, giờ gửi"},{"name":"text/link","light":"red/700","dark":"ember/350","css":"--link","desc":"Chữ link trong tin nhắn (luôn kèm gạch chân)"},{"name":"text/on-brand","light":"base/white","dark":"base/white","css":"--on-brand","desc":"Chữ và icon trên nền thương hiệu (nút chính, nút gửi)"},{"name":"border/line","light":"warm/300","dark":"night/700","css":"--line","desc":"Viền nhạt: nút cuộn, đầu bảng"},{"name":"border/rule","light":"warm/200","dark":"night/800","css":"--rule","desc":"Đường kẻ: header, hàng bảng, phân cách"},{"name":"border/line-strong","light":"warm/550","dark":"night/500","css":"--line-strong","desc":"Viền điều khiển (ô soạn tin), 3,42:1 trên trắng"},{"name":"border/bubble-edge","light":"warm/400","dark":"night/650","css":"--bubble-edge","desc":"Viền bóng tin của bot"},{"name":"state/focus","light":"blue/600","dark":"blue/300","css":"--focus","desc":"Viền focus bàn phím"},{"name":"state/offline","light":"warm/500","dark":"night/500","css":"--status-offline","desc":"Chấm trạng thái trên avatar"},{"name":"avatar/red-bg","light":"red/50","dark":"ember/920","css":"--avatar-red-bg","desc":"Avatar sắc 1 (nền)"},{"name":"avatar/red-fg","light":"red/750","dark":"ember/200","css":"--avatar-red-fg","desc":"Avatar sắc 1 (chữ)"},{"name":"avatar/amber-bg","light":"gold/100","dark":"gold/900","css":"--avatar-amber-bg","desc":"Avatar sắc 2 (nền)"},{"name":"avatar/amber-fg","light":"gold/800","dark":"gold/200","css":"--avatar-amber-fg","desc":"Avatar sắc 2 (chữ)"},{"name":"avatar/teal-bg","light":"teal/50","dark":"teal/900","css":"--avatar-teal-bg","desc":"Avatar sắc 3 (nền)"},{"name":"avatar/teal-fg","light":"teal/800","dark":"teal/200","css":"--avatar-teal-fg","desc":"Avatar sắc 3 (chữ)"},{"name":"avatar/violet-bg","light":"violet/50","dark":"violet/900","css":"--avatar-violet-bg","desc":"Avatar sắc 4 (nền)"},{"name":"avatar/violet-fg","light":"violet/800","dark":"violet/200","css":"--avatar-violet-fg","desc":"Avatar sắc 4 (chữ)"},{"name":"avatar/selected-bg","light":"red/150","dark":"red/150","css":"--avatar-selected-bg","desc":"Avatar trong mục sidebar đang chọn"},{"name":"avatar/frame-bg","light":"alpha/warm-25-a16","dark":"alpha/warm-25-a16","css":"--avatar-frame-bg","desc":"Avatar trên sidebar đỏ: trắng ấm 16%"}],"component":[{"name":"focus/ring","alias":"state/focus","css":"--focus-ring","desc":"Viền focus bàn phím trên nền sáng"},{"name":"app/bg","alias":"surface/surface","css":"--app-bg","desc":"Nền ứng dụng"},{"name":"app/text","alias":"text/ink","css":"--app-text","desc":"Chữ mặc định của ứng dụng"},{"name":"sidebar/bg","alias":"sidebar/frame","css":"--sidebar-bg","desc":"Nền sidebar"},{"name":"sidebar/text","alias":"sidebar/on-frame","css":"--sidebar-text","desc":"Chữ chính trên sidebar"},{"name":"sidebar/text-muted","alias":"sidebar/on-frame-muted","css":"--sidebar-text-muted","desc":"Chữ phụ trên sidebar"},{"name":"sidebar/icon","alias":"sidebar/on-frame-muted","css":"--sidebar-icon","desc":"Icon trên sidebar"},{"name":"sidebar/item-bg-hover","alias":"sidebar/frame-hover","css":"--sidebar-item-bg-hover","desc":"Nền mục khi rê chuột"},{"name":"sidebar/item-bg-selected","alias":"sidebar/frame-active","css":"--sidebar-item-bg-selected","desc":"Nền mục đang chọn"},{"name":"sidebar/item-text","alias":"sidebar/on-frame","css":"--sidebar-item-text","desc":"Chữ tên phiên chat (đã đọc); sáng hơn nhãn bộ lọc"},{"name":"sidebar/item-text-selected","alias":"sidebar/on-frame-active","css":"--sidebar-item-text-selected","desc":"Chữ mục đang chọn"},{"name":"sidebar/divider","alias":"sidebar/divider","css":"--sidebar-divider","desc":"Đường kẻ trên sidebar"},{"name":"sidebar/focus-ring","alias":"sidebar/on-frame","css":"--sidebar-focus-ring","desc":"Viền focus trên sidebar"},{"name":"sidebar/unread-dot","alias":"brand/gold","css":"--sidebar-unread-dot","desc":"Chấm chưa đọc"},{"name":"sidebar/item-action-icon","alias":"sidebar/on-frame-muted","css":"--sidebar-item-action-icon","desc":"Icon nút tùy chọn (⋮) của phiên chat"},{"name":"sidebar/item-action-icon-selected","alias":"sidebar/on-frame-active-muted","css":"--sidebar-item-action-icon-selected","desc":"Icon nút tùy chọn trên phiên đang chọn"},{"name":"sidebar/item-action-bg-hover-selected","alias":"avatar/selected-bg","css":"--sidebar-item-action-bg-hover-selected","desc":"Nền nút tùy chọn khi rê chuột, trên phiên đang chọn"},{"name":"search/bg","alias":"sidebar/frame-sunken","css":"--search-bg","desc":"Nền ô tìm kiếm"},{"name":"search/border","alias":"sidebar/frame-edge","css":"--search-border","desc":"Viền ô tìm kiếm"},{"name":"search/border-focus","alias":"sidebar/on-frame","css":"--search-border-focus","desc":"Viền khi đang gõ"},{"name":"search/text","alias":"sidebar/on-frame","css":"--search-text","desc":"Chữ đang gõ"},{"name":"search/placeholder","alias":"sidebar/on-frame-muted","css":"--search-placeholder","desc":"Chữ gợi ý"},{"name":"chat/bg","alias":"surface/canvas","css":"--chat-bg","desc":"Nền vùng hội thoại và header kính mờ"},{"name":"chat/header-border","alias":"border/rule","css":"--chat-header-border","desc":"Đường kẻ dưới header khi đã cuộn"},{"name":"chat/typing-dot","alias":"text/ink-2","css":"--chat-typing-dot","desc":"Chấm “đang trả lời”"},{"name":"message-user/bg","alias":"brand/brand-soft","css":"--message-user-bg","desc":"Bong bóng tin người dùng"},{"name":"message-user/meta","alias":"text/ink-2","css":"--message-user-meta","desc":"Giờ gửi"},{"name":"message-bot/bg","alias":"surface/surface","css":"--message-bot-bg","desc":"Thẻ tin của bot"},{"name":"message-bot/border","alias":"border/bubble-edge","css":"--message-bot-border","desc":"Viền thẻ tin bot"},{"name":"message-bot/sender","alias":"text/ink","css":"--message-bot-sender","desc":"Tên người gửi"},{"name":"message-bot/meta","alias":"text/ink-2","css":"--message-bot-meta","desc":"Giờ gửi"},{"name":"content/text","alias":"text/ink","css":"--content-text","desc":"Chữ câu trả lời"},{"name":"content/strong","alias":"text/ink","css":"--content-strong","desc":"Chữ đậm"},{"name":"content/link","alias":"text/link","css":"--content-link","desc":"Link (luôn gạch chân)"},{"name":"content/bullet","alias":"brand/brand","css":"--content-bullet","desc":"Chấm đầu dòng"},{"name":"content/divider","alias":"border/rule","css":"--content-divider","desc":"Đường phân cách giữa các mục"},{"name":"table/head-text","alias":"text/ink-2","css":"--table-head-text","desc":"Đầu cột"},{"name":"table/head-border","alias":"border/line","css":"--table-head-border","desc":"Kẻ dưới đầu cột"},{"name":"table/row-border","alias":"border/rule","css":"--table-row-border","desc":"Kẻ giữa các hàng"},{"name":"table/cell-text","alias":"text/ink","css":"--table-cell-text","desc":"Ô dữ liệu"},{"name":"composer/bg","alias":"surface/surface","css":"--composer-bg","desc":"Nền ô soạn tin"},{"name":"composer/border","alias":"border/line-strong","css":"--composer-border","desc":"Viền ô soạn tin"},{"name":"composer/placeholder","alias":"text/ink-2","css":"--composer-placeholder","desc":"Chữ gợi ý"},{"name":"composer/icon","alias":"text/ink-2","css":"--composer-icon","desc":"Icon đính kèm, micro"},{"name":"composer/icon-hover","alias":"text/ink","css":"--composer-icon-hover","desc":"Icon khi rê chuột"},{"name":"composer/icon-bg-hover","alias":"surface/panel","css":"--composer-icon-bg-hover","desc":"Nền nút tròn khi rê chuột"},{"name":"composer/fade","alias":"surface/canvas","css":"--composer-fade","desc":"Dải mờ phía sau ô soạn tin"},{"name":"composer/send-bg","alias":"brand/brand","css":"--composer-send-bg","desc":"Nút gửi"},{"name":"composer/send-bg-hover","alias":"brand/brand-hover","css":"--composer-send-bg-hover","desc":"Nút gửi khi rê chuột"},{"name":"composer/send-icon","alias":"text/on-brand","css":"--composer-send-icon","desc":"Icon nút gửi"},{"name":"button-primary/bg","alias":"brand/brand","css":"--button-primary-bg","desc":"Nút chính"},{"name":"button-primary/bg-hover","alias":"brand/brand-hover","css":"--button-primary-bg-hover","desc":"Khi rê chuột"},{"name":"button-primary/bg-pressed","alias":"brand/brand-pressed","css":"--button-primary-bg-pressed","desc":"Khi nhấn"},{"name":"button-primary/label","alias":"text/on-brand","css":"--button-primary-label","desc":"Chữ và icon"},{"name":"button-secondary/border","alias":"border/line-strong","css":"--button-secondary-border","desc":"Viền nút phụ"},{"name":"button-secondary/text","alias":"text/ink","css":"--button-secondary-text","desc":"Chữ nút phụ"},{"name":"button-secondary/bg-hover","alias":"surface/surface-2","css":"--button-secondary-bg-hover","desc":"Nền khi rê chuột"},{"name":"icon-button/icon","alias":"text/ink-2","css":"--icon-button-icon","desc":"Icon"},{"name":"icon-button/icon-hover","alias":"text/ink","css":"--icon-button-icon-hover","desc":"Icon khi rê chuột"},{"name":"icon-button/bg-hover","alias":"surface/surface-2","css":"--icon-button-bg-hover","desc":"Nền khi rê chuột"},{"name":"scroll-button/bg","alias":"surface/surface","css":"--scroll-button-bg","desc":"Nền nút cuộn"},{"name":"scroll-button/border","alias":"border/line","css":"--scroll-button-border","desc":"Viền"},{"name":"scroll-button/icon","alias":"text/ink-2","css":"--scroll-button-icon","desc":"Icon"},{"name":"scroll-button/icon-hover","alias":"text/ink","css":"--scroll-button-icon-hover","desc":"Icon khi rê chuột"},{"name":"menu/bg","alias":"surface/surface","css":"--menu-bg","desc":"Nền bảng Cài đặt"},{"name":"menu/border","alias":"border/line","css":"--menu-border","desc":"Viền"},{"name":"menu/text","alias":"text/ink","css":"--menu-text","desc":"Chữ"},{"name":"menu/text-muted","alias":"text/ink-2","css":"--menu-text-muted","desc":"Chữ phụ, tiêu đề nhóm"},{"name":"menu/item-bg-hover","alias":"surface/surface-2","css":"--menu-item-bg-hover","desc":"Mục khi rê chuột"},{"name":"menu/accent","alias":"brand/brand","css":"--menu-accent","desc":"Ô chọn (radio)"},{"name":"login-card/bg","alias":"surface/surface","css":"--login-card-bg","desc":"Thẻ đăng nhập"},{"name":"login-card/text","alias":"text/ink","css":"--login-card-text","desc":"Chữ"},{"name":"login-card/text-muted","alias":"text/ink-2","css":"--login-card-text-muted","desc":"Chữ phụ"},{"name":"login-card/divider","alias":"border/rule","css":"--login-card-divider","desc":"Đường kẻ chân thẻ"},{"name":"select/bg-hover","alias":"surface/surface-2","css":"--select-bg-hover","desc":"Ô chọn ngôn ngữ khi rê chuột"},{"name":"avatar/status","alias":"state/offline","css":"--avatar-status","desc":"Chấm trạng thái"},{"name":"avatar/status-ring","alias":"surface/surface","css":"--avatar-status-ring","desc":"Viền quanh chấm trạng thái"},{"name":"bot-avatar/bg","alias":"sidebar/frame","css":"--bot-avatar-bg","desc":"Nền avatar trợ lý"},{"name":"bot-avatar/icon","alias":"brand/gold","css":"--bot-avatar-icon","desc":"Icon trợ lý"},{"name":"web-pane/bg","alias":"surface/surface","css":"--web-pane-bg","desc":"Khung web (máy tính)"},{"name":"web-pane/frame-bg","alias":"surface/surface-2","css":"--web-pane-frame-bg","desc":"Nền vùng trang nhúng"},{"name":"web-pane/border","alias":"border/rule","css":"--web-pane-border","desc":"Đường kẻ ngăn"},{"name":"web-pane/text","alias":"text/ink","css":"--web-pane-text","desc":"Chữ"},{"name":"web-pane/text-muted","alias":"text/ink-2","css":"--web-pane-text-muted","desc":"Chữ phụ"},{"name":"web-pane/card-bg","alias":"surface/surface","css":"--web-pane-card-bg","desc":"Thẻ tóm tắt"},{"name":"web-pane/card-border","alias":"border/line","css":"--web-pane-card-border","desc":"Viền thẻ tóm tắt"},{"name":"overlay/scrim","alias":"surface/scrim","css":"--overlay-scrim","desc":"Lớp phủ sau ngăn kéo"}]};
+const TOKEN_DATA = {"primitives":[["base/white","#ffffff"],["red/50","#f8e3e1"],["red/100","#f8e2da"],["red/150","#f6dcd6"],["red/200","#f5d6d0"],["red/250","#f2cfc6"],["red/400","#e39a90"],["red/600","#ae2f33"],["red/700","#a3141a"],["red/750","#8a1c22"],["red/800","#8a1218"],["red/850","#85101a"],["red/900","#741015"],["ember/100","#f1e3dd"],["ember/150","#ecd6cf"],["ember/200","#f2bcb7"],["ember/250","#dcbdb5"],["ember/350","#ee8079"],["ember/450","#a2635a"],["ember/550","#d1353b"],["ember/600","#c62a31"],["ember/700","#a51d23"],["ember/750","#74463f"],["ember/850","#661d21"],["ember/880","#561217"],["ember/900","#4b2022"],["ember/920","#4a2224"],["ember/950","#400b10"],["rose/700","#7a4b47"],["warm/25","#fff7f0"],["warm/50","#fcf8f7"],["warm/100","#f6f1ee"],["warm/150","#f5f1ee"],["warm/200","#f0e9e6"],["warm/250","#eee6e2"],["warm/300","#e7dfdb"],["warm/350","#e7ddd8"],["warm/400","#d9cdc8"],["warm/500","#9a8f8c"],["warm/550","#958884"],["warm/700","#6b5f5c"],["warm/950","#1d1416"],["night/50","#f5ece7"],["night/300","#b9aba6"],["night/500","#8a7b76"],["night/650","#4a3c36"],["night/700","#403430"],["night/750","#362b28"],["night/800","#2e2421"],["night/900","#211916"],["night/950","#17110f"],["gold/100","#f6ecd6"],["gold/200","#f0d595"],["gold/400","#e9b84a"],["gold/800","#6e4a08"],["gold/900","#45361b"],["gold/950","#3d1205"],["blue/300","#79a6ff"],["blue/600","#1a5fd6"],["teal/50","#e3eef0"],["teal/200","#aadbe3"],["teal/800","#1f5560"],["teal/900","#1d3a40"],["violet/50","#ece6f3"],["violet/200","#d2c4ec"],["violet/800","#4e3a6e"],["violet/900","#362b49"],["alpha/warm-25-a15","#fff7f0",0.15],["alpha/warm-25-a16","#fff7f0",0.16],["alpha/warm-950-a40","#1d1416",0.4],["alpha/warm-950-a35","#1d1416",0.35],["alpha/warm-25-a35","#fff7f0",0.35],["alpha/warm-25-a50","#fff7f0",0.5],["alpha/black-a55","#000000",0.55]],"semantic":[{"name":"brand/brand","light":"red/700","dark":"ember/600","css":"--brand","desc":"Màu thương hiệu: nút chính, nút gửi, chấm danh sách"},{"name":"brand/brand-hover","light":"red/800","dark":"ember/550","css":"--brand-hover","desc":"Nút chính khi rê chuột"},{"name":"brand/brand-pressed","light":"red/900","dark":"ember/700","css":"--brand-pressed","desc":"Nút chính khi nhấn"},{"name":"brand/brand-soft","light":"red/200","dark":"ember/900","css":"--brand-soft","desc":"Bong bóng tin của người dùng"},{"name":"brand/gold","light":"gold/400","dark":"gold/400","css":"--gold","desc":"Vàng nhấn: tab đang chọn, chấm chưa đọc, icon trợ lý"},{"name":"brand/gold-ink","light":"gold/950","dark":"gold/950","css":"--gold-ink","desc":"Chữ trên nền vàng"},{"name":"sidebar/frame","light":"red/700","dark":"ember/880","css":"--frame","desc":"Nền sidebar và màn đăng nhập"},{"name":"sidebar/frame-hover","light":"red/600","dark":"ember/850","css":"--frame-hover","desc":"Mục sidebar khi rê chuột"},{"name":"sidebar/frame-active","light":"warm/25","dark":"ember/100","css":"--frame-active","desc":"Mục sidebar đang chọn (viên trắng ấm)"},{"name":"sidebar/frame-sunken","light":"red/850","dark":"ember/950","css":"--frame-sunken","desc":"Ô tìm kiếm trên nền đỏ"},{"name":"sidebar/frame-edge","light":"red/400","dark":"ember/450","css":"--frame-edge","desc":"Viền ô tìm kiếm, vạch kéo sidebar"},{"name":"sidebar/on-frame","light":"warm/25","dark":"night/50","css":"--on-frame","desc":"Chữ chính trên nền đỏ"},{"name":"sidebar/on-frame-muted","light":"red/250","dark":"ember/250","css":"--on-frame-muted","desc":"Chữ phụ trên nền đỏ"},{"name":"sidebar/on-frame-muted-strong","light":"red/100","dark":"ember/150","css":"--on-frame-muted-strong","desc":"Chữ phụ khi rê chuột"},{"name":"sidebar/on-frame-active-muted","light":"rose/700","dark":"ember/750","css":"--on-frame-active-muted","desc":"Chữ phụ trong mục đang chọn"},{"name":"sidebar/divider","light":"alpha/warm-25-a15","dark":"alpha/warm-25-a15","css":"--divider","desc":"Đường kẻ trên nền đỏ"},{"name":"sidebar/on-frame-active","light":"red/700","dark":"red/700","css":"--on-frame-active","desc":"Chữ trên viên sáng của mục đang chọn (tên, chữ cái avatar)"},{"name":"sidebar/scrollbar","light":"alpha/warm-25-a50","dark":"alpha/warm-25-a50","css":"--scrollbar-frame","desc":"Thanh cuộn trên sidebar đỏ"},{"name":"surface/surface","light":"base/white","dark":"night/900","css":"--surface","desc":"Nền trắng: header, thẻ, ô soạn tin, bóng bot"},{"name":"surface/surface-2","light":"warm/150","dark":"night/800","css":"--surface-2","desc":"Nền nút trung tính khi rê chuột"},{"name":"surface/canvas","light":"warm/50","dark":"night/950","css":"--canvas","desc":"Nền vùng hội thoại"},{"name":"surface/panel","light":"warm/100","dark":"night/800","css":"--panel","desc":"Nút tròn trong ô soạn tin khi rê chuột"},{"name":"surface/panel-hover","light":"warm/250","dark":"night/750","css":"--panel-hover","desc":"Panel khi rê chuột"},{"name":"surface/panel-active","light":"warm/350","dark":"night/700","css":"--panel-active","desc":"Panel khi nhấn"},{"name":"surface/scrim","light":"alpha/warm-950-a40","dark":"alpha/black-a55","css":"--scrim","desc":"Lớp phủ sau ngăn kéo trên điện thoại"},{"name":"surface/scrollbar","light":"alpha/warm-950-a35","dark":"alpha/warm-25-a35","css":"--scrollbar","desc":"Thanh cuộn trên nền sáng/tối"},{"name":"text/ink","light":"warm/950","dark":"night/50","css":"--ink","desc":"Chữ chính"},{"name":"text/ink-2","light":"warm/700","dark":"night/300","css":"--ink-2","desc":"Chữ phụ, icon trung tính, giờ gửi"},{"name":"text/link","light":"red/700","dark":"ember/350","css":"--link","desc":"Chữ link trong tin nhắn (luôn kèm gạch chân)"},{"name":"text/on-brand","light":"base/white","dark":"base/white","css":"--on-brand","desc":"Chữ và icon trên nền thương hiệu (nút chính, nút gửi)"},{"name":"text/danger","light":"red/700","dark":"ember/350","css":"--danger","desc":"Chữ báo lỗi (gửi thất bại, đăng nhập thất bại, mất mạng)"},{"name":"border/line","light":"warm/300","dark":"night/700","css":"--line","desc":"Viền nhạt: nút cuộn, đầu bảng"},{"name":"border/rule","light":"warm/200","dark":"night/800","css":"--rule","desc":"Đường kẻ: header, hàng bảng, phân cách"},{"name":"border/line-strong","light":"warm/550","dark":"night/500","css":"--line-strong","desc":"Viền điều khiển (ô soạn tin), 3,42:1 trên trắng"},{"name":"border/bubble-edge","light":"warm/400","dark":"night/650","css":"--bubble-edge","desc":"Viền bóng tin của bot"},{"name":"state/focus","light":"blue/600","dark":"blue/300","css":"--focus","desc":"Viền focus bàn phím"},{"name":"state/offline","light":"warm/500","dark":"night/500","css":"--status-offline","desc":"Chấm trạng thái trên avatar"},{"name":"avatar/red-bg","light":"red/50","dark":"ember/920","css":"--avatar-red-bg","desc":"Avatar sắc 1 (nền)"},{"name":"avatar/red-fg","light":"red/750","dark":"ember/200","css":"--avatar-red-fg","desc":"Avatar sắc 1 (chữ)"},{"name":"avatar/amber-bg","light":"gold/100","dark":"gold/900","css":"--avatar-amber-bg","desc":"Avatar sắc 2 (nền)"},{"name":"avatar/amber-fg","light":"gold/800","dark":"gold/200","css":"--avatar-amber-fg","desc":"Avatar sắc 2 (chữ)"},{"name":"avatar/teal-bg","light":"teal/50","dark":"teal/900","css":"--avatar-teal-bg","desc":"Avatar sắc 3 (nền)"},{"name":"avatar/teal-fg","light":"teal/800","dark":"teal/200","css":"--avatar-teal-fg","desc":"Avatar sắc 3 (chữ)"},{"name":"avatar/violet-bg","light":"violet/50","dark":"violet/900","css":"--avatar-violet-bg","desc":"Avatar sắc 4 (nền)"},{"name":"avatar/violet-fg","light":"violet/800","dark":"violet/200","css":"--avatar-violet-fg","desc":"Avatar sắc 4 (chữ)"},{"name":"avatar/selected-bg","light":"red/150","dark":"red/150","css":"--avatar-selected-bg","desc":"Avatar trong mục sidebar đang chọn"},{"name":"avatar/frame-bg","light":"alpha/warm-25-a16","dark":"alpha/warm-25-a16","css":"--avatar-frame-bg","desc":"Avatar trên sidebar đỏ: trắng ấm 16%"}],"component":[{"name":"focus/ring","alias":"state/focus","css":"--focus-ring","desc":"Viền focus bàn phím trên nền sáng"},{"name":"app/bg","alias":"surface/surface","css":"--app-bg","desc":"Nền ứng dụng"},{"name":"app/text","alias":"text/ink","css":"--app-text","desc":"Chữ mặc định của ứng dụng"},{"name":"sidebar/bg","alias":"sidebar/frame","css":"--sidebar-bg","desc":"Nền sidebar"},{"name":"sidebar/text","alias":"sidebar/on-frame","css":"--sidebar-text","desc":"Chữ chính trên sidebar"},{"name":"sidebar/text-muted","alias":"sidebar/on-frame-muted","css":"--sidebar-text-muted","desc":"Chữ phụ trên sidebar"},{"name":"sidebar/icon","alias":"sidebar/on-frame-muted","css":"--sidebar-icon","desc":"Icon trên sidebar"},{"name":"sidebar/item-bg-hover","alias":"sidebar/frame-hover","css":"--sidebar-item-bg-hover","desc":"Nền mục khi rê chuột"},{"name":"sidebar/item-bg-selected","alias":"sidebar/frame-active","css":"--sidebar-item-bg-selected","desc":"Nền mục đang chọn"},{"name":"sidebar/item-text","alias":"sidebar/on-frame","css":"--sidebar-item-text","desc":"Chữ tên phiên chat (đã đọc); sáng hơn nhãn bộ lọc"},{"name":"sidebar/item-text-selected","alias":"sidebar/on-frame-active","css":"--sidebar-item-text-selected","desc":"Chữ mục đang chọn"},{"name":"sidebar/divider","alias":"sidebar/divider","css":"--sidebar-divider","desc":"Đường kẻ trên sidebar"},{"name":"sidebar/focus-ring","alias":"sidebar/on-frame","css":"--sidebar-focus-ring","desc":"Viền focus trên sidebar"},{"name":"sidebar/unread-dot","alias":"brand/gold","css":"--sidebar-unread-dot","desc":"Chấm chưa đọc"},{"name":"sidebar/item-action-icon","alias":"sidebar/on-frame-muted","css":"--sidebar-item-action-icon","desc":"Icon nút tùy chọn (⋮) của phiên chat"},{"name":"sidebar/item-action-icon-selected","alias":"sidebar/on-frame-active-muted","css":"--sidebar-item-action-icon-selected","desc":"Icon nút tùy chọn trên phiên đang chọn"},{"name":"sidebar/item-action-bg-hover-selected","alias":"avatar/selected-bg","css":"--sidebar-item-action-bg-hover-selected","desc":"Nền nút tùy chọn khi rê chuột, trên phiên đang chọn"},{"name":"search/bg","alias":"sidebar/frame-sunken","css":"--search-bg","desc":"Nền ô tìm kiếm"},{"name":"search/border","alias":"sidebar/frame-edge","css":"--search-border","desc":"Viền ô tìm kiếm"},{"name":"search/border-focus","alias":"sidebar/on-frame","css":"--search-border-focus","desc":"Viền khi đang gõ"},{"name":"search/text","alias":"sidebar/on-frame","css":"--search-text","desc":"Chữ đang gõ"},{"name":"search/placeholder","alias":"sidebar/on-frame-muted","css":"--search-placeholder","desc":"Chữ gợi ý"},{"name":"chat/bg","alias":"surface/canvas","css":"--chat-bg","desc":"Nền vùng hội thoại và header kính mờ"},{"name":"chat/typing-dot","alias":"text/ink-2","css":"--chat-typing-dot","desc":"Chấm “đang trả lời”"},{"name":"chat/header-fade","alias":"surface/canvas","css":"--chat-header-fade","desc":"Dải mờ dần phía trên: tin nhắn cuộn lên nhạt dần rồi biến mất"},{"name":"chat/notice-text","alias":"text/ink-2","css":"--chat-notice-text","desc":"Dòng báo mất kết nối phía trên ô soạn tin"},{"name":"chat/notice-icon","alias":"text/danger","css":"--chat-notice-icon","desc":"Icon cảnh báo của dòng báo mất kết nối"},{"name":"message-user/bg","alias":"brand/brand-soft","css":"--message-user-bg","desc":"Bong bóng tin người dùng"},{"name":"message-user/meta","alias":"text/ink-2","css":"--message-user-meta","desc":"Giờ gửi"},{"name":"message-user/error","alias":"text/danger","css":"--message-user-error","desc":"Tin chưa gửi được"},{"name":"message-bot/bg","alias":"surface/surface","css":"--message-bot-bg","desc":"Thẻ tin của bot"},{"name":"message-bot/border","alias":"border/bubble-edge","css":"--message-bot-border","desc":"Viền thẻ tin bot"},{"name":"message-bot/sender","alias":"text/ink","css":"--message-bot-sender","desc":"Tên người gửi"},{"name":"message-bot/meta","alias":"text/ink-2","css":"--message-bot-meta","desc":"Giờ gửi"},{"name":"content/text","alias":"text/ink","css":"--content-text","desc":"Chữ câu trả lời"},{"name":"content/strong","alias":"text/ink","css":"--content-strong","desc":"Chữ đậm"},{"name":"content/link","alias":"text/link","css":"--content-link","desc":"Link (luôn gạch chân)"},{"name":"content/bullet","alias":"brand/brand","css":"--content-bullet","desc":"Chấm đầu dòng"},{"name":"content/divider","alias":"border/rule","css":"--content-divider","desc":"Đường phân cách giữa các mục"},{"name":"table/head-text","alias":"text/ink-2","css":"--table-head-text","desc":"Đầu cột"},{"name":"table/head-border","alias":"border/line","css":"--table-head-border","desc":"Kẻ dưới đầu cột"},{"name":"table/row-border","alias":"border/rule","css":"--table-row-border","desc":"Kẻ giữa các hàng"},{"name":"table/cell-text","alias":"text/ink","css":"--table-cell-text","desc":"Ô dữ liệu"},{"name":"composer/bg","alias":"surface/surface","css":"--composer-bg","desc":"Nền ô soạn tin"},{"name":"composer/border","alias":"border/line-strong","css":"--composer-border","desc":"Viền ô soạn tin"},{"name":"composer/placeholder","alias":"text/ink-2","css":"--composer-placeholder","desc":"Chữ gợi ý"},{"name":"composer/fade","alias":"surface/canvas","css":"--composer-fade","desc":"Dải mờ phía sau ô soạn tin"},{"name":"composer/send-bg","alias":"brand/brand","css":"--composer-send-bg","desc":"Nút gửi"},{"name":"composer/send-bg-hover","alias":"brand/brand-hover","css":"--composer-send-bg-hover","desc":"Nút gửi khi rê chuột"},{"name":"composer/send-icon","alias":"text/on-brand","css":"--composer-send-icon","desc":"Icon nút gửi"},{"name":"button-primary/bg","alias":"brand/brand","css":"--button-primary-bg","desc":"Nút chính"},{"name":"button-primary/bg-hover","alias":"brand/brand-hover","css":"--button-primary-bg-hover","desc":"Khi rê chuột"},{"name":"button-primary/bg-pressed","alias":"brand/brand-pressed","css":"--button-primary-bg-pressed","desc":"Khi nhấn"},{"name":"button-primary/label","alias":"text/on-brand","css":"--button-primary-label","desc":"Chữ và icon"},{"name":"button-secondary/border","alias":"border/line-strong","css":"--button-secondary-border","desc":"Viền nút phụ"},{"name":"button-secondary/text","alias":"text/ink","css":"--button-secondary-text","desc":"Chữ nút phụ"},{"name":"button-secondary/bg-hover","alias":"surface/surface-2","css":"--button-secondary-bg-hover","desc":"Nền khi rê chuột"},{"name":"icon-button/icon","alias":"text/ink-2","css":"--icon-button-icon","desc":"Icon"},{"name":"icon-button/icon-hover","alias":"text/ink","css":"--icon-button-icon-hover","desc":"Icon khi rê chuột"},{"name":"icon-button/bg-hover","alias":"surface/surface-2","css":"--icon-button-bg-hover","desc":"Nền khi rê chuột"},{"name":"scroll-button/bg","alias":"surface/surface","css":"--scroll-button-bg","desc":"Nền nút cuộn"},{"name":"scroll-button/border","alias":"border/line","css":"--scroll-button-border","desc":"Viền"},{"name":"scroll-button/icon","alias":"text/ink-2","css":"--scroll-button-icon","desc":"Icon"},{"name":"scroll-button/icon-hover","alias":"text/ink","css":"--scroll-button-icon-hover","desc":"Icon khi rê chuột"},{"name":"menu/bg","alias":"surface/surface","css":"--menu-bg","desc":"Nền bảng Cài đặt"},{"name":"menu/border","alias":"border/line","css":"--menu-border","desc":"Viền"},{"name":"menu/text","alias":"text/ink","css":"--menu-text","desc":"Chữ"},{"name":"menu/text-muted","alias":"text/ink-2","css":"--menu-text-muted","desc":"Chữ phụ, tiêu đề nhóm"},{"name":"menu/item-bg-hover","alias":"surface/surface-2","css":"--menu-item-bg-hover","desc":"Mục khi rê chuột"},{"name":"menu/accent","alias":"brand/brand","css":"--menu-accent","desc":"Ô chọn (radio)"},{"name":"login-card/bg","alias":"surface/surface","css":"--login-card-bg","desc":"Thẻ đăng nhập"},{"name":"login-card/text","alias":"text/ink","css":"--login-card-text","desc":"Chữ"},{"name":"login-card/text-muted","alias":"text/ink-2","css":"--login-card-text-muted","desc":"Chữ phụ"},{"name":"login-card/divider","alias":"border/rule","css":"--login-card-divider","desc":"Đường kẻ chân thẻ"},{"name":"login-card/error","alias":"text/danger","css":"--login-card-error","desc":"Thông báo đăng nhập thất bại"},{"name":"avatar/status","alias":"state/offline","css":"--avatar-status","desc":"Chấm trạng thái"},{"name":"avatar/status-ring","alias":"surface/surface","css":"--avatar-status-ring","desc":"Viền quanh chấm trạng thái"},{"name":"bot-avatar/bg","alias":"sidebar/frame","css":"--bot-avatar-bg","desc":"Nền avatar trợ lý"},{"name":"bot-avatar/icon","alias":"brand/gold","css":"--bot-avatar-icon","desc":"Icon trợ lý"},{"name":"web-pane/bg","alias":"surface/surface","css":"--web-pane-bg","desc":"Khung web (máy tính)"},{"name":"web-pane/frame-bg","alias":"surface/surface-2","css":"--web-pane-frame-bg","desc":"Nền vùng trang nhúng"},{"name":"web-pane/border","alias":"border/rule","css":"--web-pane-border","desc":"Đường kẻ ngăn"},{"name":"web-pane/text","alias":"text/ink","css":"--web-pane-text","desc":"Chữ"},{"name":"web-pane/text-muted","alias":"text/ink-2","css":"--web-pane-text-muted","desc":"Chữ phụ"},{"name":"web-pane/card-bg","alias":"surface/surface","css":"--web-pane-card-bg","desc":"Thẻ tóm tắt"},{"name":"web-pane/card-border","alias":"border/line","css":"--web-pane-card-border","desc":"Viền thẻ tóm tắt"},{"name":"overlay/scrim","alias":"surface/scrim","css":"--overlay-scrim","desc":"Lớp phủ sau ngăn kéo"},{"name":"answer/meta","alias":"text/ink-2","css":"--answer-meta","desc":"Chân câu trả lời: lưu ý kiểm tra, nhãn nguồn"},{"name":"answer/source-link","alias":"text/link","css":"--answer-source-link","desc":"Link nguồn ở chân câu trả lời"}]};
 // </token-data>
 // Bảng token sinh từ tokens/geoagent.tokens.json (npm run tokens). Bản tối: SEMANTIC_DARK.
 const PRIMITIVES = TOKEN_DATA.primitives; // [tên, hex, alpha?]
@@ -950,6 +1096,11 @@ async function prepareTokens(V, vars) {
     v.setValueForMode(cm, { type: "VARIABLE_ALIAS", id: target.id });
   }
   if (made) log.push("+ " + made + " biến Component");
+  // Biến Component đã bỏ khỏi file token (vd. tab/*, composer/icon*, select/bg-hover, chat/header-border): xóa khỏi Figma
+  const keep = new Set((TOKEN_DATA.component || []).map((c) => c.name));
+  const stale = Object.keys(COMP_VARS).filter((n) => !keep.has(n));
+  for (const n of stale) { COMP_VARS[n].remove(); delete COMP_VARS[n]; }
+  if (stale.length) log.push("- " + stale.length + " biến Component cũ (" + stale.join(", ") + ")");
 }
 const COMP_VARS = {};
 
@@ -1075,15 +1226,19 @@ async function qa(page, root, vars) {
   const nTs = (await figma.getLocalTextStylesAsync()).length; (nTs >= 14 ? pass : fail)("Nền tảng", nTs + " kiểu chữ (cần 14)");
   const nFx = (await figma.getLocalEffectStylesAsync()).length; (nFx >= 5 ? pass : fail)("Nền tảng", nFx + " đổ bóng (cần 5, gồm bóng ngăn kéo)");
   const nIcons = root.findAll((n) => n.type === "COMPONENT" && n.name.indexOf("Icon/") === 0).length;
-  (nIcons === 39 ? pass : fail)("Icon", nIcons + " icon (cần 39)");
-  const EXPECT = { "Icon Button": 6, "Button / Primary": 4, "Round Button": 6, "Scroll Button": 4, "Avatar": 30, "Bot Avatar": 2, "Conversation Item": 6, "Search Field": 3, "Filter Tab": 2, "Language Select": 3, "Chat Header": 2, "Composer": 2 };
+  (nIcons === 39 + Object.keys(ICON_SVG).length ? pass : fail)("Icon", nIcons + " icon (cần " + (39 + Object.keys(ICON_SVG).length) + ")");
+  const EXPECT = { "Icon Button": 6, "Button / Primary": 4, "Round Button": 6, "Scroll Button": 4, "Avatar": 30, "Bot Avatar": 2, "Conversation Item": 6, "Search Field": 3, "Menu Item": 4, "Chat Header": 2, "Composer": 3, "Status Message": 2, "Dialog": 2 };
+  for (const gone of ["Filter Tab", "Language Select"]) {
+    const k = root.findAll((n) => n.type === "COMPONENT_SET" && n.name === gone).length;
+    (k === 0 ? pass : fail)("Component", gone + (k ? ": vẫn còn, cần xóa (app không dùng nữa)" : ": đã bỏ (app không dùng nữa)"));
+  }
   for (const name of Object.keys(EXPECT)) {
     const sets = root.findAll((n) => n.type === "COMPONENT_SET" && n.name === name);
     if (sets.length !== 1) { fail("Component", name + ": có " + sets.length + " bộ (cần 1)"); continue; }
     const k = sets[0].children.length;
     (k === EXPECT[name] ? pass : fail)("Component", name + ": " + k + " biến thể (cần " + EXPECT[name] + ")");
   }
-  for (const name of ["Message / User", "Message / Bot", "Typing Indicator", "Data Table"]) {
+  for (const name of ["Message / User", "Message / Bot", "Typing Indicator", "Data Table", "Filter Bar", "Menu / Filter", "Menu / Conversation", "Menu / Account", "Answer Footer", "Empty State"]) {
     const k = root.findAll((n) => n.type === "COMPONENT" && n.name === name).length;
     (k === 1 ? pass : fail)("Component", name + ": " + k + " (cần 1)");
   }
@@ -1183,7 +1338,7 @@ async function qa(page, root, vars) {
 
   // 7. Kiểu chữ chưa gắn (chữ trong component)
   const unstyled = root.findAll((n) => n.type === "TEXT" && n.textStyleId === "" && !!n.parent && (n.parent.type === "COMPONENT" || (n.parent.parent && n.parent.parent.type === "COMPONENT"))).length;
-  out.push((unstyled ? "• " : "✓ ") + "[Chữ] " + unstyled + " ô chữ trong component dùng cỡ chữ riêng, không gắn kiểu chữ (Avatar, Filter Tab: cố ý theo code)");
+  out.push((unstyled ? "• " : "✓ ") + "[Chữ] " + unstyled + " ô chữ trong component dùng cỡ chữ riêng, không gắn kiểu chữ (Avatar, menu, chân câu trả lời: cố ý theo code)");
 
   const bad = out.filter((l) => l[0] === "✗").length;
   out.unshift("GeoAgent DS — tự kiểm tra: " + (bad ? bad + " lỗi" : "đạt tất cả") + "\n" + log.join(" · ") + "\n");

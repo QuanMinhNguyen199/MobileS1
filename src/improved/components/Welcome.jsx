@@ -1,10 +1,10 @@
 import { motion } from "motion/react";
 import { LOGIN_ASSETS } from "../assets.js";
-import { ChevronDown, SignInIcon } from "../icons.jsx";
+import { SignInIcon, WarningIcon } from "../icons.jsx";
 
 export const EMBLEM_SRC = LOGIN_ASSETS.emblem;
 
-export default function Welcome({ active, onLogin }) {
+export default function Welcome({ active, onLogin, error = "" }) {
   return (
     <motion.div
       inert={!active}
@@ -19,33 +19,33 @@ export default function Welcome({ active, onLogin }) {
       )}
 
       <h1 className="mt-5 text-display text-balance">Chào mừng tới GeoAgent</h1>
-      <p className="mt-2 text-sm leading-relaxed text-pretty text-login-card-text-muted">Dịch vụ nhắn tin và liên lạc được mã hóa, phi tập trung.</p>
+      <p className="mt-2 text-sm leading-relaxed text-pretty text-login-card-text-muted">Trợ lý AI cho nghiệp vụ thuế và kế toán.</p>
+
+      {/* Đăng nhập thất bại: báo ngay trên nút, giữ nút để thử lại */}
+      <p role="alert" className="m-0 w-full empty:hidden">
+        {error && (
+          <span className="mt-5 flex items-start gap-2 text-left text-sm text-login-card-error">
+            <WarningIcon size={16} className="mt-0.5 shrink-0" />
+            {error}
+          </span>
+        )}
+      </p>
 
       <button
         type="button"
+        data-login-button
         onClick={onLogin}
-        className="mt-7 flex h-11 w-full items-center justify-center gap-2.5 rounded-xl bg-button-primary-bg text-button text-button-primary-label transition-colors hover:bg-button-primary-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:bg-button-primary-bg-pressed"
+        className={`${error ? "mt-4" : "mt-7"} flex h-11 w-full items-center justify-center gap-2.5 rounded-xl bg-button-primary-bg text-button text-button-primary-label transition-colors hover:bg-button-primary-bg-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:bg-button-primary-bg-pressed`}
       >
         <SignInIcon size={18} />
         Đăng nhập
       </button>
 
-      <div className="mt-5 flex w-full items-center justify-between border-t border-login-card-divider pt-4 text-small text-login-card-text-muted">
+      <div className="mt-5 flex w-full items-center justify-center border-t border-login-card-divider pt-4 text-small text-login-card-text-muted">
         <span className="flex items-center gap-1.5">
           Vận hành trên
           <img src={LOGIN_ASSETS.gotix} alt="gotix" width="56" height="24" className="invert-on-dark h-6 w-14" />
         </span>
-        <label className="relative">
-          <span className="sr-only">Ngôn ngữ</span>
-          <select
-            defaultValue="vi"
-            className="h-8 cursor-pointer appearance-none rounded-lg bg-transparent pr-7 pl-2 text-small font-medium text-login-card-text hover:bg-select-bg-hover focus-visible:outline-2 focus-visible:outline-focus-ring"
-          >
-            <option value="vi">Tiếng Việt</option>
-            <option value="en">English</option>
-          </select>
-          <ChevronDown size={16} className="pointer-events-none absolute top-1/2 right-1.5 -translate-y-1/2 text-login-card-text-muted" />
-        </label>
       </div>
     </motion.div>
   );

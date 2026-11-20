@@ -1194,6 +1194,18 @@
             "dark": "{global.base.white}"
           }
         }
+      },
+      "danger": {
+        "$type": "color",
+        "$value": "{global.red.700}",
+        "$description": "Chữ báo lỗi (gửi thất bại, đăng nhập thất bại, mất mạng)",
+        "$extensions": {
+          "geoagent": {
+            "css": "--danger",
+            "figma": "text/danger",
+            "dark": "{global.ember.350}"
+          }
+        }
       }
     },
     "border": {
@@ -1658,17 +1670,6 @@
           }
         }
       },
-      "header-border": {
-        "$type": "color",
-        "$value": "{alias.border.rule}",
-        "$description": "Đường kẻ dưới header khi đã cuộn",
-        "$extensions": {
-          "geoagent": {
-            "css": "--chat-header-border",
-            "figma": "chat/header-border"
-          }
-        }
-      },
       "typing-dot": {
         "$type": "color",
         "$value": "{alias.text.ink-2}",
@@ -1677,6 +1678,39 @@
           "geoagent": {
             "css": "--chat-typing-dot",
             "figma": "chat/typing-dot"
+          }
+        }
+      },
+      "header-fade": {
+        "$type": "color",
+        "$value": "{alias.surface.canvas}",
+        "$description": "Dải mờ dần phía trên: tin nhắn cuộn lên nhạt dần rồi biến mất",
+        "$extensions": {
+          "geoagent": {
+            "css": "--chat-header-fade",
+            "figma": "chat/header-fade"
+          }
+        }
+      },
+      "notice-text": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Dòng báo mất kết nối phía trên ô soạn tin",
+        "$extensions": {
+          "geoagent": {
+            "css": "--chat-notice-text",
+            "figma": "chat/notice-text"
+          }
+        }
+      },
+      "notice-icon": {
+        "$type": "color",
+        "$value": "{alias.text.danger}",
+        "$description": "Icon cảnh báo của dòng báo mất kết nối",
+        "$extensions": {
+          "geoagent": {
+            "css": "--chat-notice-icon",
+            "figma": "chat/notice-icon"
           }
         }
       }
@@ -1701,6 +1735,17 @@
           "geoagent": {
             "css": "--message-user-meta",
             "figma": "message-user/meta"
+          }
+        }
+      },
+      "error": {
+        "$type": "color",
+        "$value": "{alias.text.danger}",
+        "$description": "Tin chưa gửi được",
+        "$extensions": {
+          "geoagent": {
+            "css": "--message-user-error",
+            "figma": "message-user/error"
           }
         }
       }
@@ -1885,39 +1930,6 @@
           "geoagent": {
             "css": "--composer-placeholder",
             "figma": "composer/placeholder"
-          }
-        }
-      },
-      "icon": {
-        "$type": "color",
-        "$value": "{alias.text.ink-2}",
-        "$description": "Icon đính kèm, micro",
-        "$extensions": {
-          "geoagent": {
-            "css": "--composer-icon",
-            "figma": "composer/icon"
-          }
-        }
-      },
-      "icon-hover": {
-        "$type": "color",
-        "$value": "{alias.text.ink}",
-        "$description": "Icon khi rê chuột",
-        "$extensions": {
-          "geoagent": {
-            "css": "--composer-icon-hover",
-            "figma": "composer/icon-hover"
-          }
-        }
-      },
-      "icon-bg-hover": {
-        "$type": "color",
-        "$value": "{alias.surface.panel}",
-        "$description": "Nền nút tròn khi rê chuột",
-        "$extensions": {
-          "geoagent": {
-            "css": "--composer-icon-bg-hover",
-            "figma": "composer/icon-bg-hover"
           }
         }
       },
@@ -2240,17 +2252,15 @@
             "figma": "login-card/divider"
           }
         }
-      }
-    },
-    "select": {
-      "bg-hover": {
+      },
+      "error": {
         "$type": "color",
-        "$value": "{alias.surface.surface-2}",
-        "$description": "Ô chọn ngôn ngữ khi rê chuột",
+        "$value": "{alias.text.danger}",
+        "$description": "Thông báo đăng nhập thất bại",
         "$extensions": {
           "geoagent": {
-            "css": "--select-bg-hover",
-            "figma": "select/bg-hover"
+            "css": "--login-card-error",
+            "figma": "login-card/error"
           }
         }
       }
@@ -2391,6 +2401,30 @@
           "geoagent": {
             "css": "--overlay-scrim",
             "figma": "overlay/scrim"
+          }
+        }
+      }
+    },
+    "answer": {
+      "meta": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Chân câu trả lời: lưu ý kiểm tra, nhãn nguồn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--answer-meta",
+            "figma": "answer/meta"
+          }
+        }
+      },
+      "source-link": {
+        "$type": "color",
+        "$value": "{alias.text.link}",
+        "$description": "Link nguồn ở chân câu trả lời",
+        "$extensions": {
+          "geoagent": {
+            "css": "--answer-source-link",
+            "figma": "answer/source-link"
           }
         }
       }

@@ -25,6 +25,21 @@ const filter = () => {
 search.addEventListener("input", filter);
 index();
 
+// ---- Công tắc Sáng / Tối: chọn bản màu hiện ở cột Màu (Alias, Component). Nhớ lựa chọn trên máy này.
+const scheme = $("#tk-scheme");
+const KEY = "geoagent-token-scheme";
+const setScheme = (value) => {
+  content.dataset.scheme = value;
+  for (const r of scheme.querySelectorAll("input")) r.checked = r.value === value;
+  try { localStorage.setItem(KEY, value); } catch { /* chế độ riêng tư: bỏ qua */ }
+};
+const syncScheme = () => { scheme.hidden = !content.querySelector(".tk-on-dark"); };
+scheme.addEventListener("change", (e) => setScheme(e.target.value));
+let saved = "light";
+try { saved = localStorage.getItem(KEY) || "light"; } catch { /* bỏ qua */ }
+setScheme(saved === "dark" ? "dark" : "light");
+syncScheme();
+
 // ---- Sao chép (Async Clipboard, dự phòng execCommand khi không có quyền)
 const legacyCopy = (text) => {
   const field = Object.assign(document.createElement("textarea"), { value: text });
@@ -65,7 +80,7 @@ const apply = ({ html, navHtml, heading, line, total }) => {
   title.textContent = heading;
   summary.textContent = line;
   search.value = "";
-  index(); filter();
+  index(); filter(); syncScheme();
   count.textContent = total;
 };
 const loadFile = async (file) => {
