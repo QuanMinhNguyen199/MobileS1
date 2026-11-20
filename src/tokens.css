@@ -385,8 +385,7 @@
   --web-pane-card-bg: var(--surface); /* Thẻ tóm tắt */
   --web-pane-card-border: var(--line); /* Viền thẻ tóm tắt */
   --overlay-scrim: var(--scrim); /* Lớp phủ sau ngăn kéo */
-  --answer-meta: var(--ink-2); /* Chân câu trả lời: lưu ý kiểm tra, nhãn nguồn */
-  --answer-source-link: var(--link); /* Link nguồn ở chân câu trả lời */
+  --answer-meta: var(--ink-2); /* Chân câu trả lời: lưu ý kiểm tra */
 }
 
 @theme inline {
@@ -528,7 +527,6 @@
   --color-web-pane-card-border: var(--web-pane-card-border);
   --color-overlay-scrim: var(--overlay-scrim);
   --color-answer-meta: var(--answer-meta);
-  --color-answer-source-link: var(--answer-source-link);
 }
 
 @theme {

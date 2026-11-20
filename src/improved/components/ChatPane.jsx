@@ -224,7 +224,7 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
                     <div className="w-full rounded-bubble rounded-tl-bubble-tip border border-message-bot-border bg-message-bot-bg px-4 py-3.5 shadow-bubble md:px-5 md:py-4">
                       <MessageContent blocks={m.blocks} onOpenLink={openLink} linkPreviewMode={viewport.mobile ? "panel" : "dialog"} />
                     </div>
-                    <AnswerFooter blocks={m.blocks} title={conversation.topic ?? conversation.name} onOpenLink={openLink} />
+                    <AnswerFooter blocks={m.blocks} title={conversation.topic ?? conversation.name} />
                   </div>
                 </article>
               )

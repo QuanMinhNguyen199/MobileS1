@@ -2442,22 +2442,11 @@
       "meta": {
         "$type": "color",
         "$value": "{alias.text.ink-2}",
-        "$description": "Chân câu trả lời: lưu ý kiểm tra, nhãn nguồn",
+        "$description": "Chân câu trả lời: lưu ý kiểm tra",
         "$extensions": {
           "geoagent": {
             "css": "--answer-meta",
             "figma": "answer/meta"
-          }
-        }
-      },
-      "source-link": {
-        "$type": "color",
-        "$value": "{alias.text.link}",
-        "$description": "Link nguồn ở chân câu trả lời",
-        "$extensions": {
-          "geoagent": {
-            "css": "--answer-source-link",
-            "figma": "answer/source-link"
           }
         }
       }
