@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { SendIcon, WarningIcon } from "../icons.jsx";
+import { ClipIcon, MicIcon, SendIcon, WarningIcon } from "../icons.jsx";
 
 // compact: cột chat hẹp (máy tính khi khung web đang mở bên phải) dùng lề như điện thoại.
 // offline: hiện dòng báo mất kết nối phía trên ô; vẫn cho gõ và gửi (tin gửi lúc mất mạng hiện "Chưa gửi được" kèm nút Thử lại).
-// Chưa có đính kèm / giọng nói: không đặt nút giả, thêm lại khi có chức năng thật.
+// Đính kèm (trái) và micro (phải) là nút giao diện, chưa nối chức năng.
 export default function Composer({ onSend, placeholder = "Nhắn tin", compact = false, offline = false }) {
   const [text, setText] = useState("");
   const formRef = useRef(null);
@@ -44,7 +44,15 @@ export default function Composer({ onSend, placeholder = "Nhắn tin", compact =
             </span>
           )}
         </p>
-        <div className="flex min-h-14 items-end gap-1 rounded-composer border border-composer-border bg-composer-bg p-2 pl-4 shadow-composer">
+        <div className="flex min-h-14 items-end gap-1 rounded-composer border border-composer-border bg-composer-bg p-2 shadow-composer">
+          <button
+            type="button"
+            aria-label="Đính kèm tệp"
+            title="Đính kèm tệp"
+            className="grid size-10 shrink-0 place-items-center rounded-full text-composer-icon hover:bg-composer-icon-bg-hover hover:text-composer-icon-hover focus-visible:outline-2 focus-visible:outline-focus-ring"
+          >
+            <ClipIcon />
+          </button>
           <label htmlFor="msg" className="sr-only">Nội dung tin nhắn</label>
           <textarea
             id="msg"
@@ -56,7 +64,17 @@ export default function Composer({ onSend, placeholder = "Nhắn tin", compact =
             enterKeyHint="send"
             className="field-sizing-content max-h-[8lh] min-h-[1lh] w-full min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-2 text-input outline-none placeholder:text-composer-placeholder"
           />
-          {/* Nút gửi hiện khi đã có chữ */}
+          {/* Góc phải: micro luôn có; khi có chữ, micro trượt sang trái nhường chỗ cho nút gửi */}
+          <motion.button
+            layout
+            type="button"
+            aria-label="Nhập bằng giọng nói"
+            title="Nhập bằng giọng nói"
+            transition={{ type: "spring", bounce: 0, visualDuration: 0.2 }}
+            className="grid size-10 shrink-0 place-items-center rounded-full text-composer-icon hover:bg-composer-icon-bg-hover hover:text-composer-icon-hover focus-visible:outline-2 focus-visible:outline-focus-ring"
+          >
+            <MicIcon />
+          </motion.button>
           <AnimatePresence initial={false} mode="popLayout">
             {hasText && (
               <motion.button

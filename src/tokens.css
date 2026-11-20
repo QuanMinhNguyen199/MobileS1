@@ -341,6 +341,9 @@
   --composer-bg: var(--surface); /* Nền ô soạn tin */
   --composer-border: var(--line-strong); /* Viền ô soạn tin */
   --composer-placeholder: var(--ink-2); /* Chữ gợi ý */
+  --composer-icon: var(--ink-2); /* Icon đính kèm, micro */
+  --composer-icon-hover: var(--ink); /* Icon khi rê chuột */
+  --composer-icon-bg-hover: var(--panel); /* Nền nút tròn khi rê chuột */
   --composer-fade: var(--canvas); /* Dải mờ phía sau ô soạn tin */
   --composer-send-bg: var(--brand); /* Nút gửi */
   --composer-send-bg-hover: var(--brand-hover); /* Nút gửi khi rê chuột */
@@ -480,6 +483,9 @@
   --color-composer-bg: var(--composer-bg);
   --color-composer-border: var(--composer-border);
   --color-composer-placeholder: var(--composer-placeholder);
+  --color-composer-icon: var(--composer-icon);
+  --color-composer-icon-hover: var(--composer-icon-hover);
+  --color-composer-icon-bg-hover: var(--composer-icon-bg-hover);
   --color-composer-fade: var(--composer-fade);
   --color-composer-send-bg: var(--composer-send-bg);
   --color-composer-send-bg-hover: var(--composer-send-bg-hover);

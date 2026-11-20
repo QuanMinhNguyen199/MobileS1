@@ -1933,6 +1933,39 @@
           }
         }
       },
+      "icon": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Icon đính kèm, micro",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-icon",
+            "figma": "composer/icon"
+          }
+        }
+      },
+      "icon-hover": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Icon khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-icon-hover",
+            "figma": "composer/icon-hover"
+          }
+        }
+      },
+      "icon-bg-hover": {
+        "$type": "color",
+        "$value": "{alias.surface.panel}",
+        "$description": "Nền nút tròn khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--composer-icon-bg-hover",
+            "figma": "composer/icon-bg-hover"
+          }
+        }
+      },
       "fade": {
         "$type": "color",
         "$value": "{alias.surface.canvas}",
