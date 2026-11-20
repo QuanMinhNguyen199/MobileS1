@@ -37,7 +37,6 @@ export const ICONS = {
   "chevron-down": item("Mở rộng", "navigation", "ChevronDown"),
   "chevron-up": item("Thu gọn", "navigation", "ChevronUp"),
   more: item("Tùy chọn", "navigation", "Ellipsis", { ios: "Ellipsis", android: "EllipsisVertical" }),
-  phone: item("Xem trên điện thoại", "navigation", "Smartphone"),
   filter: item("Lọc", "navigation", "ListFilter"),
   settings: item("Cài đặt", "navigation", "SlidersHorizontal"),
   "sign-in": item("Đăng nhập", "navigation", "LogIn"),

@@ -76,13 +76,6 @@
       "file": "more.svg"
     },
     {
-      "name": "phone",
-      "label": "Xem trên điện thoại",
-      "group": "navigation",
-      "source": "lucide:Smartphone",
-      "file": "phone.svg"
-    },
-    {
       "name": "filter",
       "label": "Lọc",
       "group": "navigation",

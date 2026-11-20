@@ -205,6 +205,11 @@ async function main() {
 
   // ---------- Icon mới trong bộ icon (lọc, chưa đọc, đổi tên, xóa, đăng xuất): tạo component nếu chưa có ----------
   {
+    // Icon đã bỏ khỏi bộ icon: xóa component (instance nào còn dùng sẽ thành bản tách rời, Figma tự xử lý)
+    for (const name of ICON_REMOVED) {
+      const old = root.findOne((n) => n.type === "COMPONENT" && n.name === "Icon/" + name);
+      if (old) { old.remove(); log.push("- Icon/" + name); }
+    }
     const home = iconComp("close").parent;
     for (const [name, svg] of Object.entries(ICON_SVG)) {
       if (root.findOne((n) => n.type === "COMPONENT" && n.name === "Icon/" + name)) continue;
@@ -882,6 +887,8 @@ async function main() {
 }
 
 // Icon thêm vào bộ icon sau lần dựng đầu (lấy từ public/geoagent-icons/*.svg). Plugin tạo component nếu file Figma chưa có.
+// Icon đã bỏ khỏi bộ icon (src/improved/icon-data.js): plugin xóa component tương ứng trong Figma
+const ICON_REMOVED = ["phone"];
 const ICON_SVG = {
   "filter": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#000000\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 5h20\"></path><path d=\"M6 12h12\"></path><path d=\"M9 19h6\"></path></svg>",
   "unread": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#000000\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12.7 3H4a2 2 0 0 0-2 2v16.286a.71.71 0 0 0 1.212.502l2.202-2.202A2 2 0 0 1 6.828 19H20a2 2 0 0 0 2-2v-4.7\"></path><circle cx=\"19\" cy=\"6\" r=\"3\"></circle></svg>",
@@ -1226,7 +1233,8 @@ async function qa(page, root, vars) {
   const nTs = (await figma.getLocalTextStylesAsync()).length; (nTs >= 14 ? pass : fail)("Nền tảng", nTs + " kiểu chữ (cần 14)");
   const nFx = (await figma.getLocalEffectStylesAsync()).length; (nFx >= 5 ? pass : fail)("Nền tảng", nFx + " đổ bóng (cần 5, gồm bóng ngăn kéo)");
   const nIcons = root.findAll((n) => n.type === "COMPONENT" && n.name.indexOf("Icon/") === 0).length;
-  (nIcons === 39 + Object.keys(ICON_SVG).length ? pass : fail)("Icon", nIcons + " icon (cần " + (39 + Object.keys(ICON_SVG).length) + ")");
+  const iconNeed = 39 + Object.keys(ICON_SVG).length - ICON_REMOVED.length;
+  (nIcons === iconNeed ? pass : fail)("Icon", nIcons + " icon (cần " + iconNeed + ")");
   const EXPECT = { "Icon Button": 6, "Button / Primary": 4, "Round Button": 6, "Scroll Button": 4, "Avatar": 30, "Bot Avatar": 2, "Conversation Item": 6, "Search Field": 3, "Menu Item": 4, "Chat Header": 2, "Composer": 3, "Status Message": 2, "Dialog": 2 };
   for (const gone of ["Filter Tab", "Language Select"]) {
     const k = root.findAll((n) => n.type === "COMPONENT_SET" && n.name === gone).length;

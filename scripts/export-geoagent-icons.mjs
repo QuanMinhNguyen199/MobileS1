@@ -1,4 +1,5 @@
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { createElement } from "react";
@@ -118,6 +119,8 @@ section{scroll-margin-top:20px;margin-bottom:32px}section h2{font-size:16px;font
   const TOK = JSON.parse(readFileSync(resolve(root, "tokens/geoagent.tokens.json"), "utf8"));
   copyFileSync(resolve(root, "tokens/geoagent.tokens.json"), resolve(out, "geoagent.tokens.json"));
   copyFileSync(new URL("./token-view.mjs", import.meta.url), resolve(out, "token-view.js"));
+  // Đánh số phiên bản CSS/JS theo nội dung: trình duyệt không dùng bản cũ đã lưu khi trang đổi
+  const tokenAssetVersion = createHash("sha256").update(["token-page.css", "token-page.js", "token-view.mjs"].map((n) => readFileSync(new URL("./" + n, import.meta.url))).join("")).digest("hex").slice(0, 10);
   const view = renderTokenView(TOK);
   if (view.problems.length) throw new Error("tokens/geoagent.tokens.json lỗi:\n- " + view.problems.join("\n- "));
   const navHtml = (nav) => nav.map(([id, l]) => `<a href="#${id}">${l}</a>`).join("");
@@ -129,23 +132,23 @@ section{scroll-margin-top:20px;margin-bottom:32px}section h2{font-size:16px;font
   writeFileSync(resolve(out, "tokens.html"), `<!doctype html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>GeoAgent — Design token</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Plus+Jakarta+Sans:wght@600&display=swap&subset=vietnamese">
-<link rel="stylesheet" href="catalog.css"><link rel="stylesheet" href="token-page.css"></head>
+<link rel="stylesheet" href="catalog.css"><link rel="stylesheet" href="token-page.css?v=${tokenAssetVersion}"></head>
 <body>${masthead("token", "Design token")}
 <div class="layout"><aside class="catalog-nav" aria-label="Nhóm token"><p>GeoAgent Tokens</p><nav id="tk-nav">${navHtml(view.nav)}<a href="#usage">Dùng trong code</a></nav><a class="download-link" href="geoagent.tokens.json" download>${svg("download", { size: 18 })} Tải tokens.json</a><p class="download-hint">Chuẩn W3C DTCG. Nguồn chung của Figma và code.</p></aside>
-<main><div class="intro"><div><h1 id="tk-title">Design token GeoAgent</h1><p id="tk-summary">${view.total} token · Global → Alias → Component · Bảng biến với giá trị Light / Dark và cách dùng trong code</p></div></div>
+<main><div class="intro"><div><h1 id="tk-title">Design token GeoAgent</h1><p id="tk-summary">${view.total} token · Global → Alias → Component · Bảng biến, màu Sáng / Tối và cách dùng trong code</p></div></div>
 <div class="tk-drop" id="tk-drop"><div class="tk-drop-text">${svg("document", { size: 22 })}<p><b>Xem file token khác</b><span>Kéo thả file .json vào đây, hoặc chọn file. File chỉ được đọc trên máy bạn, không tải lên đâu.</span></p></div><label class="ghost-button tk-pick">Chọn file…<input type="file" id="tk-file" accept=".json,application/json" class="sr-only"></label></div>
 <div class="tk-viewing" id="tk-viewing" hidden><p><span id="tk-viewing-text"></span></p><button type="button" class="ghost-button" id="tk-reset">Xem lại token GeoAgent</button></div>
 <div class="tk-problems" id="tk-problems" role="alert" hidden></div>
-<div class="toolbar tk-toolbar"><label class="search">${svg("search", { size: 18 })}<span class="sr-only">Tìm token</span><input id="tk-search" type="search" placeholder="Tìm alias, biến gốc hoặc class" autocomplete="off"></label><fieldset id="tk-scheme" class="tk-scheme"><legend class="sr-only">Xem màu theo giao diện</legend><label><input type="radio" name="tk-scheme" value="light" checked><span>Sáng</span></label><label><input type="radio" name="tk-scheme" value="dark"><span>Tối</span></label></fieldset><span id="tk-count" role="status" aria-live="polite">${view.total} token</span><span id="copy-status" class="copy-status" role="status" aria-live="polite"></span></div>
+<div class="toolbar tk-toolbar"><label class="search">${svg("search", { size: 18 })}<span class="sr-only">Tìm token</span><input id="tk-search" type="search" placeholder="Tìm alias, biến gốc hoặc class" autocomplete="off"></label><span id="tk-count" role="status" aria-live="polite">${view.total} token</span><span id="copy-status" class="copy-status" role="status" aria-live="polite"></span></div>
 <div id="tk-content">${view.html}</div>
 <p id="tk-empty" hidden>Không tìm thấy token phù hợp. Thử tên ngắn hơn, ví dụ “brand” hoặc “ink”.</p>
 ${usage}
 <footer>Sinh tự động từ tokens/geoagent.tokens.json bởi npm run icons:export. Không sửa tay trang này.</footer></main></div>
-<script type="module" src="token-page.js"></script></body></html>`);
+<script type="module" src="token-page.js?v=${tokenAssetVersion}"></script></body></html>`);
 
   copyFileSync(new URL("./token-page.css", import.meta.url), resolve(out, "token-page.css"));
 
-  copyFileSync(new URL("./token-page.js", import.meta.url), resolve(out, "token-page.js"));
+  writeFileSync(resolve(out, "token-page.js"), readFileSync(new URL("./token-page.js", import.meta.url), "utf8").replace("./token-view.js\"", `./token-view.js?v=${tokenAssetVersion}"`));
 }
 
 writeFileSync(resolve(out, "catalog.js"), `

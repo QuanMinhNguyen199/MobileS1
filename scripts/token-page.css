@@ -77,18 +77,26 @@
 @media (forced-colors: active) { .tk-swatch { border-color: CanvasText; } }
 @media (prefers-reduced-motion: no-preference) { .copy { transition: border-color .15s, background-color .15s; } }
 
-/* Công tắc Sáng / Tối: cột Màu của Alias và Component chỉ hiện bản của giao diện đang chọn */
-.tk-scheme { display: inline-flex; margin: 0; padding: 2px; border: 1px solid var(--line); border-radius: 999px; background: white; }
-.tk-scheme[hidden] { display: none; }
-.tk-scheme label { position: relative; display: inline-flex; align-items: center; min-block-size: 32px; padding-inline: 14px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; }
+/* Đầu mục: tiêu đề bên trái, công tắc Sáng / Tối bên phải thẳng mép bảng */
+.tk-head { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; margin-block-end: 8px; }
+.tk-head > h2 { margin: 0; }
+.tk-section > .tk-head + .set-note { margin-block-start: 0; }
+
+/* Công tắc Sáng / Tối: một khối nền đá, mục đang chọn là ô trắng; cột Màu chỉ hiện bản của giao diện đang chọn */
+.tk-scheme { display: inline-flex; flex: none; margin: 0; padding: 3px; border: 0; border-radius: 8px; background: #efe8e4; }
+.tk-scheme label { position: relative; display: inline-flex; align-items: center; justify-content: center; min-inline-size: 64px; min-block-size: 30px; padding-inline: 14px; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; }
 .tk-scheme input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
-.tk-scheme label:has(input:checked) { background: var(--ink); color: white; }
-.tk-scheme label:has(input:focus-visible) { outline: 2px solid #1a5fd6; outline-offset: 2px; }
+.tk-scheme label:hover { color: var(--ink); }
+.tk-scheme label:has(input:checked) { background: white; color: var(--ink); font-weight: 600; }
+.tk-scheme label:has(input:focus-visible) { outline: 2px solid #1a5fd6; outline-offset: 1px; }
 #tk-content:not([data-scheme="dark"]) .tk-on-dark,
 #tk-content[data-scheme="dark"] .tk-on-light { display: none; }
-/* Bản tối: ô màu đặt trên nền tối để thấy đúng màu sẽ hiện trên màn hình */
-#tk-content[data-scheme="dark"] .tk-on-dark .tk-swatch { outline: 3px solid #17110f; outline-offset: 0; }
 .tk-table-alias { min-inline-size: 900px; }
 .tk-table-alias thead th:nth-child(2) { inline-size: 26%; }
 .tk-table-alias thead th:nth-child(3) { inline-size: 24%; }
-@media (pointer: coarse) { .tk-scheme label { min-block-size: 44px; } }
+/* Chữ trong bảng đủ đọc: mã 13px, hai dòng mã sát nhau */
+.copy code { font-size: 13px; }
+.tk-codes { gap: 0; }
+.tk-codes .copy { min-block-size: 26px; }
+@media (pointer: coarse) { .tk-scheme label { min-block-size: 44px; } .tk-codes .copy { min-block-size: 44px; } }
+@media (forced-colors: active) { .tk-scheme label:has(input:checked) { outline: 2px solid CanvasText; } }

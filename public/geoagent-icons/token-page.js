@@ -1,7 +1,7 @@
 
 // Trang Token: tìm kiếm, sao chép, và xem file token khác bằng kéo thả / chọn file.
 // Nội dung dựng bằng token-view.js, cùng module với script build, nên file thả vào hiển thị giống trang gốc.
-import { renderTokenView, esc } from "./token-view.js";
+import { renderTokenView, esc } from "./token-view.js?v=fce80d8336";
 
 const $ = (s) => document.querySelector(s);
 const content = $("#tk-content"), nav = $("#tk-nav"), search = $("#tk-search"), count = $("#tk-count"), empty = $("#tk-empty");
@@ -25,19 +25,21 @@ const filter = () => {
 search.addEventListener("input", filter);
 index();
 
-// ---- Công tắc Sáng / Tối: chọn bản màu hiện ở cột Màu (Alias, Component). Nhớ lựa chọn trên máy này.
-const scheme = $("#tk-scheme");
+// ---- Công tắc Sáng / Tối cạnh tiêu đề Alias và Component: chọn bản màu hiện ở cột Màu.
+// Mọi công tắc trên trang đồng bộ với nhau; nhớ lựa chọn trên máy này (không có bộ nhớ thì về Sáng).
 const KEY = "geoagent-token-scheme";
-const setScheme = (value) => {
-  content.dataset.scheme = value;
-  for (const r of scheme.querySelectorAll("input")) r.checked = r.value === value;
-  try { localStorage.setItem(KEY, value); } catch { /* chế độ riêng tư: bỏ qua */ }
+let scheme = "light";
+try { scheme = localStorage.getItem(KEY) === "dark" ? "dark" : "light"; } catch { /* chế độ riêng tư */ }
+const syncScheme = () => {
+  content.dataset.scheme = scheme;
+  for (const r of content.querySelectorAll("[data-scheme-switch] input")) r.checked = r.value === scheme;
 };
-const syncScheme = () => { scheme.hidden = !content.querySelector(".tk-on-dark"); };
-scheme.addEventListener("change", (e) => setScheme(e.target.value));
-let saved = "light";
-try { saved = localStorage.getItem(KEY) || "light"; } catch { /* bỏ qua */ }
-setScheme(saved === "dark" ? "dark" : "light");
+content.addEventListener("change", (e) => {
+  if (!e.target.closest("[data-scheme-switch]")) return;
+  scheme = e.target.value;
+  try { localStorage.setItem(KEY, scheme); } catch { /* bỏ qua */ }
+  syncScheme();
+});
 syncScheme();
 
 // ---- Sao chép (Async Clipboard, dự phòng execCommand khi không có quyền)

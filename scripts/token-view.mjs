@@ -7,8 +7,11 @@
 export const esc = (s) => String(s).replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 const code = (text) => `<button type="button" class="copy" data-copy="${esc(text)}" aria-label="Sao chép ${esc(text)}"><code>${esc(text)}</code></button>`;
 const searchable = (...parts) => esc(parts.filter((p) => p != null && p !== "").join(" "));
-const section = (id, title, meta, note, body) =>
-  `<section class="tk-section" id="${id}" aria-labelledby="h-${id}"><h2 id="h-${id}">${title}${meta ? `<span>${meta}</span>` : ""}</h2>${note ? `<p class="set-note">${note}</p>` : ""}${body}</section>`;
+// tools: điều khiển đặt bên phải tiêu đề mục (công tắc Sáng / Tối của Alias, Component)
+const section = (id, title, meta, note, body, tools = "") =>
+  `<section class="tk-section" id="${id}" aria-labelledby="h-${id}"><div class="tk-head"><h2 id="h-${id}">${title}${meta ? `<span>${meta}</span>` : ""}</h2>${tools}</div>${note ? `<p class="set-note">${note}</p>` : ""}${body}</section>`;
+// Công tắc Sáng / Tối cạnh tiêu đề mục. Mỗi mục một nhóm radio; token-page.js đồng bộ mọi nhóm và nhớ lựa chọn.
+const schemeSwitch = (id) => `<fieldset class="tk-scheme" data-scheme-switch><legend class="sr-only">Màu theo giao diện</legend><label><input type="radio" name="tk-scheme-${id}" value="light" checked><span>Sáng</span></label><label><input type="radio" name="tk-scheme-${id}" value="dark"><span>Tối</span></label></fieldset>`;
 
 // Duyệt cây token. $type khai báo ở nhóm được kế thừa xuống token con (theo DTCG).
 const leaves = (node, prefix = [], inheritedType) =>
@@ -93,7 +96,7 @@ const group = (name, rows, columns) => `<tbody class="tk-group"><tr class="tk-gr
 const swatch = (c) => `<span aria-hidden="true" class="tk-swatch" style="--c:${c ? esc(c.css) : "transparent"}"></span>`;
 const colorValue = (c, ref) => `<div class="tk-value">${swatch(c)}<div>${ref ? code(ref) : c ? code(c.a < 1 ? c.css : c.hex ? c.hex.toUpperCase() : c.css) : '<span class="warn">Không đọc được</span>'}${ref && c ? `<span class="tk-resolved">${esc(colorLabel(c))}</span>` : ""}</div></div>`;
 // Có bản tối: một cột màu, công tắc Sáng / Tối (token-page.js) chọn bản đang hiện. Không có bản tối: chỉ một bản.
-const schemeHead = (has) => (has ? '<span class="tk-on-light">Màu · Sáng</span><span class="tk-on-dark">Màu · Tối</span>' : "Màu");
+const schemeHead = () => "Màu";
 const schemeCell = (has, light, dark) => (has ? `<div class="tk-on-light">${light}</div><div class="tk-on-dark">${dark}</div>` : light);
 const description = (text) => `<span class="tk-desc">${esc(text || "—")}</span>`;
 
@@ -146,7 +149,7 @@ const tiered = (T) => {
       [colorValue(p.color), description(usedBy[p.name]?.map(aliasName).join(", ") || "Chưa có alias tham chiếu")],
     )).join(""), 3)).join(""), "tk-table-global"));
 
-  const semantic = section("semantic", "Alias", `${sems.length} biến${darkCount ? " · Sáng / Tối" : ""}`,
+  const semantic = section("semantic", "Alias", `${sems.length} biến`,
     "Tên hiển thị theo vai trò, với tiền tố alias_. Giá trị là tham chiếu về Global; tên biến CSS và class trong code giữ nguyên.",
     table("Alias — màu theo vai trò", ["Tên alias", schemeHead(darkCount), "Dùng trong code", "Mô tả"], groups.map(g => group(GROUP_LABEL[g] || g, sems.filter(s => s.group === g).map(s => row(
       searchable(s.name, aliasName(s.css), s.css, s.cls, s.prim?.name, s.color?.hex, s.dark?.name, s.dark?.color?.hex, s.desc),
@@ -154,7 +157,7 @@ const tiered = (T) => {
       [schemeCell(darkCount, colorValue(s.color, s.prim ? variableName(s.prim.name) : undefined),
           colorValue(s.dark?.color || s.color, s.dark ? variableName(s.dark.name) : s.prim ? variableName(s.prim.name) : undefined)),
         `<div class="tk-codes">${code(s.cls)}${code(`var(${s.css})`)}</div>`, description(s.desc)],
-    )).join(""), 4)).join(""), "tk-table-alias"));
+    )).join(""), 4)).join(""), "tk-table-alias"), darkCount ? schemeSwitch("semantic") : "");
 
   // Tầng 3 · Component: bộ phận của component trỏ về một alias; Light/Dark là giá trị cuối sau alias
   const semByPath = Object.fromEntries(sems.map((s) => [s.name.replace("/", "."), s]));
@@ -165,7 +168,7 @@ const tiered = (T) => {
     const css = ext(t).css || "--" + p.join("-");
     return { group: p[0], name: p.join("/"), css, cls: `${utilFor(p.slice(1).join("-"))}-${css.slice(2)}`, sem, desc: t.$description || "" };
   });
-  const component = comps.length ? section("component", "Component", `${comps.length} biến${darkCount ? " · Sáng / Tối" : ""}`,
+  const component = comps.length ? section("component", "Component", `${comps.length} biến`,
     "Mỗi bộ phận của component trỏ về một alias. Code component dùng tầng này, nên đổi màu riêng một bộ phận chỉ cần trỏ nó sang alias khác. Cột Màu là màu cuối cùng sau khi đi qua alias, theo giao diện đang chọn (Sáng / Tối).",
     table("Component — bộ phận của component", ["Tên component", schemeHead(darkCount), "Alias", "Dùng trong code", "Mô tả"],
       [...new Set(comps.map((c) => c.group))].map((g) => group(g, comps.filter((c) => c.group === g).map((c) => row(
@@ -174,7 +177,7 @@ const tiered = (T) => {
         [schemeCell(darkCount, colorValue(c.sem?.color), colorValue(c.sem?.dark?.color || c.sem?.color)),
           c.sem ? code(aliasName(c.sem.css)) : '<span class="warn">không trỏ về alias</span>',
           `<div class="tk-codes">${code(c.cls)}${code(`var(${c.css})`)}</div>`, description(c.desc)],
-      )).join(""), 5)).join(""), "tk-table-component")) : "";
+      )).join(""), 5)).join(""), "tk-table-component"), darkCount ? schemeSwitch("component") : "") : "";
 
   const types = leaves(T.typography).map(([p, t]) => ({ key: p.at(-1), v: resolve(t.$value).value || {}, figma: ext(t).figma || p.join("/"), desc: t.$description || "" }));
   const unread = T.fontWeight?.unread;

@@ -25,19 +25,21 @@ const filter = () => {
 search.addEventListener("input", filter);
 index();
 
-// ---- Công tắc Sáng / Tối: chọn bản màu hiện ở cột Màu (Alias, Component). Nhớ lựa chọn trên máy này.
-const scheme = $("#tk-scheme");
+// ---- Công tắc Sáng / Tối cạnh tiêu đề Alias và Component: chọn bản màu hiện ở cột Màu.
+// Mọi công tắc trên trang đồng bộ với nhau; nhớ lựa chọn trên máy này (không có bộ nhớ thì về Sáng).
 const KEY = "geoagent-token-scheme";
-const setScheme = (value) => {
-  content.dataset.scheme = value;
-  for (const r of scheme.querySelectorAll("input")) r.checked = r.value === value;
-  try { localStorage.setItem(KEY, value); } catch { /* chế độ riêng tư: bỏ qua */ }
+let scheme = "light";
+try { scheme = localStorage.getItem(KEY) === "dark" ? "dark" : "light"; } catch { /* chế độ riêng tư */ }
+const syncScheme = () => {
+  content.dataset.scheme = scheme;
+  for (const r of content.querySelectorAll("[data-scheme-switch] input")) r.checked = r.value === scheme;
 };
-const syncScheme = () => { scheme.hidden = !content.querySelector(".tk-on-dark"); };
-scheme.addEventListener("change", (e) => setScheme(e.target.value));
-let saved = "light";
-try { saved = localStorage.getItem(KEY) || "light"; } catch { /* bỏ qua */ }
-setScheme(saved === "dark" ? "dark" : "light");
+content.addEventListener("change", (e) => {
+  if (!e.target.closest("[data-scheme-switch]")) return;
+  scheme = e.target.value;
+  try { localStorage.setItem(KEY, scheme); } catch { /* bỏ qua */ }
+  syncScheme();
+});
 syncScheme();
 
 // ---- Sao chép (Async Clipboard, dự phòng execCommand khi không có quyền)
