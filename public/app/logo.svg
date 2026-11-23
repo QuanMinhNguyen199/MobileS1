@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>GeoAgent</title>
+  <!-- Logo GeoAgent bo góc, dùng trong app (icon cài đặt là icon.svg, nền tràn viền). Chữ G vàng ôm bong bóng hội thoại có hai mắt, ăng-ten ở đầu chữ G -->
+  <defs>
+    <mask id="g">
+      <rect width="512" height="512" fill="#fff"/>
+      <!-- khe hở của chữ G (góc trên bên phải) -->
+      <path d="M292 60H470V252H292Z" fill="#000"/>
+      <!-- bong bóng hội thoại, đuôi ở góc dưới bên trái -->
+      <path d="M214 194H322a40 40 0 0 1 40 40V308a40 40 0 0 1-40 40H252L186 392 198 340a40 40 0 0 1-28-38V234a40 40 0 0 1 44-40Z" fill="#000"/>
+    </mask>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#da251e"/>
+  <circle cx="256" cy="272" r="164" fill="#fed11f" mask="url(#g)"/>
+  <path d="M294 116 336 76" stroke="#fed11f" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="340" cy="72" r="18" fill="#fff8f2"/>
+  <rect x="207" y="256" width="36" height="36" rx="8" fill="#fed11f"/>
+  <rect x="267" y="256" width="36" height="36" rx="8" fill="#fed11f"/>
+</svg>

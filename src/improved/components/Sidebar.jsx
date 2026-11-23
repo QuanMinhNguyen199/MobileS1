@@ -32,7 +32,7 @@ export default function Sidebar({ conversations, activeId, showActive, onOpen, o
     >
       {/* Thương hiệu */}
       <div className="flex h-16 shrink-0 items-center gap-3 px-4">
-        <img ref={logoRef} src={LOGIN_ASSETS.emblem} alt="" width="400" height="407" className={`h-auto w-8 shrink-0 ${logoHidden ? "invisible" : ""}`} />
+        <img ref={logoRef} src={LOGIN_ASSETS.logo} alt="" width="512" height="512" className={`size-8 shrink-0 ${logoHidden ? "invisible" : ""}`} />
         <div className="min-w-0 flex-1">
           <p className="font-heading text-wordmark">GeoAgent</p>
           <p className="text-xs leading-4 text-sidebar-text-muted">Trợ lý AI thông minh</p>

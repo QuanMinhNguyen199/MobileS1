@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
 import App from "./App.jsx";
-import Welcome, { EMBLEM_SRC } from "./components/Welcome.jsx";
+import Welcome, { LOGO_SRC } from "./components/Welcome.jsx";
 import { LOGIN_ASSETS } from "./assets.js";
 
 // Máy tính: welcome → auth (logo ở giữa, chờ xác thực) → fly (logo bay vào sidebar) → reveal (mở app hình tròn) → app
-// Điện thoại (header không có quốc huy, không có chỗ để logo hạ cánh):
-//   welcome → auth → reveal kiểu "rèm": cả màn đăng nhập đỏ cùng quốc huy trượt lên, app nằm sẵn bên dưới hiện rõ dần → app
+// Điện thoại (header không có logo, không có chỗ để logo hạ cánh):
+//   welcome → auth → reveal kiểu "rèm": cả màn đăng nhập đỏ cùng logo trượt lên, app nằm sẵn bên dưới hiện rõ dần → app
 const AUTH_MS = 1300;
 const REVEAL_AFTER_FLY_MS = 420;
 const flight = { type: "spring", bounce: 0, visualDuration: 0.55 };
@@ -36,7 +36,7 @@ export default function Root() {
         setPhase("welcome");
         return;
       }
-      // Máy tính: quốc huy bay vào sidebar. Điện thoại: không có chỗ hạ cánh nên dùng chuyển cảnh kiểu rèm.
+      // Máy tính: logo bay vào sidebar. Điện thoại: không có chỗ hạ cánh nên dùng chuyển cảnh kiểu rèm.
       const el = logoRef.current;
       if (el) {
         const r = el.getBoundingClientRect();
@@ -153,13 +153,13 @@ export default function Root() {
                   <circle cx="80" cy="80" r="74" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeDasharray="110 355" />
                 </motion.svg>
                 <motion.img
-                  layoutId="emblem"
+                  layoutId="logo"
                   transition={flight}
-                  src={EMBLEM_SRC}
+                  src={LOGO_SRC}
                   alt=""
-                  width="400"
-                  height="407"
-                  className="h-[106px] w-[104px] drop-shadow-[0_6px_16px_rgb(80_0_0_/_0.35)]"
+                  width="512"
+                  height="512"
+                  className="size-[104px] drop-shadow-[0_6px_16px_rgb(80_0_0_/_0.35)]"
                 />
               </div>
               <motion.p
@@ -175,12 +175,12 @@ export default function Root() {
 
         {!reduce && target && (phase === "fly" || phase === "reveal") && (
           <motion.img
-            layoutId="emblem"
+            layoutId="logo"
             transition={flight}
-            src={EMBLEM_SRC}
+            src={LOGO_SRC}
             alt=""
-            width="400"
-            height="407"
+            width="512"
+            height="512"
             className="absolute"
             style={{ left: target.x, top: target.y, width: target.w, height: target.h }}
           />

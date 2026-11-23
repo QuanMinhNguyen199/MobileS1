@@ -209,6 +209,27 @@
       "file": "attach.svg"
     },
     {
+      "name": "camera",
+      "label": "Chụp ảnh",
+      "group": "compose",
+      "source": "lucide:Camera",
+      "file": "camera.svg"
+    },
+    {
+      "name": "image",
+      "label": "Chọn ảnh",
+      "group": "compose",
+      "source": "lucide:Image",
+      "file": "image.svg"
+    },
+    {
+      "name": "text-format",
+      "label": "Định dạng chữ",
+      "group": "compose",
+      "source": "lucide:Baseline",
+      "file": "text-format.svg"
+    },
+    {
       "name": "send",
       "label": "Gửi tin nhắn",
       "group": "compose",

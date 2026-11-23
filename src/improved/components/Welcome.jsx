@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { LOGIN_ASSETS } from "../assets.js";
 import { SignInIcon, WarningIcon } from "../icons.jsx";
 
-export const EMBLEM_SRC = LOGIN_ASSETS.emblem;
+export const LOGO_SRC = LOGIN_ASSETS.logo;
 
 export default function Welcome({ active, onLogin, error = "" }) {
   return (
@@ -13,9 +13,9 @@ export default function Welcome({ active, onLogin, error = "" }) {
       className="relative z-10 mx-auto flex w-[420px] max-w-[calc(100%-32px)] flex-col items-center rounded-2xl bg-login-card-bg px-6 pt-9 pb-6 text-center text-login-card-text shadow-card md:px-10"
     >
       {active ? (
-        <motion.img layoutId="emblem" src={EMBLEM_SRC} alt="Quốc huy" width="400" height="407" className="h-[73px] w-[72px]" />
+        <motion.img layoutId="logo" src={LOGO_SRC} alt="GeoAgent" width="512" height="512" className="size-[72px]" />
       ) : (
-        <div className="h-[73px] w-[72px]" aria-hidden="true" />
+        <div className="size-[72px]" aria-hidden="true" />
       )}
 
       <h1 className="mt-5 text-display text-balance">Chào mừng tới GeoAgent</h1>
