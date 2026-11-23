@@ -48,15 +48,20 @@ export default function App({ logoRef, logoHidden, onLogout }) {
   const timer = useRef(null);
   const isMobile = useIsMobile();
   const online = useOnline();
-  // Máy tính: link đang mở trong khung web bên phải khung chat (không phải modal)
-  const [web, setWeb] = useState(null);
+  // Link đang mở trong khung web, lưu riêng theo từng phiên: đổi phiên thì khung web đổi theo,
+  // quay lại phiên cũ thì thấy lại đúng trang đã để dở (hoặc không có khung nếu lần trước chưa mở link nào).
+  const [webs, setWebs] = useState({}); // { [conversationId]: link }
   const webOrigin = useRef(null);
-  const openWeb = (link, origin) => { webOrigin.current = origin; setWeb(link); };
-  const closeWeb = () => {
-    setWeb(null);
+  const openWeb = (link, origin) => {
+    webOrigin.current = origin;
+    setWebs((all) => ({ ...all, [activeId]: link }));
+  };
+  const closeWeb = (id = activeId) => {
+    setWebs(({ [id]: _closed, ...rest }) => rest);
     const origin = webOrigin.current;
     requestAnimationFrame(() => (origin?.isConnected ? origin : document.getElementById("chat-title"))?.focus({ preventScroll: true }));
   };
+  const web = webs[activeId] ?? null;
 
   useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => watchScrolling(), []);
@@ -64,7 +69,6 @@ export default function App({ logoRef, logoHidden, onLogout }) {
   // Đóng ngăn kéo khi chuyển sang máy tính; Esc để đóng
   useEffect(() => {
     if (!isMobile) setDrawer(false);
-    else setWeb(null); // sang điện thoại: khung web máy tính đóng, điện thoại dùng khung riêng
   }, [isMobile]);
 
   const closeDrawer = () => {
@@ -93,6 +97,7 @@ export default function App({ logoRef, logoHidden, onLogout }) {
       setActiveId(rest[0].id);
       rest[0] = { ...rest[0], unread: false };
     }
+    setWebs(({ [id]: _removed, ...others }) => others);
     setConversations(rest); // ngăn kéo (điện thoại) vẫn mở để xóa tiếp
   };
 
@@ -203,13 +208,25 @@ export default function App({ logoRef, logoHidden, onLogout }) {
         onNewChat={newChat}
         online={online}
         onMenu={() => setDrawer(true)}
-        onOpenWeb={isMobile ? undefined : openWeb}
+        webLink={web}
+        onOpenWeb={openWeb}
+        onCloseWeb={() => closeWeb()}
         compact={!isMobile && Boolean(web)}
         inert={drawer}
         className={!isMobile && web ? "w-[clamp(380px,36vw,520px)] shrink-0" : "min-w-0 flex-1"}
       />
-      {/* Máy tính: khung web bên phải khung chat */}
-      {!isMobile && web && <DesktopWebPane link={web} onClose={closeWeb} className="min-w-0 flex-1 border-l border-web-pane-border" />}
+      {/* Máy tính: khung web bên phải khung chat. Mỗi phiên giữ khung riêng (ẩn khi không xem) để
+          quay lại vẫn đúng chỗ đang đọc trong trang, không tải lại. */}
+      {!isMobile &&
+        Object.entries(webs).map(([id, link]) => (
+          <DesktopWebPane
+            key={id}
+            link={link}
+            active={id === activeId}
+            onClose={() => closeWeb(id)}
+            className="min-w-0 flex-1 border-l border-web-pane-border"
+          />
+        ))}
 
       <AnimatePresence>
         {isMobile && drawer && (

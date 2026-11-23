@@ -33,18 +33,23 @@ function ScrollButton({ label, onClick, disabled, children }) {
   );
 }
 
-// onOpenWeb (máy tính): mở link trong khung web bên phải do App.jsx đặt. compact: cột chat hẹp khi khung web mở.
-export default function ChatPane({ conversation, typing, onSend, onRetry, onNewChat, actions = [], online = true, onMenu, onOpenWeb, compact = false, inert = false, className = "" }) {
+// webLink/onOpenWeb/onCloseWeb: link đang mở của phiên này (App.jsx lưu theo phiên; máy tính hiện bên phải, điện thoại hiện trong khung). compact: cột chat hẹp khi khung web mở.
+export default function ChatPane({ conversation, typing, onSend, onRetry, onNewChat, actions = [], online = true, onMenu, webLink = null, onOpenWeb, onCloseWeb, compact = false, inert = false, className = "" }) {
   const scroller = useRef(null);
   const [atTop, setAtTop] = useState(true);
-  const [link, setLink] = useState(null);
-  const [webChatOpen, setWebChatOpen] = useState(false);
+  // Link do App.jsx lưu theo từng phiên. Điện thoại: khung trò chuyện mở/thu gọn cũng nhớ theo phiên.
+  const link = webLink;
+  const [chatOpenById, setChatOpenById] = useState({});
+  const webChatOpen = chatOpenById[conversation.id] ?? true;
+  const setWebChatOpen = (value) =>
+    setChatOpenById((all) => ({ ...all, [conversation.id]: typeof value === "function" ? value(all[conversation.id] ?? true) : value }));
+  // Bản nháp ô soạn tin của từng phiên: đổi phiên rồi quay lại vẫn còn chữ đang gõ dở
+  const drafts = useRef(new Map());
   const collapseWebChat = () => {
     setWebChatOpen(false);
     requestAnimationFrame(() => document.querySelector(".mobile-web-chat-toggle")?.focus());
   };
   const sheet = useWebChatSheet({ onCollapse: collapseWebChat });
-  const linkOrigin = useRef(null);
   const viewport = useMobileViewport();
   const [atBottom, setAtBottom] = useState(true);
 
@@ -89,19 +94,10 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
   const webActive = viewport.mobile && Boolean(link);
 
   const openLink = (next, origin) => {
-    if (!viewport.mobile && onOpenWeb) return onOpenWeb(next, origin || document.activeElement);
-    linkOrigin.current = origin || document.activeElement;
-    setLink(next);
-    setWebChatOpen(true);
+    onOpenWeb?.(next, origin || document.activeElement);
+    if (viewport.mobile) setWebChatOpen(true);
   };
-  const closeLink = () => {
-    setLink(null);
-    const origin = linkOrigin.current;
-    requestAnimationFrame(() => {
-      if (origin?.isConnected) origin.focus({ preventScroll: true });
-      else document.getElementById("chat-title")?.focus({ preventScroll: true });
-    });
-  };
+  const closeLink = () => onCloseWeb?.(); // App.jsx trả focus về link vừa bấm
 
   return (
     <main inert={inert} data-web-active={webActive} style={webActive ? { height: viewport.height, maxHeight: "100%" } : undefined} className={`relative flex min-h-0 flex-col bg-chat-bg ${className}`}>
@@ -142,7 +138,7 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
       <div className="chat-workspace flex min-h-0 flex-1 flex-col" data-web-active={webActive}
         data-sheet-resizing={webActive && sheet.resizing}
         style={webActive ? { "--chat-sheet-size": webChatOpen ? `${sheet.extent}%` : "0px", "--chat-sheet-gap": webChatOpen ? "8px" : "0px", "--chat-bar-size": webChatOpen ? "0px" : "calc(48px + var(--safe-bottom))" } : undefined}>
-      {viewport.mobile && link && <MobileWebPane key={link.url} link={link} onClose={closeLink} />}
+      {viewport.mobile && link && <MobileWebPane key={`${conversation.id}|${link.url}`} link={link} onClose={closeLink} />}
       <div id="mobile-web-chat" hidden={webActive && !webChatOpen}
         role={webActive ? "region" : undefined} aria-label={webActive ? `Trò chuyện với ${otherName}` : undefined}
         className="mobile-web-chat flex min-h-0 flex-1 flex-col overflow-hidden bg-chat-bg"
@@ -240,7 +236,7 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
               </div>
             )}
           </div>
-          <Composer key={conversation.id} onSend={onSend} compact={compact} offline={!online} placeholder={conversation.bot ? "Hỏi GeoAgent" : "Nhắn tin"} />
+          <Composer key={conversation.id} draft={drafts.current.get(conversation.id)} onDraft={(t) => drafts.current.set(conversation.id, t)} onSend={onSend} compact={compact} offline={!online} placeholder={conversation.bot ? "Hỏi GeoAgent" : "Nhắn tin"} />
           </div>
         </div>
 

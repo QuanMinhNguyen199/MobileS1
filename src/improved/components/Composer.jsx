@@ -5,8 +5,13 @@ import { ClipIcon, MicIcon, SendIcon, WarningIcon } from "../icons.jsx";
 // compact: cột chat hẹp (máy tính khi khung web đang mở bên phải) dùng lề như điện thoại.
 // offline: hiện dòng báo mất kết nối phía trên ô; vẫn cho gõ và gửi (tin gửi lúc mất mạng hiện "Chưa gửi được" kèm nút Thử lại).
 // Đính kèm (trái) và micro (phải) là nút giao diện, chưa nối chức năng.
-export default function Composer({ onSend, placeholder = "Nhắn tin", compact = false, offline = false }) {
-  const [text, setText] = useState("");
+// draft/onDraft: chữ đang gõ dở của phiên (ChatPane giữ theo từng phiên).
+export default function Composer({ draft = "", onDraft, onSend, placeholder = "Nhắn tin", compact = false, offline = false }) {
+  const [text, setTextState] = useState(draft);
+  const setText = (value) => {
+    setTextState(value);
+    onDraft?.(value);
+  };
   const formRef = useRef(null);
   const hasText = text.trim() !== "";
 

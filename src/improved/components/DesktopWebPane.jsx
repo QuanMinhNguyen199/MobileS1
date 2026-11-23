@@ -14,7 +14,7 @@ const hostOf = (url) => {
 // Máy tính: khung web cố định bên phải khung chat (không phải modal), để vừa đọc trang vừa nhắn tin.
 // Esc khi đang ở trong khung: đóng và trả focus về link vừa bấm (App.jsx lo phần trả focus).
 // Trang chặn nhúng (embed: false trong LINK_PREVIEWS) không dùng iframe: giải thích và đưa bản tóm tắt.
-export default function DesktopWebPane({ link, onClose, className = "" }) {
+export default function DesktopWebPane({ link, active = true, onClose, className = "" }) {
   const id = useId();
   const heading = useRef(null);
   const [loaded, setLoaded] = useState(false);
@@ -34,11 +34,13 @@ export default function DesktopWebPane({ link, onClose, className = "" }) {
   return (
     <motion.section
       aria-labelledby={`${id}-title`}
+      aria-hidden={!active || undefined}
+      inert={!active}
       onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); onClose(); } }}
       initial={reduce ? false : { opacity: 0, x: 12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ type: "spring", bounce: 0, visualDuration: 0.25 }}
-      className={`flex min-h-0 flex-col bg-web-pane-bg text-web-pane-text ${className}`}
+      className={`${active ? "flex" : "hidden"} min-h-0 flex-col bg-web-pane-bg text-web-pane-text ${className}`}
     >
       {/* Thanh trên: nguồn, tiêu đề, mở tab mới, đóng */}
       <div className="flex h-16 shrink-0 items-center gap-1 border-b border-web-pane-border pr-3 pl-5 pt-[var(--safe-top)]">
