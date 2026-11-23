@@ -1,17 +1,17 @@
 import { createElement } from "react";
 // Import từng icon theo tên để bundler chỉ đóng gói icon đang dùng
 import {
-  ArrowLeft, ArrowUp, BookOpenText, Check, ChevronDown as LChevronDown, ChevronUp as LChevronUp, CircleCheck, CircleX, Copy, Download,
-  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Info, Link, ListFilter, LogIn, LogOut, Menu, MessageSquareDot, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Pencil, Plus, RotateCw,
-  Search, ShieldCheck, SlidersHorizontal, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, Trash2, TriangleAlert, UserPlus,
+  ArrowLeft, ArrowUp, Bell, BookOpenText, Check, ChevronDown as LChevronDown, ChevronUp as LChevronUp, CircleCheck, CircleX, Copy, Download,
+  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Info, KeyRound, Link, ListFilter, LogIn, LogOut, Menu, MessageSquareDot, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Pencil, Plus, RotateCw,
+  Search, Settings, ShieldCheck, SlidersHorizontal, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, Trash2, TriangleAlert, UserPlus,
   Users, X,
 } from "lucide-react";
 import { ICONS, STROKE, lucideFor } from "./icon-data.js";
 
 const LUCIDE = {
-  ArrowLeft, ArrowUp, BookOpenText, Check, ChevronDown: LChevronDown, ChevronUp: LChevronUp, CircleCheck, CircleX, Copy, Download,
-  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Info, Link, ListFilter, LogIn, LogOut, Menu, MessageSquareDot, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Pencil, Plus, RotateCw,
-  Search, ShieldCheck, SlidersHorizontal, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, Trash2, TriangleAlert, UserPlus,
+  ArrowLeft, ArrowUp, Bell, BookOpenText, Check, ChevronDown: LChevronDown, ChevronUp: LChevronUp, CircleCheck, CircleX, Copy, Download,
+  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Info, KeyRound, Link, ListFilter, LogIn, LogOut, Menu, MessageSquareDot, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Pencil, Plus, RotateCw,
+  Search, Settings, ShieldCheck, SlidersHorizontal, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, Trash2, TriangleAlert, UserPlus,
   Users, X,
 };
 

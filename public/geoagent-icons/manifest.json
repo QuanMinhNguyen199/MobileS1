@@ -90,6 +90,20 @@
       "file": "settings.svg"
     },
     {
+      "name": "cog",
+      "label": "Thiết lập",
+      "group": "navigation",
+      "source": "lucide:Settings",
+      "file": "cog.svg"
+    },
+    {
+      "name": "notification",
+      "label": "Thông báo",
+      "group": "navigation",
+      "source": "lucide:Bell",
+      "file": "notification.svg"
+    },
+    {
       "name": "sign-in",
       "label": "Đăng nhập",
       "group": "navigation",
@@ -285,6 +299,13 @@
       "group": "knowledge",
       "source": "lucide:ShieldCheck",
       "file": "shield.svg"
+    },
+    {
+      "name": "key",
+      "label": "Mã hóa",
+      "group": "knowledge",
+      "source": "lucide:KeyRound",
+      "file": "key.svg"
     },
     {
       "name": "retry",
