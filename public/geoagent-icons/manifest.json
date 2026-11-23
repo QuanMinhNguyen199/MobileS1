@@ -181,6 +181,118 @@
       "file": "delete.svg"
     },
     {
+      "name": "reply",
+      "label": "Trả lời",
+      "group": "conversation",
+      "source": "lucide:Reply",
+      "file": "reply.svg"
+    },
+    {
+      "name": "pin",
+      "label": "Ghim",
+      "group": "conversation",
+      "source": "lucide:Pin",
+      "file": "pin.svg"
+    },
+    {
+      "name": "unpin",
+      "label": "Bỏ ghim",
+      "group": "conversation",
+      "source": "lucide:PinOff",
+      "file": "unpin.svg"
+    },
+    {
+      "name": "forward",
+      "label": "Chuyển tiếp",
+      "group": "conversation",
+      "source": "lucide:Forward",
+      "file": "forward.svg"
+    },
+    {
+      "name": "select",
+      "label": "Chọn nhiều",
+      "group": "conversation",
+      "source": "lucide:SquareCheck",
+      "file": "select.svg"
+    },
+    {
+      "name": "quote",
+      "label": "Trích dẫn",
+      "group": "conversation",
+      "source": "lucide:Quote",
+      "file": "quote.svg"
+    },
+    {
+      "name": "bookmark",
+      "label": "Lưu",
+      "group": "conversation",
+      "source": "lucide:Bookmark",
+      "file": "bookmark.svg"
+    },
+    {
+      "name": "mute",
+      "label": "Tắt thông báo",
+      "group": "conversation",
+      "source": "lucide:BellOff",
+      "file": "mute.svg"
+    },
+    {
+      "name": "archive",
+      "label": "Lưu trữ",
+      "group": "conversation",
+      "source": "lucide:Archive",
+      "file": "archive.svg"
+    },
+    {
+      "name": "mention",
+      "label": "Nhắc tên",
+      "group": "conversation",
+      "source": "lucide:AtSign",
+      "file": "mention.svg"
+    },
+    {
+      "name": "translate",
+      "label": "Dịch",
+      "group": "conversation",
+      "source": "lucide:Languages",
+      "file": "translate.svg"
+    },
+    {
+      "name": "embed",
+      "label": "Mã nhúng",
+      "group": "knowledge",
+      "source": "lucide:SquareCode",
+      "file": "embed.svg"
+    },
+    {
+      "name": "report",
+      "label": "Báo cáo",
+      "group": "feedback",
+      "source": "lucide:CircleAlert",
+      "file": "report.svg"
+    },
+    {
+      "name": "flag",
+      "label": "Gắn cờ",
+      "group": "feedback",
+      "source": "lucide:Flag",
+      "file": "flag.svg"
+    },
+    {
+      "name": "pending",
+      "label": "Đang gửi",
+      "group": "feedback",
+      "source": "lucide:Clock",
+      "file": "pending.svg"
+    },
+    {
+      "name": "read",
+      "label": "Đã đọc",
+      "group": "feedback",
+      "source": "lucide:CheckCheck",
+      "file": "read.svg"
+    },
+    {
       "name": "favorite",
       "label": "Yêu thích",
       "group": "conversation",
@@ -383,6 +495,104 @@
       "group": "feedback",
       "source": "lucide:Check",
       "file": "check.svg"
+    },
+    {
+      "name": "speak",
+      "label": "Đọc to",
+      "group": "ai",
+      "source": "lucide:Volume2",
+      "file": "speak.svg"
+    },
+    {
+      "name": "branch",
+      "label": "Tách nhánh hội thoại",
+      "group": "ai",
+      "source": "lucide:GitBranch",
+      "file": "branch.svg"
+    },
+    {
+      "name": "reasoning",
+      "label": "Suy luận",
+      "group": "ai",
+      "source": "lucide:Lightbulb",
+      "file": "reasoning.svg"
+    },
+    {
+      "name": "tool",
+      "label": "Công cụ",
+      "group": "ai",
+      "source": "lucide:Wrench",
+      "file": "tool.svg"
+    },
+    {
+      "name": "web-search",
+      "label": "Tìm trên web",
+      "group": "ai",
+      "source": "lucide:Globe",
+      "file": "web-search.svg"
+    },
+    {
+      "name": "voice-mode",
+      "label": "Hội thoại giọng nói",
+      "group": "ai",
+      "source": "lucide:AudioLines",
+      "file": "voice-mode.svg"
+    },
+    {
+      "name": "map",
+      "label": "Bản đồ",
+      "group": "data",
+      "source": "lucide:Map",
+      "file": "map.svg"
+    },
+    {
+      "name": "location",
+      "label": "Vị trí",
+      "group": "data",
+      "source": "lucide:MapPin",
+      "file": "location.svg"
+    },
+    {
+      "name": "layers",
+      "label": "Lớp dữ liệu",
+      "group": "data",
+      "source": "lucide:Layers",
+      "file": "layers.svg"
+    },
+    {
+      "name": "table",
+      "label": "Bảng",
+      "group": "data",
+      "source": "lucide:Table",
+      "file": "table.svg"
+    },
+    {
+      "name": "chart",
+      "label": "Biểu đồ",
+      "group": "data",
+      "source": "lucide:ChartColumn",
+      "file": "chart.svg"
+    },
+    {
+      "name": "panel",
+      "label": "Mở bảng bên",
+      "group": "navigation",
+      "source": "lucide:PanelRight",
+      "file": "panel.svg"
+    },
+    {
+      "name": "expand",
+      "label": "Phóng to",
+      "group": "navigation",
+      "source": "lucide:Maximize2",
+      "file": "expand.svg"
+    },
+    {
+      "name": "history",
+      "label": "Lịch sử",
+      "group": "navigation",
+      "source": "lucide:History",
+      "file": "history.svg"
     }
   ]
 }

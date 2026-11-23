@@ -1,17 +1,17 @@
 import { createElement } from "react";
 // Import từng icon theo tên để bundler chỉ đóng gói icon đang dùng
 import {
-  ArrowLeft, ArrowUp, Baseline, Bell, BookOpenText, Camera, Check, ChevronDown as LChevronDown, ChevronUp as LChevronUp, CircleCheck, CircleX, Copy, Download,
-  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Image, Info, KeyRound, Link, ListFilter, LogIn, LogOut, Menu, MessageSquareDot, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Pencil, Plus, RotateCw,
-  Search, Settings, ShieldCheck, SlidersHorizontal, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, Trash2, TriangleAlert, UserPlus,
+  ArrowLeft, Archive, ArrowUp, AtSign, AudioLines, Baseline, Bell, BellOff, Bookmark, BookOpenText, Camera, Check, CheckCheck, ChevronDown as LChevronDown, ChevronUp as LChevronUp, ChartColumn, CircleAlert, CircleCheck, CircleX, Clock, Copy, Download,
+  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Flag, Forward, GitBranch, Globe, History, Image, Info, KeyRound, Languages, Layers, Lightbulb, Link, ListFilter, Map as LMap, MapPin, Maximize2, LogIn, LogOut, Menu, MessageSquareDot, MessageSquarePlus, MessageSquareText, Mic, PanelRight, Paperclip, Pencil, Pin, PinOff, Plus, Quote, Reply, RotateCw,
+  Search, Settings, ShieldCheck, SlidersHorizontal, Smile, Square, SquareCheck, SquareCode, SquarePen, Star, ThumbsDown, Table, ThumbsUp, Trash2, TriangleAlert, UserPlus, Volume2, Wrench,
   Users, X,
 } from "lucide-react";
 import { ICONS, STROKE, lucideFor } from "./icon-data.js";
 
 const LUCIDE = {
-  ArrowLeft, ArrowUp, Baseline, Bell, BookOpenText, Camera, Check, ChevronDown: LChevronDown, ChevronUp: LChevronUp, CircleCheck, CircleX, Copy, Download,
-  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Image, Info, KeyRound, Link, ListFilter, LogIn, LogOut, Menu, MessageSquareDot, MessageSquarePlus, MessageSquareText, Mic, Paperclip, Pencil, Plus, RotateCw,
-  Search, Settings, ShieldCheck, SlidersHorizontal, Smile, Square, SquarePen, Star, ThumbsDown, ThumbsUp, Trash2, TriangleAlert, UserPlus,
+  ArrowLeft, Archive, ArrowUp, AtSign, AudioLines, Baseline, Bell, BellOff, Bookmark, BookOpenText, Camera, Check, CheckCheck, ChevronDown: LChevronDown, ChevronUp: LChevronUp, ChartColumn, CircleAlert, CircleCheck, CircleX, Clock, Copy, Download,
+  ChevronLeft, Ellipsis, EllipsisVertical, ExternalLink, SendHorizontal, Share, Share2, FileText, Flag, Forward, GitBranch, Globe, History, Image, Info, KeyRound, Languages, Layers, Lightbulb, Link, ListFilter, Map: LMap, MapPin, Maximize2, LogIn, LogOut, Menu, MessageSquareDot, MessageSquarePlus, MessageSquareText, Mic, PanelRight, Paperclip, Pencil, Pin, PinOff, Plus, Quote, Reply, RotateCw,
+  Search, Settings, ShieldCheck, SlidersHorizontal, Smile, Square, SquareCheck, SquareCode, SquarePen, Star, ThumbsDown, Table, ThumbsUp, Trash2, TriangleAlert, UserPlus, Volume2, Wrench,
   Users, X,
 };
 
@@ -90,3 +90,33 @@ export const DownloadIcon = icon("download");
 export const RetryIcon = icon("retry");
 export const WarningIcon = icon("warning");
 export const SourcesIcon = icon("sources");
+export const ReplyIcon = icon("reply");
+export const PinIcon = icon("pin");
+export const TranslateIcon = icon("translate");
+export const EmbedIcon = icon("embed");
+export const ReportIcon = icon("report");
+export const UnpinIcon = icon("unpin");
+export const ForwardIcon = icon("forward");
+export const SelectIcon = icon("select");
+export const QuoteIcon = icon("quote");
+export const BookmarkIcon = icon("bookmark");
+export const MuteIcon = icon("mute");
+export const ArchiveIcon = icon("archive");
+export const MentionIcon = icon("mention");
+export const FlagIcon = icon("flag");
+export const PendingIcon = icon("pending");
+export const ReadIcon = icon("read");
+export const SpeakIcon = icon("speak");
+export const BranchIcon = icon("branch");
+export const ReasoningIcon = icon("reasoning");
+export const ToolIcon = icon("tool");
+export const WebSearchIcon = icon("web-search");
+export const VoiceModeIcon = icon("voice-mode");
+export const MapIcon = icon("map");
+export const LocationIcon = icon("location");
+export const LayersIcon = icon("layers");
+export const TableIcon = icon("table");
+export const ChartIcon = icon("chart");
+export const PanelIcon = icon("panel");
+export const ExpandIcon = icon("expand");
+export const HistoryIcon = icon("history");
