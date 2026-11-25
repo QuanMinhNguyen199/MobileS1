@@ -14,12 +14,12 @@ concurrency:
   group: github-pages
   cancel-in-progress: false
 
+# Hai job riêng theo mẫu chuẩn của GitHub Pages: build xong và upload artifact ở job đầu,
+# job deploy chạy sau (needs: build). Khi gộp chung một job, bước Deploy có lúc hỏi API ngay sau khi upload
+# và nhận "Found 0 artifact(s)" (artifact chưa kịp hiện), làm deploy hỏng dù build thành công.
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -47,6 +47,13 @@ jobs:
         with:
           path: dist
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
