@@ -29,7 +29,7 @@ function Rich({ text, onOpenLink, linkPreviewMode }) {
             e.preventDefault();
             onOpenLink({ label, url }, e.currentTarget);
           }}
-          className="rounded-sm font-medium text-content-link underline decoration-1 underline-offset-[3px] hover:decoration-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          className="rounded-sm font-medium text-content-link underline decoration-1 underline-offset-[0.3em] [text-decoration-skip-ink:none] hover:decoration-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           {label}
           <ExternalLinkIcon size={14} className="ml-0.5 inline-block align-[-2px]" />

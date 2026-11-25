@@ -76,7 +76,7 @@ export default function DesktopWebPane({ link, active = true, onClose, className
           <div className="h-full overflow-y-auto p-8">
             <div className="mx-auto max-w-lg">
               <p className="m-0 text-title text-pretty">{host} không cho xem trang bên trong ứng dụng khác</p>
-              <p className="mt-2 mb-0 text-small text-web-pane-text-muted text-pretty">Trang này chặn hiển thị trong khung nhúng. <a href={link.url} target="_blank" rel="noopener noreferrer" className="font-medium text-content-link underline underline-offset-2">Mở trong tab mới</a> để đọc toàn văn.</p>
+              <p className="mt-2 mb-0 text-small text-web-pane-text-muted text-pretty">Trang này chặn hiển thị trong khung nhúng. <a href={link.url} target="_blank" rel="noopener noreferrer" className="font-medium text-content-link underline underline-offset-[0.3em] [text-decoration-skip-ink:none]">Mở trong tab mới</a> để đọc toàn văn.</p>
               {preview && (
                 <div className="mt-6 rounded-2xl border border-web-pane-card-border bg-web-pane-card-bg p-5">
                   <p className="m-0 text-xs font-medium text-web-pane-text-muted">Tóm tắt · bản xem trước giả lập</p>
@@ -113,7 +113,7 @@ export default function DesktopWebPane({ link, active = true, onClose, className
             {embed === undefined && (
               <p className="absolute inset-x-0 bottom-0 m-0 border-t border-web-pane-border bg-web-pane-bg px-4 py-2 text-xs text-web-pane-text-muted">
                 Khung trống? Một số trang chặn xem nhúng.{" "}
-                <a href={link.url} target="_blank" rel="noopener noreferrer" className="font-medium text-content-link underline underline-offset-2">Mở trong tab mới</a>
+                <a href={link.url} target="_blank" rel="noopener noreferrer" className="font-medium text-content-link underline underline-offset-[0.3em] [text-decoration-skip-ink:none]">Mở trong tab mới</a>
               </p>
             )}
           </>

@@ -6,7 +6,7 @@ import { ClipIcon, CloseIcon, MicIcon, ReplyIcon, SendIcon, WarningIcon } from "
 // offline: hiện dòng báo mất kết nối phía trên ô; vẫn cho gõ và gửi (tin gửi lúc mất mạng hiện "Chưa gửi được" kèm nút Thử lại).
 // Đính kèm (trái) và micro (phải) là nút giao diện, chưa nối chức năng.
 // draft/onDraft: chữ đang gõ dở của phiên (ChatPane giữ theo từng phiên).
-// quote/onClearQuote: đoạn đang trả lời ({ text, key }), hiện phía trên ô nhập; gửi tin thì đi kèm tin. key mới thì đưa focus vào ô nhập.
+// quote/onClearQuote: đoạn đang trả lời ({ text, label?, key }), hiện phía trên ô nhập; gửi tin thì đi kèm tin. key mới thì đưa focus vào ô nhập.
 export default function Composer({ draft = "", onDraft, onSend, quote = null, onClearQuote, placeholder = "Nhắn tin", compact = false, offline = false }) {
   const [text, setTextState] = useState(draft);
   const setText = (value) => {
@@ -27,7 +27,8 @@ export default function Composer({ draft = "", onDraft, onSend, quote = null, on
   const submit = (e) => {
     e.preventDefault();
     if (!hasText) return;
-    onSend(text.trim(), quote?.text);
+    // Gửi kèm trích dẫn: toàn văn cho AI (text) và nhãn hiển thị nếu là cả câu trả lời (label)
+    onSend(text.trim(), quote ? { text: quote.text, ...(quote.label ? { label: quote.label } : {}) } : undefined);
     setText("");
     onClearQuote?.();
   };
@@ -66,11 +67,13 @@ export default function Composer({ draft = "", onDraft, onSend, quote = null, on
         </p>
         <div className="rounded-composer border border-composer-border bg-composer-bg p-2 shadow-composer">
         {quote && (
-          <div className="mb-1 flex items-start gap-2 rounded-lg border-l-2 border-quote-bar bg-quote-bg py-2 pr-1 pl-3">
-            <ReplyIcon size={16} className="mt-0.5 text-quote-icon" />
+          // Trích dẫn: vạch trái liền mép (không bo góc trái), chỉ bo góc phải; cùng kiểu với tin đã gửi.
+          // Trả lời cả câu trả lời: chỉ hiện nhãn ngắn (label), toàn văn vẫn gửi kèm cho AI.
+          <div className="mb-1 flex items-start gap-2 rounded-r-lg border-l-2 border-quote-bar bg-quote-bg py-2 pr-1 pl-3">
+            <ReplyIcon size={16} className="mt-0.5 shrink-0 text-quote-icon" />
             <p id="composer-quote" className="m-0 line-clamp-2 min-w-0 flex-1 text-small text-quote-text [overflow-wrap:anywhere]">
-              <span className="sr-only">Đang trả lời đoạn: </span>
-              {quote.text}
+              <span className="sr-only">{quote.label ? "Đang trả lời: " : "Đang trả lời đoạn: "}</span>
+              {quote.label ?? quote.text}
             </p>
             <button
               type="button"
@@ -80,7 +83,7 @@ export default function Composer({ draft = "", onDraft, onSend, quote = null, on
               }}
               aria-label="Bỏ trích dẫn"
               title="Bỏ trích dẫn (Esc)"
-              className="-my-1 grid size-8 shrink-0 place-items-center rounded-full text-quote-icon hover:bg-composer-icon-bg-hover hover:text-composer-icon-hover focus-visible:outline-2 focus-visible:outline-focus-ring pointer-coarse:size-10 [&_svg]:size-4"
+              className="-my-1 grid size-8 shrink-0 place-items-center rounded-full text-quote-icon hover:bg-quote-close-bg-hover focus-visible:outline-2 focus-visible:outline-focus-ring pointer-coarse:size-10 [&_svg]:size-4"
             >
               <CloseIcon />
             </button>

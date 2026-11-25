@@ -122,7 +122,8 @@ export default function App({ logoRef, logoHidden, onLogout }) {
     }, 900);
   };
 
-  // quote: đoạn trong câu trả lời trước mà người dùng đang trả lời (bôi đen / vuốt / nút Trả lời). Khi nối API, gửi kèm làm ngữ cảnh.
+  // quote: { text, label? } — đoạn đang trả lời (bôi đen) hoặc cả câu trả lời (nút ↩ / vuốt, có label để hiển thị).
+  // Khi nối API, gửi quote.text kèm làm ngữ cảnh; label chỉ để hiển thị.
   const send = (text, quote) => {
     const id = activeId;
     const failed = !navigator.onLine;

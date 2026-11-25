@@ -62,7 +62,7 @@ export default function MobileWebPane({ link, onClose }) {
           {!valid ? "Liên kết không hợp lệ." : mixed ? "Trang HTTP không mở được trong khung này. " : blocked ? "Xem website: "
             : phase === "loading" ? "Đang mở website… " : phase === "error" ? "Không mở được trang. "
             : phase === "slow" ? "Trang chưa hiển thị? " : "Trang trống hoặc bị chặn? "}
-          {valid && <a href={link.url} target="_blank" rel="noopener noreferrer" className="font-medium text-content-link underline underline-offset-2">Mở tab mới</a>}
+          {valid && <a href={link.url} target="_blank" rel="noopener noreferrer" className="font-medium text-content-link underline underline-offset-[0.3em] [text-decoration-skip-ink:none]">Mở tab mới</a>}
         </p>}
       </div>
 

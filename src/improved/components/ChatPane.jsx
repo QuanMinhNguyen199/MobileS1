@@ -10,7 +10,7 @@ import MobileWebPane from "./MobileWebPane.jsx";
 import useMobileViewport from "../useMobileViewport.js";
 import useWebChatSheet from "../useWebChatSheet.js";
 import { BotAvatar, IconButton } from "./ui.jsx";
-import { ChevronDown, ChevronUp, EditIcon, MenuIcon, MoreIcon, RetryIcon, WarningIcon } from "../icons.jsx";
+import { ChevronDown, ChevronUp, EditIcon, MenuIcon, MoreIcon, ReplyIcon, RetryIcon, WarningIcon } from "../icons.jsx";
 
 // Gợi ý cho phiên mới (trạng thái rỗng): bấm là gửi luôn
 const SUGGESTIONS = [
@@ -47,13 +47,16 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
     setChatOpenById((all) => ({ ...all, [conversation.id]: typeof value === "function" ? value(all[conversation.id] ?? true) : value }));
   // Bản nháp ô soạn tin của từng phiên: đổi phiên rồi quay lại vẫn còn chữ đang gõ dở
   const drafts = useRef(new Map());
-  // Đoạn đang trả lời của từng phiên ({ text, key }): từ đoạn bôi đen, vuốt tin (điện thoại) hoặc nút Trả lời
+  // Đoạn đang trả lời của từng phiên ({ text, label?, key }).
+  // Bôi đen: text là đoạn đã chọn, hiện nguyên văn. Cả câu trả lời (nút ↩, vuốt trên điện thoại): text là toàn văn
+  // để gửi kèm cho AI, còn hiển thị chỉ là nhãn ngắn (label), vì toàn văn ghép phẳng bảng số liệu không đọc được.
   const [quotes, setQuotes] = useState({});
   const quote = quotes[conversation.id] ?? null;
-  const replyTo = (text) => {
+  const replyTo = (text, label) => {
     if (!text) return;
-    setQuotes((all) => ({ ...all, [conversation.id]: { text, key: Date.now() } }));
+    setQuotes((all) => ({ ...all, [conversation.id]: { text, ...(label ? { label } : {}), key: Date.now() } }));
   };
+  const answerLabel = (m) => `Câu trả lời lúc ${m.time}`;
   const clearQuote = () => setQuotes(({ [conversation.id]: _removed, ...rest }) => rest);
   const collapseWebChat = () => {
     setWebChatOpen(false);
@@ -195,10 +198,14 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
               m.from === "user" ? (
                 <div key={m.id} className={`flex max-w-[85%] flex-col items-end self-end ${compact ? "" : "md:max-w-[75%]"}`}>
                   <span className="sr-only">Bạn: </span>
+                  {/* Cùng kiểu với khung trích trong ô soạn tin: vạch trái, nền nhạt, chỉ bo góc bên phải */}
                   {m.quote && (
-                    <blockquote className="m-0 mb-1.5 max-w-full border-l-2 border-quote-bar py-0.5 pl-2.5 text-small text-quote-text">
-                      <span className="sr-only">Trả lời đoạn: </span>
-                      <span className="line-clamp-2 [overflow-wrap:anywhere]">{m.quote}</span>
+                    <blockquote className="m-0 mb-1.5 flex max-w-full items-start gap-1.5 rounded-r-lg border-l-2 border-quote-bar bg-quote-bg py-1.5 pr-3 pl-2.5 text-small text-quote-text">
+                      <ReplyIcon size={14} className="mt-0.5 shrink-0 text-quote-icon" />
+                      <span className="line-clamp-2 [overflow-wrap:anywhere]">
+                        <span className="sr-only">{m.quote.label ? "Trả lời: " : "Trả lời đoạn: "}</span>
+                        {m.quote.label ?? m.quote.text ?? m.quote}
+                      </span>
                     </blockquote>
                   )}
                   <div className="rounded-bubble rounded-br-bubble-tip bg-message-user-bg px-4 py-2.5 text-bubble whitespace-pre-wrap [overflow-wrap:anywhere]">
@@ -228,7 +235,7 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
               ) : (
                 <article key={m.id} className="w-full">
                   <div className="min-w-0">
-                    <SwipeReply enabled={viewport.mobile} onReply={() => replyTo(toQuote(m.blocks))}>
+                    <SwipeReply enabled={viewport.mobile} onReply={() => replyTo(toQuote(m.blocks), answerLabel(m))}>
                       <p className="m-0 mb-2 flex items-center gap-2 text-small">
                         {otherAvatar}
                         <span className="font-medium text-message-bot-sender">{otherName}</span>
@@ -238,7 +245,7 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
                         <MessageContent blocks={m.blocks} onOpenLink={openLink} linkPreviewMode={viewport.mobile ? "panel" : "dialog"} />
                       </div>
                     </SwipeReply>
-                    <AnswerFooter blocks={m.blocks} title={conversation.topic ?? conversation.name} onReply={replyTo} />
+                    <AnswerFooter blocks={m.blocks} title={conversation.topic ?? conversation.name} onReply={(text) => replyTo(text, answerLabel(m))} />
                   </div>
                 </article>
               )

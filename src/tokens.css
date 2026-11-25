@@ -99,6 +99,7 @@
   --scrollbar-frame: var(--alpha-warm-25-a50); /* Thanh cuộn trên sidebar đỏ */
   --surface: var(--base-white); /* Nền trắng: header, thẻ, ô soạn tin, bóng bot */
   --surface-2: var(--warm-150); /* Nền nút trung tính khi rê chuột */
+  --surface-raised: var(--base-white); /* Nền nổi trên thẻ (nút nổi cạnh đoạn đang chọn): trắng khi sáng, sáng hơn thẻ khi tối */
   --canvas: var(--warm-50); /* Nền vùng hội thoại */
   --panel: var(--warm-100); /* Nút tròn trong ô soạn tin khi rê chuột */
   --panel-hover: var(--warm-250); /* Panel khi rê chuột */
@@ -145,6 +146,7 @@
     --on-frame-active-muted: var(--ember-750);
     --surface: var(--night-900);
     --surface-2: var(--night-800);
+    --surface-raised: var(--night-750);
     --canvas: var(--night-950);
     --panel: var(--night-800);
     --panel-hover: var(--night-750);
@@ -188,6 +190,7 @@
     --on-frame-active-muted: light-dark(var(--rose-700), var(--ember-750));
     --surface: light-dark(var(--base-white), var(--night-900));
     --surface-2: light-dark(var(--warm-150), var(--night-800));
+    --surface-raised: light-dark(var(--base-white), var(--night-750));
     --canvas: light-dark(var(--warm-50), var(--night-950));
     --panel: light-dark(var(--warm-100), var(--night-800));
     --panel-hover: light-dark(var(--warm-250), var(--night-750));
@@ -231,6 +234,7 @@
     --on-frame-active-muted: var(--rose-700);
     --surface: var(--base-white);
     --surface-2: var(--warm-150);
+    --surface-raised: var(--base-white);
     --canvas: var(--warm-50);
     --panel: var(--warm-100);
     --panel-hover: var(--warm-250);
@@ -273,6 +277,7 @@
     --on-frame-active-muted: var(--ember-750);
     --surface: var(--night-900);
     --surface-2: var(--night-800);
+    --surface-raised: var(--night-750);
     --canvas: var(--night-950);
     --panel: var(--night-800);
     --panel-hover: var(--night-750);
@@ -391,16 +396,17 @@
   --web-pane-card-border: var(--line); /* Viền thẻ tóm tắt */
   --overlay-scrim: var(--scrim); /* Lớp phủ sau ngăn kéo */
   --answer-meta: var(--ink-2); /* Chân câu trả lời: lưu ý kiểm tra */
-  --reply-action-bg: var(--surface); /* Nút Hỏi GeoAgent cạnh đoạn đang chọn */
-  --reply-action-bg-hover: var(--panel-hover); /* Nền khi rê chuột */
-  --reply-action-border: var(--line); /* Viền */
+  --reply-action-bg: var(--surface-raised); /* Nút Hỏi GeoAgent cạnh đoạn đang chọn */
+  --reply-action-bg-hover: var(--panel-active); /* Nền khi rê chuột */
+  --reply-action-border: var(--line-strong); /* Viền (đủ 3:1 để tách khỏi chữ phía sau ở cả hai giao diện) */
   --reply-action-text: var(--ink); /* Chữ */
   --reply-action-icon: var(--ink-2); /* Icon */
-  --quote-bar: var(--brand); /* Vạch trái của đoạn trích */
+  --quote-bar: var(--link); /* Vạch trái của đoạn trích (đỏ, sáng hơn ở giao diện tối để đạt 3:1) */
   --quote-bg: var(--surface-2); /* Nền đoạn trích trong ô soạn tin */
   --quote-text: var(--ink-2); /* Chữ đoạn trích */
   --quote-icon: var(--ink-2); /* Icon trả lời / nút bỏ trích dẫn */
-  --reply-swipe-bg: var(--surface-2); /* Vòng tròn icon hiện ra khi vuốt tin để trả lời */
+  --quote-close-bg-hover: var(--panel-hover); /* Nền nút bỏ trích dẫn khi rê chuột */
+  --reply-swipe-bg: var(--brand-soft); /* Vòng tròn icon hiện ra khi vuốt tin để trả lời (hồng nhạt như bong bóng người dùng) */
   --reply-swipe-icon: var(--ink-2); /* Icon trả lời khi vuốt */
 }
 
@@ -426,6 +432,7 @@
   --color-scrollbar-frame: var(--scrollbar-frame);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-raised: var(--surface-raised);
   --color-canvas: var(--canvas);
   --color-panel: var(--panel);
   --color-panel-hover: var(--panel-hover);
@@ -553,6 +560,7 @@
   --color-quote-bg: var(--quote-bg);
   --color-quote-text: var(--quote-text);
   --color-quote-icon: var(--quote-icon);
+  --color-quote-close-bg-hover: var(--quote-close-bg-hover);
   --color-reply-swipe-bg: var(--reply-swipe-bg);
   --color-reply-swipe-icon: var(--reply-swipe-icon);
 }
