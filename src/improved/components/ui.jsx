@@ -35,7 +35,8 @@ export function BotAvatar({ size = 32 }) {
       className="grid shrink-0 place-items-center rounded-full bg-bot-avatar-bg font-semibold text-bot-avatar-icon"
       style={{ width: size, height: size, fontSize: Math.round(size * 0.45) }}
     >
-      <AssistantIcon size={Math.round(size * 0.68)} />
+      {/* Dấu hiệu thương hiệu dạng khối: lớn hơn icon nét một chút để chữ G và hai mắt còn rõ ở cỡ 22–28px */}
+      <AssistantIcon size={Math.round(size * 0.76)} />
     </span>
   );
 }

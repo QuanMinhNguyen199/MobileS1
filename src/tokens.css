@@ -82,6 +82,7 @@
   --brand-hover: var(--red-800); /* Nút chính khi rê chuột */
   --brand-pressed: var(--red-900); /* Nút chính khi nhấn */
   --brand-soft: var(--red-200); /* Bong bóng tin của người dùng */
+  --brand-mark: var(--red-700); /* Nền dấu hiệu thương hiệu (avatar GeoAgent): đỏ đậm ở cả hai giao diện để giống logo */
   --gold: var(--gold-400); /* Vàng nhấn: tab đang chọn, chấm chưa đọc, icon trợ lý */
   --gold-ink: var(--gold-950); /* Chữ trên nền vàng */
   --frame: var(--red-700); /* Nền sidebar và màn đăng nhập */
@@ -132,6 +133,7 @@
     --brand-hover: var(--ember-550);
     --brand-pressed: var(--ember-700);
     --brand-soft: var(--ember-900);
+    --brand-mark: var(--ember-700);
     --frame: var(--ember-880);
     --frame-hover: var(--ember-850);
     --frame-active: var(--ember-100);
@@ -174,6 +176,7 @@
     --brand-hover: light-dark(var(--red-800), var(--ember-550));
     --brand-pressed: light-dark(var(--red-900), var(--ember-700));
     --brand-soft: light-dark(var(--red-200), var(--ember-900));
+    --brand-mark: light-dark(var(--red-700), var(--ember-700));
     --frame: light-dark(var(--red-700), var(--ember-880));
     --frame-hover: light-dark(var(--red-600), var(--ember-850));
     --frame-active: light-dark(var(--warm-25), var(--ember-100));
@@ -216,6 +219,7 @@
     --brand-hover: var(--red-800);
     --brand-pressed: var(--red-900);
     --brand-soft: var(--red-200);
+    --brand-mark: var(--red-700);
     --frame: var(--red-700);
     --frame-hover: var(--red-600);
     --frame-active: var(--warm-25);
@@ -257,6 +261,7 @@
     --brand-hover: var(--ember-550);
     --brand-pressed: var(--ember-700);
     --brand-soft: var(--ember-900);
+    --brand-mark: var(--ember-700);
     --frame: var(--ember-880);
     --frame-hover: var(--ember-850);
     --frame-active: var(--ember-100);
@@ -375,7 +380,7 @@
   --login-card-error: var(--danger); /* Thông báo đăng nhập thất bại */
   --avatar-status: var(--status-offline); /* Chấm trạng thái */
   --avatar-status-ring: var(--surface); /* Viền quanh chấm trạng thái */
-  --bot-avatar-bg: var(--frame); /* Nền avatar trợ lý */
+  --bot-avatar-bg: var(--brand-mark); /* Nền avatar trợ lý */
   --bot-avatar-icon: var(--gold); /* Icon trợ lý */
   --web-pane-bg: var(--surface); /* Khung web (máy tính) */
   --web-pane-frame-bg: var(--surface-2); /* Nền vùng trang nhúng */
@@ -404,6 +409,7 @@
   --color-brand-hover: var(--brand-hover);
   --color-brand-pressed: var(--brand-pressed);
   --color-brand-soft: var(--brand-soft);
+  --color-brand-mark: var(--brand-mark);
   --color-gold: var(--gold);
   --color-gold-ink: var(--gold-ink);
   --color-frame: var(--frame);

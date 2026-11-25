@@ -877,6 +877,18 @@
           }
         }
       },
+      "brand-mark": {
+        "$type": "color",
+        "$value": "{global.red.700}",
+        "$description": "Nền dấu hiệu thương hiệu (avatar GeoAgent): đỏ đậm ở cả hai giao diện để giống logo",
+        "$extensions": {
+          "geoagent": {
+            "css": "--brand-mark",
+            "figma": "brand/brand-mark",
+            "dark": "{global.ember.700}"
+          }
+        }
+      },
       "gold": {
         "$type": "color",
         "$value": "{global.gold.400}",
@@ -2325,7 +2337,7 @@
     "bot-avatar": {
       "bg": {
         "$type": "color",
-        "$value": "{alias.sidebar.frame}",
+        "$value": "{alias.brand.brand-mark}",
         "$description": "Nền avatar trợ lý",
         "$extensions": {
           "geoagent": {

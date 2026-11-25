@@ -1,6 +1,6 @@
 // GeoAgent Icons: bộ icon của GeoAgent dựng trên Lucide (lucide-react, giấy phép ISC).
 // Mỗi icon chức năng trỏ tới một icon Lucide; tên, nhóm và nhãn tiếng Việt là của GeoAgent.
-// Riêng "assistant" là dấu hiệu tự vẽ (Lucide không có), cùng kiểu nét: lưới 24 × 24, đầu nét tròn.
+// Riêng "assistant" là dấu hiệu thương hiệu tự vẽ (Lucide không có): lưới 24 × 24, dạng khối như logo GeoAgent.
 // Dùng chung cho component React (icons.jsx) và script xuất SVG (scripts/export-geoagent-icons.mjs).
 
 // Độ dày nét hiển thị (px), giữ nguyên ở mọi cỡ icon. Đổi một chỗ này để chỉnh cả bộ.
@@ -8,9 +8,10 @@ export const STROKE = 1.75;
 
 // platforms: bản riêng cho iPhone / Android khi thói quen hai nền tảng khác nhau; không có thì dùng bản chung
 const item = (label, group, lucide, platforms) => ({ label, group, lucide, ...(platforms ? { platforms } : {}) });
-const p = (d) => ["path", { d }];
-const c = (cx, cy, r, dot = false) => ["circle", { cx, cy, r, ...(dot ? { fill: "currentColor", stroke: "none" } : {}) }];
 const custom = (label, group, ...nodes) => ({ label, group, nodes });
+// Phần hình vẽ theo tọa độ 512 của logo: thu nhỏ vào lưới 24 (cả hình cao 382 đơn vị → 22, căn giữa), mặc định tô đặc
+const BRAND = "matrix(0.0576 0 0 0.0576 -2.75 -2.11)";
+const brand = (tag, attrs) => [tag, { fill: "currentColor", stroke: "none", transform: BRAND, ...attrs }];
 
 // Ba bộ icon: dùng chung (mặc định), iPhone, Android
 export const PLATFORMS = [
@@ -71,12 +72,17 @@ export const ICONS = {
   pending: item("Đang gửi", "feedback", "Clock"),
   read: item("Đã đọc", "feedback", "CheckCheck"),
   favorite: item("Yêu thích", "conversation", "Star"),
+  // Dấu hiệu thương hiệu, lấy từ public/app/logo.svg (bỏ nền ô vuông đỏ): chữ G khối đặc ôm bong bóng hội thoại,
+  // hai mắt và ăng-ten. Giữ dạng khối như logo (không chuyển sang nét) để nhận ra ngay; đơn sắc, màu theo currentColor.
+  // Hình vẽ ở hệ tọa độ 512 của logo rồi thu về lưới 24 bằng BRAND (cùng một ma trận cho mọi phần).
   assistant: custom(
     "Trợ lý GeoAgent",
     "conversation",
-    p("M18.5 5.5A8.5 8.5 0 0 0 4 14.8L3 21l6.2-1a8.5 8.5 0 0 0 11.2-9.5M12 6.5l4 4-4 6-4-6 4-4Z"),
-    c(12, 10.5, 1, true),
-    p("M19 3v4m-2-2h4")
+    brand("path", { d: "M292 112A164 164 0 1 0 418.8 252H362V308A40 40 0 0 1 322 348H252L186 392 198 340A40 40 0 0 1 170 302V234A40 40 0 0 1 214 194H292Z" }),
+    brand("rect", { x: 207, y: 256, width: 36, height: 36, rx: 8 }),
+    brand("rect", { x: 267, y: 256, width: 36, height: 36, rx: 8 }),
+    brand("path", { d: "M294 116 336 76", fill: "none", stroke: "currentColor", strokeWidth: 16, strokeLinecap: "round" }),
+    brand("circle", { cx: 340, cy: 72, r: 18 })
   ),
   plus: item("Thêm", "compose", "Plus"),
   attach: item("Đính kèm tệp", "compose", "Paperclip"),

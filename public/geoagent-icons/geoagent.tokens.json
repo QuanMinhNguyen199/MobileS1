@@ -877,6 +877,18 @@
           }
         }
       },
+      "brand-mark": {
+        "$type": "color",
+        "$value": "{global.red.700}",
+        "$description": "Nền dấu hiệu thương hiệu (avatar GeoAgent): đỏ đậm ở cả hai giao diện để giống logo",
+        "$extensions": {
+          "geoagent": {
+            "css": "--brand-mark",
+            "figma": "brand/brand-mark",
+            "dark": "{global.ember.700}"
+          }
+        }
+      },
       "gold": {
         "$type": "color",
         "$value": "{global.gold.400}",
@@ -2325,7 +2337,7 @@
     "bot-avatar": {
       "bg": {
         "$type": "color",
-        "$value": "{alias.sidebar.frame}",
+        "$value": "{alias.brand.brand-mark}",
         "$description": "Nền avatar trợ lý",
         "$extensions": {
           "geoagent": {
@@ -2447,6 +2459,133 @@
           "geoagent": {
             "css": "--answer-meta",
             "figma": "answer/meta"
+          }
+        }
+      }
+    },
+    "reply-action": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface}",
+        "$description": "Nút Hỏi GeoAgent cạnh đoạn đang chọn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--reply-action-bg",
+            "figma": "reply-action/bg"
+          }
+        }
+      },
+      "bg-hover": {
+        "$type": "color",
+        "$value": "{alias.surface.panel-hover}",
+        "$description": "Nền khi rê chuột",
+        "$extensions": {
+          "geoagent": {
+            "css": "--reply-action-bg-hover",
+            "figma": "reply-action/bg-hover"
+          }
+        }
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{alias.border.line}",
+        "$description": "Viền",
+        "$extensions": {
+          "geoagent": {
+            "css": "--reply-action-border",
+            "figma": "reply-action/border"
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{alias.text.ink}",
+        "$description": "Chữ",
+        "$extensions": {
+          "geoagent": {
+            "css": "--reply-action-text",
+            "figma": "reply-action/text"
+          }
+        }
+      },
+      "icon": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Icon",
+        "$extensions": {
+          "geoagent": {
+            "css": "--reply-action-icon",
+            "figma": "reply-action/icon"
+          }
+        }
+      }
+    },
+    "quote": {
+      "bar": {
+        "$type": "color",
+        "$value": "{alias.brand.brand}",
+        "$description": "Vạch trái của đoạn trích",
+        "$extensions": {
+          "geoagent": {
+            "css": "--quote-bar",
+            "figma": "quote/bar"
+          }
+        }
+      },
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface-2}",
+        "$description": "Nền đoạn trích trong ô soạn tin",
+        "$extensions": {
+          "geoagent": {
+            "css": "--quote-bg",
+            "figma": "quote/bg"
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Chữ đoạn trích",
+        "$extensions": {
+          "geoagent": {
+            "css": "--quote-text",
+            "figma": "quote/text"
+          }
+        }
+      },
+      "icon": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Icon trả lời / nút bỏ trích dẫn",
+        "$extensions": {
+          "geoagent": {
+            "css": "--quote-icon",
+            "figma": "quote/icon"
+          }
+        }
+      }
+    },
+    "reply-swipe": {
+      "bg": {
+        "$type": "color",
+        "$value": "{alias.surface.surface-2}",
+        "$description": "Vòng tròn icon hiện ra khi vuốt tin để trả lời",
+        "$extensions": {
+          "geoagent": {
+            "css": "--reply-swipe-bg",
+            "figma": "reply-swipe/bg"
+          }
+        }
+      },
+      "icon": {
+        "$type": "color",
+        "$value": "{alias.text.ink-2}",
+        "$description": "Icon trả lời khi vuốt",
+        "$extensions": {
+          "geoagent": {
+            "css": "--reply-swipe-icon",
+            "figma": "reply-swipe/icon"
           }
         }
       }
