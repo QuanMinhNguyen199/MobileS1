@@ -9,10 +9,9 @@ import { toQuote } from "../answerText.js";
 import MobileWebPane from "./MobileWebPane.jsx";
 import useMobileViewport from "../useMobileViewport.js";
 import useWebChatSheet from "../useWebChatSheet.js";
-import { Avatar, BotAvatar, IconButton } from "./ui.jsx";
+import { BotAvatar, IconButton } from "./ui.jsx";
 import { ChevronDown, ChevronUp, EditIcon, MenuIcon, MoreIcon, RetryIcon, WarningIcon } from "../icons.jsx";
 
-const ME = "Nguyễn Minh Quân";
 // Gợi ý cho phiên mới (trạng thái rỗng): bấm là gửi luôn
 const SUGGESTIONS = [
   "So sánh nghĩa vụ thuế TNDN năm 2025 với 2024",
@@ -205,7 +204,7 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
                   <div className="rounded-bubble rounded-br-bubble-tip bg-message-user-bg px-4 py-2.5 text-bubble whitespace-pre-wrap [overflow-wrap:anywhere]">
                     {m.text}
                   </div>
-                  {/* Avatar nằm trên dòng giờ gửi để mép phải bong bóng thẳng với mép ô soạn tin */}
+                  {/* Tin của mình chỉ có giờ gửi, không cần avatar: bên phải luôn là người dùng */}
                   {m.status === "failed" ? (
                     <p className="m-0 mt-1.5 flex flex-wrap items-center justify-end gap-x-2 text-xs text-message-user-error">
                       <WarningIcon size={14} className="shrink-0" />
@@ -221,9 +220,8 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
                       </button>
                     </p>
                   ) : (
-                    <p className="m-0 mt-1.5 flex items-center gap-2 text-xs text-message-user-meta">
+                    <p className="m-0 mt-1.5 text-xs text-message-user-meta">
                       <time className="tabular-nums">{m.time}</time>
-                      <Avatar name={ME} size={22} />
                     </p>
                   )}
                 </div>
