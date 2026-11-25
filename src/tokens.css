@@ -386,6 +386,17 @@
   --web-pane-card-border: var(--line); /* Viền thẻ tóm tắt */
   --overlay-scrim: var(--scrim); /* Lớp phủ sau ngăn kéo */
   --answer-meta: var(--ink-2); /* Chân câu trả lời: lưu ý kiểm tra */
+  --reply-action-bg: var(--surface); /* Nút Hỏi GeoAgent cạnh đoạn đang chọn */
+  --reply-action-bg-hover: var(--panel-hover); /* Nền khi rê chuột */
+  --reply-action-border: var(--line); /* Viền */
+  --reply-action-text: var(--ink); /* Chữ */
+  --reply-action-icon: var(--ink-2); /* Icon */
+  --quote-bar: var(--brand); /* Vạch trái của đoạn trích */
+  --quote-bg: var(--surface-2); /* Nền đoạn trích trong ô soạn tin */
+  --quote-text: var(--ink-2); /* Chữ đoạn trích */
+  --quote-icon: var(--ink-2); /* Icon trả lời / nút bỏ trích dẫn */
+  --reply-swipe-bg: var(--surface-2); /* Vòng tròn icon hiện ra khi vuốt tin để trả lời */
+  --reply-swipe-icon: var(--ink-2); /* Icon trả lời khi vuốt */
 }
 
 @theme inline {
@@ -527,6 +538,17 @@
   --color-web-pane-card-border: var(--web-pane-card-border);
   --color-overlay-scrim: var(--overlay-scrim);
   --color-answer-meta: var(--answer-meta);
+  --color-reply-action-bg: var(--reply-action-bg);
+  --color-reply-action-bg-hover: var(--reply-action-bg-hover);
+  --color-reply-action-border: var(--reply-action-border);
+  --color-reply-action-text: var(--reply-action-text);
+  --color-reply-action-icon: var(--reply-action-icon);
+  --color-quote-bar: var(--quote-bar);
+  --color-quote-bg: var(--quote-bg);
+  --color-quote-text: var(--quote-text);
+  --color-quote-icon: var(--quote-icon);
+  --color-reply-swipe-bg: var(--reply-swipe-bg);
+  --color-reply-swipe-icon: var(--reply-swipe-icon);
 }
 
 @theme {

@@ -43,7 +43,7 @@ function Rich({ text, onOpenLink, linkPreviewMode }) {
 // Bảng chỉ dùng đường kẻ ngang; cột số căn phải, chữ số đều nhau
 function DataTable({ head, rows, label }) {
   return (
-    <div tabIndex={0} role="region" aria-label={label ? `Bảng: ${label}` : "Bảng dữ liệu"} className="mb-4 max-w-full overflow-x-auto focus-visible:outline-2 focus-visible:outline-focus-ring">
+    <div tabIndex={0} role="region" aria-label={label ? `Bảng: ${label}` : "Bảng dữ liệu"} className="mb-4 max-w-full overflow-x-auto overscroll-x-contain focus-visible:outline-2 focus-visible:outline-focus-ring">
       <table className="border-collapse text-sm tabular-nums">
         <thead>
           <tr>

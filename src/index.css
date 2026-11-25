@@ -271,6 +271,39 @@
   color: var(--button-primary-label);
 }
 
+/* Vuốt câu trả lời sang phải để trả lời (điện thoại, SwipeReply.jsx).
+   Cuộn ngang gốc + snap bắt buộc vào nội dung: thả tay là bật về. Lề trong 16px (bù lề cột chat)
+   và lề dưới để bóng của thẻ tin không bị vùng cuộn cắt. */
+:root[data-variant="improved"] .swipe-reply {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 16px;
+  overscroll-behavior-x: none; /* không kích hoạt cử chỉ "quay lại" của trình duyệt */
+  margin: -4px -16px -24px;
+  padding: 4px 16px 24px;
+  --swipe: 0;
+}
+:root[data-variant="improved"] .swipe-reply-action {
+  flex: 0 0 56px;
+  display: grid;
+  place-items: start start;
+}
+/* --swipe-y (SwipeReply.jsx): giữa phần tin đang nhìn thấy */
+:root[data-variant="improved"] .swipe-reply-action > span {
+  opacity: var(--swipe);
+  transform: translateY(var(--swipe-y, 0px)) scale(calc(0.6 + 0.4 * var(--swipe)));
+}
+:root[data-variant="improved"] .swipe-reply-content {
+  flex: 0 0 100%;
+  min-inline-size: 0;
+  scroll-snap-align: start;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-variant="improved"] .swipe-reply-action > span { transform: translateY(var(--swipe-y, 0px)); }
+}
+
 /* Thanh cuộn (bản cải thiện)
    Máy tính: mảnh, trong suốt khi đứng yên; chỉ hiện khi đang cuộn (data-scrolling do improved/scrollbars.js gắn).
    Rãnh vẫn giữ chỗ nên nội dung không xô lệch khi thanh hiện ra.

@@ -1,29 +1,44 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ClipIcon, MicIcon, SendIcon, WarningIcon } from "../icons.jsx";
+import { ClipIcon, CloseIcon, MicIcon, ReplyIcon, SendIcon, WarningIcon } from "../icons.jsx";
 
 // compact: cột chat hẹp (máy tính khi khung web đang mở bên phải) dùng lề như điện thoại.
 // offline: hiện dòng báo mất kết nối phía trên ô; vẫn cho gõ và gửi (tin gửi lúc mất mạng hiện "Chưa gửi được" kèm nút Thử lại).
 // Đính kèm (trái) và micro (phải) là nút giao diện, chưa nối chức năng.
 // draft/onDraft: chữ đang gõ dở của phiên (ChatPane giữ theo từng phiên).
-export default function Composer({ draft = "", onDraft, onSend, placeholder = "Nhắn tin", compact = false, offline = false }) {
+// quote/onClearQuote: đoạn đang trả lời ({ text, key }), hiện phía trên ô nhập; gửi tin thì đi kèm tin. key mới thì đưa focus vào ô nhập.
+export default function Composer({ draft = "", onDraft, onSend, quote = null, onClearQuote, placeholder = "Nhắn tin", compact = false, offline = false }) {
   const [text, setTextState] = useState(draft);
   const setText = (value) => {
     setTextState(value);
     onDraft?.(value);
   };
   const formRef = useRef(null);
+  const inputRef = useRef(null);
   const hasText = text.trim() !== "";
+
+  // Vừa chọn trả lời một đoạn: đưa con trỏ vào ô nhập (không chạy khi chỉ đổi phiên có sẵn trích dẫn)
+  const lastQuoteKey = useRef(quote?.key);
+  useEffect(() => {
+    if (quote && quote.key !== lastQuoteKey.current) inputRef.current?.focus();
+    lastQuoteKey.current = quote?.key;
+  }, [quote]);
 
   const submit = (e) => {
     e.preventDefault();
     if (!hasText) return;
-    onSend(text.trim());
+    onSend(text.trim(), quote?.text);
     setText("");
+    onClearQuote?.();
   };
 
-  // Enter gửi, Shift+Enter xuống dòng; bỏ qua khi bộ gõ (Telex/IME) đang ghép chữ
+  // Enter gửi, Shift+Enter xuống dòng; bỏ qua khi bộ gõ (Telex/IME) đang ghép chữ. Esc bỏ trích dẫn.
   const onKeyDown = (e) => {
+    if (e.key === "Escape" && quote) {
+      e.preventDefault();
+      onClearQuote?.();
+      return;
+    }
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (e.nativeEvent.isComposing || e.keyCode === 229) return;
@@ -49,7 +64,29 @@ export default function Composer({ draft = "", onDraft, onSend, placeholder = "N
             </span>
           )}
         </p>
-        <div className="flex min-h-14 items-end gap-1 rounded-composer border border-composer-border bg-composer-bg p-2 shadow-composer">
+        <div className="rounded-composer border border-composer-border bg-composer-bg p-2 shadow-composer">
+        {quote && (
+          <div className="mb-1 flex items-start gap-2 rounded-lg border-l-2 border-quote-bar bg-quote-bg py-2 pr-1 pl-3">
+            <ReplyIcon size={16} className="mt-0.5 text-quote-icon" />
+            <p id="composer-quote" className="m-0 line-clamp-2 min-w-0 flex-1 text-small text-quote-text [overflow-wrap:anywhere]">
+              <span className="sr-only">Đang trả lời đoạn: </span>
+              {quote.text}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                onClearQuote?.();
+                inputRef.current?.focus();
+              }}
+              aria-label="Bỏ trích dẫn"
+              title="Bỏ trích dẫn (Esc)"
+              className="-my-1 grid size-8 shrink-0 place-items-center rounded-full text-quote-icon hover:bg-composer-icon-bg-hover hover:text-composer-icon-hover focus-visible:outline-2 focus-visible:outline-focus-ring pointer-coarse:size-10 [&_svg]:size-4"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+        )}
+        <div className="flex min-h-10 items-end gap-1">
           <button
             type="button"
             aria-label="Đính kèm tệp"
@@ -60,7 +97,9 @@ export default function Composer({ draft = "", onDraft, onSend, placeholder = "N
           </button>
           <label htmlFor="msg" className="sr-only">Nội dung tin nhắn</label>
           <textarea
+            ref={inputRef}
             id="msg"
+            aria-describedby={quote ? "composer-quote" : undefined}
             rows={1}
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -97,6 +136,7 @@ export default function Composer({ draft = "", onDraft, onSend, placeholder = "N
               </motion.button>
             )}
           </AnimatePresence>
+        </div>
         </div>
       </div>
     </form>

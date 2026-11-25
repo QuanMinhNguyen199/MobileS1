@@ -122,7 +122,8 @@ export default function App({ logoRef, logoHidden, onLogout }) {
     }, 900);
   };
 
-  const send = (text) => {
+  // quote: đoạn trong câu trả lời trước mà người dùng đang trả lời (bôi đen / vuốt / nút Trả lời). Khi nối API, gửi kèm làm ngữ cảnh.
+  const send = (text, quote) => {
     const id = activeId;
     const failed = !navigator.onLine;
     update(id, (c) => ({
@@ -130,7 +131,7 @@ export default function App({ logoRef, logoHidden, onLogout }) {
       // Phiên mới: lấy câu hỏi đầu tiên làm chủ đề (khi nối API, thay bằng tóm tắt do máy chủ trả về)
       topic: c.topic ?? (text.length > 60 ? `${text.slice(0, 57).trimEnd()}…` : text),
       preview: `Bạn: ${text}`,
-      messages: [...c.messages, { id: Date.now(), from: "user", time: now(), text, ...(failed ? { status: "failed" } : {}) }],
+      messages: [...c.messages, { id: Date.now(), from: "user", time: now(), text, ...(quote ? { quote } : {}), ...(failed ? { status: "failed" } : {}) }],
     }));
     if (!failed) reply(id);
   };

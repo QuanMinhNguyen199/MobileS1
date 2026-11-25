@@ -3,6 +3,9 @@ import MessageContent from "./MessageContent.jsx";
 import Composer from "./Composer.jsx";
 import AnswerFooter from "./AnswerFooter.jsx";
 import PopupMenu from "./PopupMenu.jsx";
+import SelectionReply from "./SelectionReply.jsx";
+import SwipeReply from "./SwipeReply.jsx";
+import { toQuote } from "../answerText.js";
 import MobileWebPane from "./MobileWebPane.jsx";
 import useMobileViewport from "../useMobileViewport.js";
 import useWebChatSheet from "../useWebChatSheet.js";
@@ -45,6 +48,14 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
     setChatOpenById((all) => ({ ...all, [conversation.id]: typeof value === "function" ? value(all[conversation.id] ?? true) : value }));
   // Bản nháp ô soạn tin của từng phiên: đổi phiên rồi quay lại vẫn còn chữ đang gõ dở
   const drafts = useRef(new Map());
+  // Đoạn đang trả lời của từng phiên ({ text, key }): từ đoạn bôi đen, vuốt tin (điện thoại) hoặc nút Trả lời
+  const [quotes, setQuotes] = useState({});
+  const quote = quotes[conversation.id] ?? null;
+  const replyTo = (text) => {
+    if (!text) return;
+    setQuotes((all) => ({ ...all, [conversation.id]: { text, key: Date.now() } }));
+  };
+  const clearQuote = () => setQuotes(({ [conversation.id]: _removed, ...rest }) => rest);
   const collapseWebChat = () => {
     setWebChatOpen(false);
     requestAnimationFrame(() => document.querySelector(".mobile-web-chat-toggle")?.focus());
@@ -89,8 +100,9 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
     return () => window.removeEventListener("resize", measure);
   }, [measure]);
 
-  const otherName = conversation.bot ? "GeoAgent" : conversation.name;
-  const otherAvatar = conversation.bot ? <BotAvatar size={28} /> : <Avatar name={conversation.name} size={28} />;
+  // Người trả lời luôn là GeoAgent, không lấy tên phiên làm tên người gửi
+  const otherName = "GeoAgent";
+  const otherAvatar = <BotAvatar size={28} />;
   const webActive = viewport.mobile && Boolean(link);
 
   const openLink = (next, origin) => {
@@ -184,6 +196,12 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
               m.from === "user" ? (
                 <div key={m.id} className={`flex max-w-[85%] flex-col items-end self-end ${compact ? "" : "md:max-w-[75%]"}`}>
                   <span className="sr-only">Bạn: </span>
+                  {m.quote && (
+                    <blockquote className="m-0 mb-1.5 max-w-full border-l-2 border-quote-bar py-0.5 pl-2.5 text-small text-quote-text">
+                      <span className="sr-only">Trả lời đoạn: </span>
+                      <span className="line-clamp-2 [overflow-wrap:anywhere]">{m.quote}</span>
+                    </blockquote>
+                  )}
                   <div className="rounded-bubble rounded-br-bubble-tip bg-message-user-bg px-4 py-2.5 text-bubble whitespace-pre-wrap [overflow-wrap:anywhere]">
                     {m.text}
                   </div>
@@ -212,15 +230,17 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
               ) : (
                 <article key={m.id} className="w-full">
                   <div className="min-w-0">
-                    <p className="m-0 mb-2 flex items-center gap-2 text-small">
-                      {otherAvatar}
-                      <span className="font-medium text-message-bot-sender">{otherName}</span>
-                      <time className="text-xs text-message-bot-meta tabular-nums">{m.time}</time>
-                    </p>
-                    <div className="w-full rounded-bubble rounded-tl-bubble-tip border border-message-bot-border bg-message-bot-bg px-4 py-3.5 shadow-bubble md:px-5 md:py-4">
-                      <MessageContent blocks={m.blocks} onOpenLink={openLink} linkPreviewMode={viewport.mobile ? "panel" : "dialog"} />
-                    </div>
-                    <AnswerFooter blocks={m.blocks} title={conversation.topic ?? conversation.name} />
+                    <SwipeReply enabled={viewport.mobile} onReply={() => replyTo(toQuote(m.blocks))}>
+                      <p className="m-0 mb-2 flex items-center gap-2 text-small">
+                        {otherAvatar}
+                        <span className="font-medium text-message-bot-sender">{otherName}</span>
+                        <time className="text-xs text-message-bot-meta tabular-nums">{m.time}</time>
+                      </p>
+                      <div data-reply-source className="w-full rounded-bubble rounded-tl-bubble-tip border border-message-bot-border bg-message-bot-bg px-4 py-3.5 shadow-bubble md:px-5 md:py-4">
+                        <MessageContent blocks={m.blocks} onOpenLink={openLink} linkPreviewMode={viewport.mobile ? "panel" : "dialog"} />
+                      </div>
+                    </SwipeReply>
+                    <AnswerFooter blocks={m.blocks} title={conversation.topic ?? conversation.name} onReply={replyTo} />
                   </div>
                 </article>
               )
@@ -236,7 +256,7 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
               </div>
             )}
           </div>
-          <Composer key={conversation.id} draft={drafts.current.get(conversation.id)} onDraft={(t) => drafts.current.set(conversation.id, t)} onSend={onSend} compact={compact} offline={!online} placeholder={conversation.bot ? "Hỏi GeoAgent" : "Nhắn tin"} />
+          <Composer key={conversation.id} draft={drafts.current.get(conversation.id)} onDraft={(t) => drafts.current.set(conversation.id, t)} onSend={onSend} quote={quote} onClearQuote={clearQuote} compact={compact} offline={!online} placeholder="Hỏi GeoAgent" />
           </div>
         </div>
 
@@ -256,6 +276,7 @@ export default function ChatPane({ conversation, typing, onSend, onRetry, onNewC
         {webChatOpen ? <ChevronDown /> : <ChevronUp />}
       </button>}
       </div>
+      {!inert && <SelectionReply onReply={replyTo} scroller={scroller} />}
     </main>
   );
 }
